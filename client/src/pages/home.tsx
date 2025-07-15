@@ -173,12 +173,83 @@ export default function Home() {
             </div>
             
             <div className="bg-gray-100 rounded-2xl p-8 relative">
-              <div className="flex justify-center">
-                <img 
-                  src="/attached_assets/free-legal-quotes.png" 
-                  alt="Free Legal Quotes - Compare attorney fees from Law Firm A ($4,000), Law Firm B ($6,500), and Law Firm C ($5,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
-                  className="rounded-xl max-w-full h-auto" 
-                />
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-8">Free Legal Quotes</h3>
+                
+                {/* Quote Bubbles positioned around the image */}
+                <div className="relative max-w-md mx-auto">
+                  {/* Law Firm A - Top Left */}
+                  <div className="absolute -top-4 left-8 transform -translate-x-1/2 z-10">
+                    <div className="bg-white rounded-full px-4 py-3 shadow-lg border-2 border-gray-800 relative">
+                      <div className="text-center">
+                        <div className="font-semibold text-sm text-gray-900">Law Firm A</div>
+                        <div className="text-gray-900 font-bold text-sm">Price $4,000</div>
+                      </div>
+                      {/* Thought bubble tail */}
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                        <div className="w-3 h-3 bg-white border-2 border-gray-800 rounded-full"></div>
+                      </div>
+                      <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/4">
+                        <div className="w-2 h-2 bg-white border-2 border-gray-800 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Law Firm B - Top Center */}
+                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="bg-white rounded-full px-4 py-3 shadow-lg border-2 border-gray-800 relative">
+                      <div className="text-center">
+                        <div className="font-semibold text-sm text-gray-900">Law Firm B</div>
+                        <div className="text-gray-900 font-bold text-sm">Price $6,500</div>
+                      </div>
+                      {/* Thought bubble tail */}
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                        <div className="w-3 h-3 bg-white border-2 border-gray-800 rounded-full"></div>
+                      </div>
+                      <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/4">
+                        <div className="w-2 h-2 bg-white border-2 border-gray-800 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Law Firm C - Top Right */}
+                  <div className="absolute -top-4 right-8 transform translate-x-1/2 z-10">
+                    <div className="bg-white rounded-full px-4 py-3 shadow-lg border-2 border-gray-800 relative">
+                      <div className="text-center">
+                        <div className="font-semibold text-sm text-gray-900">Law Firm C</div>
+                        <div className="text-gray-900 font-bold text-sm">Price $5,500</div>
+                      </div>
+                      {/* Thought bubble tail */}
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                        <div className="w-3 h-3 bg-white border-2 border-gray-800 rounded-full"></div>
+                      </div>
+                      <div className="absolute -bottom-6 left-1/2 transform translate-x-1/4">
+                        <div className="w-2 h-2 bg-white border-2 border-gray-800 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Professional woman image */}
+                  <div className="mt-12 flex justify-center">
+                    <img 
+                      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=300&h=300" 
+                      alt="Professional woman considering legal options" 
+                      className="rounded-xl w-48 h-48 object-cover" 
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Legal practice areas */}
+              <div className="mt-8 grid grid-cols-2 gap-6 text-center">
+                <div>
+                  <div className="font-bold text-lg text-gray-900">Immigration Law</div>
+                  <div className="text-sm text-gray-600">Personal Injury</div>
+                </div>
+                <div>
+                  <div className="font-bold text-lg text-gray-900">Criminal Law</div>
+                  <div className="text-sm text-gray-600">Family Law</div>
+                </div>
               </div>
             </div>
           </div>
