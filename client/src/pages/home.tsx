@@ -173,51 +173,12 @@ export default function Home() {
             </div>
             
             <div className="bg-gray-100 rounded-2xl p-8 relative">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Free Legal Quotes</h3>
-                
-                {/* Quote Bubbles */}
-                <div className="flex justify-center items-center mb-6 space-x-4">
-                  <div className="quote-bubble">
-                    <div className="text-center">
-                      <div className="font-semibold text-sm">Law Firm A</div>
-                      <div className="text-primary font-bold">Price $4,000</div>
-                    </div>
-                  </div>
-                  
-                  <div className="quote-bubble">
-                    <div className="text-center">
-                      <div className="font-semibold text-sm">Law Firm B</div>
-                      <div className="text-primary font-bold">Price $6,500</div>
-                    </div>
-                  </div>
-                  
-                  <div className="quote-bubble">
-                    <div className="text-center">
-                      <div className="font-semibold text-sm">Law Firm C</div>
-                      <div className="text-primary font-bold">Price $5,500</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
               <div className="flex justify-center">
                 <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=400&h=300" 
-                  alt="Professional woman considering legal options" 
-                  className="rounded-xl w-64 h-48 object-cover" 
+                  src="/attached_assets/free-legal-quotes.png" 
+                  alt="Free Legal Quotes - Compare attorney fees from Law Firm A ($4,000), Law Firm B ($6,500), and Law Firm C ($5,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
+                  className="rounded-xl max-w-full h-auto" 
                 />
-              </div>
-              
-              <div className="mt-6 grid grid-cols-2 gap-4 text-center">
-                <div className="bg-white rounded-lg p-3">
-                  <div className="font-semibold text-sm text-gray-900">Immigration Law</div>
-                  <div className="text-xs text-gray-600">Personal Injury</div>
-                </div>
-                <div className="bg-white rounded-lg p-3">
-                  <div className="font-semibold text-sm text-gray-900">Criminal Law</div>
-                  <div className="text-xs text-gray-600">Family Law</div>
-                </div>
               </div>
             </div>
           </div>
