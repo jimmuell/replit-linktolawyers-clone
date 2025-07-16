@@ -154,10 +154,9 @@ export default function Home() {
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-center">
             <div className="mb-8 lg:mb-0">
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                Find Your Attorney<br />
-                Compare And Negotiate<br />
-                Legal Fees From Law<br />
-                Firms Nationwide
+                Find Your Immigration Attorney<br />
+                Compare And Negotiate Legal Fees<br />
+                From Law Firms Nationwide
               </h1>
               
               <p className="text-lg text-gray-600 mb-6 max-w-lg">
