@@ -55,17 +55,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await apiRequest('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const { user, sessionId } = response;
-      localStorage.setItem('sessionId', sessionId);
-      setUser(user);
+      const response = await apiRequest('POST', '/api/auth/login', { email, password });
+      const data = await response.json();
+      
+      localStorage.setItem('sessionId', data.sessionId);
+      setUser(data.user);
     } catch (error) {
       throw error;
     }
@@ -73,14 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (userData: { email: string; password: string; firstName: string; lastName: string; role: string }) => {
     try {
-      const response = await apiRequest('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
+      const response = await apiRequest('POST', '/api/auth/register', userData);
+      const data = await response.json();
+      
       // After registration, login the user
       await login(userData.email, userData.password);
     } catch (error) {
@@ -91,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     const sessionId = localStorage.getItem('sessionId');
     if (sessionId) {
-      apiRequest('/api/auth/logout', {
+      fetch('/api/auth/logout', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionId}`
