@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X, ChevronDown, Settings } from "lucide-react";
+import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X, ChevronDown, Settings, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,6 +21,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -37,6 +38,9 @@ export default function Home() {
     const handleScroll = () => {
       const sections = ['home', 'how-it-works', 'about'];
       const scrollPosition = window.scrollY + 100;
+
+      // Show/hide scroll to top button
+      setShowScrollToTop(window.scrollY > 300);
 
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -62,6 +66,10 @@ export default function Home() {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMenuOpen(false);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -582,6 +590,17 @@ export default function Home() {
         open={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+
+      {/* Scroll to Top Button */}
+      {showScrollToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 bg-black hover:bg-gray-800 text-white p-3 rounded-full shadow-lg transition-all duration-300 z-50"
+          aria-label="Scroll to top"
+        >
+          <ChevronUp className="h-6 w-6" />
+        </button>
+      )}
     </div>
   );
 }
