@@ -6,7 +6,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: { email: string; password: string; firstName: string; lastName: string; role: string }) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loading: boolean;
 }
 
@@ -77,15 +77,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    setLoading(true);
     const sessionId = localStorage.getItem('sessionId');
     if (sessionId) {
-      fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${sessionId}`
-        }
-      }).catch(console.error);
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionId}`
+          }
+        });
+      } catch (error) {
+        console.error('Logout request failed:', error);
+      }
     }
     localStorage.removeItem('sessionId');
     setUser(null);

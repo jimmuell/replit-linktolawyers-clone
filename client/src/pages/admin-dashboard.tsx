@@ -10,38 +10,20 @@ export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
 
   useEffect(() => {
-    if (user && user.role !== 'admin') {
-      // Redirect non-admin users
+    if (!loading && (!user || user.role !== 'admin')) {
+      // Redirect non-admin users or logged out users immediately
       window.location.href = '/';
     }
-  }, [user]);
+  }, [user, loading]);
 
-  // Show loading state while checking authentication
-  if (loading) {
+  // Show loading state while checking authentication or redirecting
+  if (loading || !user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
-      </div>
-    );
-  }
-
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-96">
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-            <CardDescription>You need admin privileges to access this page.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => window.location.href = '/'} className="w-full">
-              Go to Home
-            </Button>
-          </CardContent>
-        </Card>
       </div>
     );
   }
@@ -77,7 +59,7 @@ export default function AdminDashboard() {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>
+              <DropdownMenuItem onClick={() => logout()}>
                 Sign Out
               </DropdownMenuItem>
             </DropdownMenuContent>

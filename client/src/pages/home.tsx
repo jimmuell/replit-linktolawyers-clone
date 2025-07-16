@@ -145,7 +145,7 @@ export default function Home() {
                       Settings
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>
+                    <DropdownMenuItem onClick={() => logout()}>
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -212,7 +212,7 @@ export default function Home() {
                         </AvatarFallback>
                       </Avatar>
                       <span>{user.firstName} {user.lastName}</span>
-                      <Button variant="ghost" size="sm" onClick={logout}>
+                      <Button variant="ghost" size="sm" onClick={() => logout()}>
                         Sign Out
                       </Button>
                     </div>
