@@ -239,25 +239,27 @@ export default function Home() {
       <section id="home" className="bg-white py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-stretch min-h-[600px]">
-            <div className="mb-8 lg:mb-0 flex flex-col justify-center">
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                Find Your Immigration Attorney
-              </h1>
-              <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-6 leading-relaxed">
-                Compare And Negotiate Legal Fees<br />
-                From Law Firms Nationwide
-              </h2>
-              
-              <p className="text-lg text-gray-600 mb-6 max-w-lg">
-                At LinkToLawyers, we bridge the gap between individuals seeking expert legal services and the professionals who can provide them by using our AI Powered Smart Matching Algorithm.
-              </p>
-              
-              <p className="text-gray-600 mb-8 max-w-lg">
-                Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
-              </p>
+            <div className="mb-8 lg:mb-0 flex flex-col justify-between">
+              <div>
+                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+                  Find Your Immigration Attorney
+                </h1>
+                <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-6 leading-relaxed">
+                  Compare And Negotiate Legal Fees<br />
+                  From Law Firms Nationwide
+                </h2>
+                
+                <p className="text-lg text-gray-600 mb-6 max-w-lg">
+                  At LinkToLawyers, we bridge the gap between individuals seeking expert legal services and the professionals who can provide them by using our AI Powered Smart Matching Algorithm.
+                </p>
+                
+                <p className="text-gray-600 mb-8 max-w-lg">
+                  Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
+                </p>
+              </div>
               
               <Button 
-                className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg"
+                className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg self-start"
                 onClick={() => setIsQuoteModalOpen(true)}
               >
                 Get A Free Legal Quote!
