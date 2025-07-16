@@ -258,6 +258,12 @@ export default function Home() {
                 </p>
               </div>
               
+              <div className="mb-6">
+                <p className="text-gray-600 max-w-lg">
+                  Take control of your legal expenses today. Compare quotes from multiple attorneys, negotiate fair pricing, and make confident decisions about your legal representation. Start your journey to affordable legal services now.
+                </p>
+              </div>
+              
               <Button 
                 className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg self-start"
                 onClick={() => setIsQuoteModalOpen(true)}

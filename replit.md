@@ -10,6 +10,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **UI/UX Improvements** (July 16, 2025): Enhanced hero section layout and image updates
+  - Updated thinking girl image to show realistic law firm pricing ($1,200, $1,750, $2,500)
+  - Implemented equal-width, equal-height hero section columns with balanced layout
+  - Added call-to-action button positioned at bottom of left column for visual alignment
+  - Enhanced content flow with additional paragraph above button for better spacing
+  - Improved responsive design for better mobile and desktop experience
+
+- **Free Resources and Help Pages** (July 16, 2025): Created comprehensive resource and support pages
+  - Built dedicated Free Resources page with downloadable guides and webinars
+  - Created Help & Support page with FAQ, contact forms, and support options
+  - Added proper routing for /free-resources and /help pages
+  - Updated navigation links to route to dedicated pages instead of scrolling sections
+  - Maintained consistent authentication and UI design across all pages
+
 - **Authentication System Implementation** (July 16, 2025): Built complete role-based authentication system with email/password
   - Updated database schema to include email, firstName, lastName, role, createdAt, updatedAt fields
   - Implemented three user roles: client, attorney, and admin
