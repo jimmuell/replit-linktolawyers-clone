@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -462,8 +462,11 @@ export default function Home() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl text-center">
-              Receive a <span className="font-bold">FREE</span> quote! Please fill out the form below and submit it.
+              Request Your Free Quote
             </DialogTitle>
+            <DialogDescription className="text-center text-gray-600">
+              Tell us about your immigration case and get personalized quotes from qualified attorneys
+            </DialogDescription>
           </DialogHeader>
           
           <form onSubmit={handleSubmit} className="space-y-4">

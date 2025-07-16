@@ -10,6 +10,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Case Type Categorization System** (July 16, 2025): Implemented comprehensive legal case type dropdown system
+  - Created hierarchical PostgreSQL database structure for case types with parent/child relationships
+  - Built complete backend infrastructure with API routes, storage methods, and automated seeding
+  - Implemented 11 professional immigration law categories with bilingual support (English/Spanish)
+  - Replaced basic category dropdown with sophisticated case type system showing detailed subcategories
+  - Added case types: Family-Based Immigrant Visa (Immediate Relative, Family Preference, Waivers), K-1 Fiancé Visa, Citizenship & Naturalization (N-400, N-600), Asylum (Affirmative, Defensive), Deportation Defense, VAWA, and Other
+  - Each case type includes detailed descriptions to help users identify their specific legal needs
+  - System automatically seeds missing case types on server startup for data consistency
+
 - **UI/UX Improvements** (July 16, 2025): Enhanced hero section layout and image updates
   - Updated thinking girl image to show realistic law firm pricing ($1,200, $1,750, $2,500)
   - Implemented equal-width, equal-height hero section columns with balanced layout
