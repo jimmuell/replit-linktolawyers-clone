@@ -178,7 +178,7 @@ export default function Home() {
                 <img 
                   src={girlThinkingImage} 
                   alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($4,000), Law Firm B ($6,500), and Law Firm C ($5,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
-                  className="rounded-xl max-w-full h-auto" 
+                  className="rounded-xl max-w-full h-auto border-5 border-gray-300" 
                 />
               </div>
             </div>
