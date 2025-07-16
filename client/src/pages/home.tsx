@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import { Link } from "wouter";
-import girlThinkingImage from "@assets/thinking_girl_ai_2_1752675350935.png";
+import girlThinkingImage from "@assets/thinking_girl_ai_3_1752707368242.png";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
