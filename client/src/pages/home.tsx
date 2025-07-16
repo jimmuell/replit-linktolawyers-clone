@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import girlThinkingImage from "@assets/girl-thinking.jpg";
+import girlThinkingImage from "@assets/girl-thinking-new.png";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
