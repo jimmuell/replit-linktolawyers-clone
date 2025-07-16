@@ -391,7 +391,7 @@ export default function Home() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName">First name / Nombre</Label>
+                <Label htmlFor="firstName">First name</Label>
                 <Input
                   id="firstName"
                   placeholder="First name"
@@ -401,7 +401,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="lastName">Last name / Apellido</Label>
+                <Label htmlFor="lastName">Last name</Label>
                 <Input
                   id="lastName"
                   placeholder="Last name"
@@ -414,7 +414,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="category">Category / Categoría</Label>
+                <Label htmlFor="category">Category</Label>
                 <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose category..." />
@@ -431,7 +431,7 @@ export default function Home() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="nationality">Nationality / Nacionalidad</Label>
+                <Label htmlFor="nationality">Nationality</Label>
                 <Select value={formData.nationality} onValueChange={(value) => handleInputChange('nationality', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose nationality..." />
@@ -452,7 +452,7 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="email">Email / Correo electrónico</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -463,7 +463,7 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="zipCode">Zip Code / Correo electrónico</Label>
+                <Label htmlFor="zipCode">Zip Code</Label>
                 <Input
                   id="zipCode"
                   placeholder="99999"
@@ -475,7 +475,7 @@ export default function Home() {
             </div>
 
             <div>
-              <Label htmlFor="legalNeed">Please describe your legal need / Por favor, describa su necesidad legal</Label>
+              <Label htmlFor="legalNeed">Please describe your legal need</Label>
               <Textarea
                 id="legalNeed"
                 placeholder="Type your message here..."
