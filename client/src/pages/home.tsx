@@ -496,17 +496,18 @@ export default function Home() {
               </div>
             </div>
 
+            <div>
+              <Label htmlFor="caseType">Case Type</Label>
+              <HierarchicalCaseTypeSelect
+                caseTypes={caseTypes}
+                value={formData.caseType}
+                onValueChange={(value) => handleInputChange('caseType', value)}
+                loading={caseTypesLoading}
+                placeholder="Choose case type..."
+              />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="caseType">Case Type</Label>
-                <HierarchicalCaseTypeSelect
-                  caseTypes={caseTypes}
-                  value={formData.caseType}
-                  onValueChange={(value) => handleInputChange('caseType', value)}
-                  loading={caseTypesLoading}
-                  placeholder="Choose case type..."
-                />
-              </div>
               <div>
                 <Label htmlFor="nationality">Nationality</Label>
                 <Select value={formData.nationality} onValueChange={(value) => handleInputChange('nationality', value)}>
@@ -524,6 +525,9 @@ export default function Home() {
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div>
+                {/* Empty div to maintain grid layout */}
               </div>
             </div>
 
