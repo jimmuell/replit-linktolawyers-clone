@@ -173,14 +173,12 @@ export default function Home() {
               </Button>
             </div>
             
-            <div className="bg-gray-100 rounded-2xl p-8 relative">
-              <div className="flex justify-center">
-                <img 
-                  src={girlThinkingImage} 
-                  alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($4,000), Law Firm B ($6,500), and Law Firm C ($5,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
-                  className="rounded-xl max-w-full h-auto border-5 border-gray-300" 
-                />
-              </div>
+            <div className="flex justify-center">
+              <img 
+                src={girlThinkingImage} 
+                alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($4,000), Law Firm B ($6,500), and Law Firm C ($5,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
+                className="w-full h-auto border-5 border-gray-300" 
+              />
             </div>
           </div>
         </div>
