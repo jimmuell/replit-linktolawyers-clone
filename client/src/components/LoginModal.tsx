@@ -146,6 +146,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
                   <SelectContent>
                     <SelectItem value="client">Client</SelectItem>
                     <SelectItem value="attorney">Attorney</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
