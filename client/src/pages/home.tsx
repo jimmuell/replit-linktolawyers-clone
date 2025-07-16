@@ -94,12 +94,6 @@ export default function Home() {
               >
                 How it works
               </button>
-              <button className="text-gray-700 hover:text-primary transition-colors">
-                Free resources
-              </button>
-              <button className="text-gray-700 hover:text-primary transition-colors">
-                Help
-              </button>
               <button
                 onClick={() => scrollToSection('about')}
                 className={cn(
@@ -113,7 +107,13 @@ export default function Home() {
                 Contact Us
               </button>
               <button className="text-gray-700 hover:text-primary transition-colors">
+                Free resources
+              </button>
+              <button className="text-gray-700 hover:text-primary transition-colors">
                 Blog
+              </button>
+              <button className="text-gray-700 hover:text-primary transition-colors">
+                Help
               </button>
             </div>
             
@@ -184,12 +184,6 @@ export default function Home() {
                 >
                   How it works
                 </button>
-                <button className="text-gray-700 hover:text-primary transition-colors text-left">
-                  Free resources
-                </button>
-                <button className="text-gray-700 hover:text-primary transition-colors text-left">
-                  Help
-                </button>
                 <button
                   onClick={() => scrollToSection('about')}
                   className="text-gray-700 hover:text-primary transition-colors text-left"
@@ -200,7 +194,13 @@ export default function Home() {
                   Contact Us
                 </button>
                 <button className="text-gray-700 hover:text-primary transition-colors text-left">
+                  Free resources
+                </button>
+                <button className="text-gray-700 hover:text-primary transition-colors text-left">
                   Blog
+                </button>
+                <button className="text-gray-700 hover:text-primary transition-colors text-left">
+                  Help
                 </button>
                 <div className="flex flex-col space-y-2 pt-4">
                   {user ? (
