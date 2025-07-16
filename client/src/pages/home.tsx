@@ -188,7 +188,7 @@ export default function Home() {
       {/* Value Proposition */}
       <section className="bg-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-left">
+          <div className="text-justify">
             <p className="text-lg text-gray-700 leading-relaxed">
               Stop overspending for legal services. Finding the right attorney shouldn't be complicated or cost you an arm and a leg. We're here to help you make a smart choice and connect you with lawyers at a fair price. Our platform lets you compare fees and negotiate with top law firms locally and nationally. It's crucial to compare firms and costs before selecting an attorney. Comparing legal prices from multiple law firms is the best way to save. Compare attorney fees hassle-free and avoid unnecessary expenses. You're in control no consultations until you're prepared to move forward.
             </p>
