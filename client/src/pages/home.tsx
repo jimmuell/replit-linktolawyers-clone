@@ -494,20 +494,12 @@ export default function Home() {
                   onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
                 />
                 <div className="text-sm text-gray-600 leading-relaxed">
-                  <p className="mb-2">
+                  <p>
                     By clicking Submit you agree to share your information with a law firm and consent to be contacted by them. You will 
                     be matched with a firm closest to your zip code. Certain inquiries may require a manual review in which we will contact 
                     you prior to matching with a law firm. Your information will not be treated as confidential nor will it create an attorney-
                     client relationship. You agree to our <a href="#" className="text-blue-600 hover:underline">terms and conditions</a> and 
                     our <a href="#" className="text-blue-600 hover:underline">privacy policy</a>.
-                  </p>
-                  <p className="text-gray-500">
-                    Al hacer clic en "Enviar", acepta compartir su información con un bufete de abogados y da su consentimiento para que 
-                    dicho bufete se comunique con usted. Se le asignará el bufete más cercano a su código postal. Ciertas consultas 
-                    pueden requerir una revisión manual, en cuyo caso nos pondremos en contacto con usted antes de asignarle un 
-                    bufete. Su información no será tratada como confidencial ni creará una relación abogado-cliente. Usted acepta 
-                    nuestros <a href="#" className="text-blue-600 hover:underline">términos y condiciones</a> y 
-                    nuestra <a href="#" className="text-blue-600 hover:underline">política de privacidad</a>.
                   </p>
                 </div>
               </div>
