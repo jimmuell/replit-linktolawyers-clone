@@ -86,15 +86,6 @@ export default function Home() {
             
             <div className="hidden md:flex items-center space-x-8">
               <button
-                onClick={() => scrollToSection('home')}
-                className={cn(
-                  "text-gray-700 hover:text-primary transition-colors",
-                  activeSection === 'home' && "text-primary"
-                )}
-              >
-                Home
-              </button>
-              <button
                 onClick={() => scrollToSection('how-it-works')}
                 className={cn(
                   "text-gray-700 hover:text-primary transition-colors",
@@ -102,6 +93,12 @@ export default function Home() {
                 )}
               >
                 How it works
+              </button>
+              <button className="text-gray-700 hover:text-primary transition-colors">
+                Free resources
+              </button>
+              <button className="text-gray-700 hover:text-primary transition-colors">
+                Help
               </button>
               <button
                 onClick={() => scrollToSection('about')}
@@ -182,16 +179,16 @@ export default function Home() {
             <div className="md:hidden py-4 border-t">
               <div className="flex flex-col space-y-4">
                 <button
-                  onClick={() => scrollToSection('home')}
-                  className="text-gray-700 hover:text-primary transition-colors text-left"
-                >
-                  Home
-                </button>
-                <button
                   onClick={() => scrollToSection('how-it-works')}
                   className="text-gray-700 hover:text-primary transition-colors text-left"
                 >
                   How it works
+                </button>
+                <button className="text-gray-700 hover:text-primary transition-colors text-left">
+                  Free resources
+                </button>
+                <button className="text-gray-700 hover:text-primary transition-colors text-left">
+                  Help
                 </button>
                 <button
                   onClick={() => scrollToSection('about')}
