@@ -259,7 +259,7 @@ export default function Home() {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">About LinkToLawyers</h2>
             <p className="text-lg text-gray-600 mb-8">Connecting You with Expert Legal Services</p>
             
-            <div className="max-w-4xl mx-auto">
+            <div>
               <p className="text-gray-700 leading-relaxed text-justify">
                 LinkToLawyers was created to empower consumers in making informed decisions when choosing an attorney, a decision that can profoundly impact your life. We prioritize educating consumers because we believe that a well-informed consumer is a satisfied one. By fostering working relationships with law firms of all sizes, we offer consumers a comprehensive range of options. Our AI powered comparative platform allows consumers to compare attorney fees nationwide, and to negotiate pricing with attorneys, ensuring they receive the best value. Our goal is to match consumers with an attorney who will passionately advocate for them, taking their unique needs into account, and receive the most competitive pricing.
               </p>
