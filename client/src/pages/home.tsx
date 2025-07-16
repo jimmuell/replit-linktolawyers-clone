@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
+import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import { Link } from "wouter";
 import girlThinkingImage from "@assets/thinking_girl_ai_4_1752707600100.png";
 
@@ -43,27 +44,7 @@ export default function Home() {
 
   const caseTypes = caseTypesData?.data || [];
 
-  // Group case types by category for hierarchical display
-  const groupedCaseTypes = caseTypes.reduce((acc: any, caseType: any) => {
-    const category = caseType.category;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(caseType);
-    return acc;
-  }, {});
 
-  // Sort categories and case types by displayOrder
-  const sortedCategories = Object.keys(groupedCaseTypes).sort((a, b) => {
-    const aMinOrder = Math.min(...groupedCaseTypes[a].map((ct: any) => ct.displayOrder));
-    const bMinOrder = Math.min(...groupedCaseTypes[b].map((ct: any) => ct.displayOrder));
-    return aMinOrder - bMinOrder;
-  });
-
-  // Sort case types within each category
-  Object.keys(groupedCaseTypes).forEach(category => {
-    groupedCaseTypes[category].sort((a: any, b: any) => a.displayOrder - b.displayOrder);
-  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -518,32 +499,13 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="caseType">Case Type</Label>
-                <Select value={formData.caseType} onValueChange={(value) => handleInputChange('caseType', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={caseTypesLoading ? "Loading..." : "Choose case type..."} />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-80 overflow-y-auto">
-                    {sortedCategories.map((category, categoryIndex) => (
-                      <SelectGroup key={category}>
-                        <SelectLabel className="text-sm font-semibold text-gray-700 px-2 py-1 bg-gray-50">
-                          {category}
-                        </SelectLabel>
-                        {groupedCaseTypes[category].map((caseType: any) => (
-                          <SelectItem 
-                            key={caseType.id} 
-                            value={caseType.value}
-                            className="pl-6 text-sm"
-                          >
-                            <div className="flex flex-col">
-                              <span className="font-medium">{caseType.label}</span>
-                              <span className="text-xs text-gray-500 mt-1">{caseType.description}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <HierarchicalCaseTypeSelect
+                  caseTypes={caseTypes}
+                  value={formData.caseType}
+                  onValueChange={(value) => handleInputChange('caseType', value)}
+                  loading={caseTypesLoading}
+                  placeholder="Choose case type..."
+                />
               </div>
               <div>
                 <Label htmlFor="nationality">Nationality</Label>
