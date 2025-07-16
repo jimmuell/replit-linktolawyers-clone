@@ -91,7 +91,7 @@ export default function Home() {
                 Free Quote
               </Button>
               <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
-                For Attorneys
+                Español
               </Button>
             </div>
 
@@ -139,7 +139,7 @@ export default function Home() {
                     Free Quote
                   </Button>
                   <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
-                    For Attorneys
+                    Español
                   </Button>
                 </div>
               </div>
