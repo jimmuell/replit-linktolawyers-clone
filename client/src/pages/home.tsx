@@ -211,7 +211,7 @@ export default function Home() {
                 <Edit3 className="h-12 w-12 text-gray-800" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Step 1: Fill Out A Request</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-sm leading-relaxed text-justify">
                 At LinkToLawyers, integrity is paramount. We guarantee that your information will never be sold to spammers, ensuring you won't receive any spam emails or unwanted phone calls. Rest assured, your privacy is fully protected with our completely confidential service. Your trust is important to us, and we are committed to maintaining the highest standards of security and privacy in all our interactions.
               </p>
             </div>
@@ -222,7 +222,7 @@ export default function Home() {
                 <CheckSquare className="h-12 w-12 text-gray-800" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Step 2: Real Choice</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-sm leading-relaxed text-justify">
                 We are an impartial service that lets you compare prices from law firms across the nation. LinkToLawyers aggregates pricing information from law firms in every zip code and state. Using advanced AI technology, we analyze your needs to match you with suitable law firms across the U.S. Our mission is to ensure you get the best possible deal. Say goodbye to overpaying for legal services.
               </p>
             </div>
@@ -233,7 +233,7 @@ export default function Home() {
                 <DollarSign className="h-12 w-12 text-gray-800" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Step 3: Start Saving</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-sm leading-relaxed text-justify">
                 We work with law firms of varying sizes to provide you with extensive options. Our comparison search engine simplifies finding the perfect attorney. Legal services can vary, so we recommend comparing several firms, at least 3-5. Our platform ensures competitive rates to help you find the best value. Note that the rates provided are for comparison purposes only.
               </p>
             </div>
@@ -244,7 +244,7 @@ export default function Home() {
                 <Handshake className="h-12 w-12 text-gray-800" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-4">Step 4: Not Satisfied</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">
+              <p className="text-gray-600 text-sm leading-relaxed text-justify">
                 At LinkToLawyers, we understand the importance of fair pricing for legal services. You shouldn't have to pay an arm and a leg for legal services. If you are not satisfied with your attorney's fees, feel free to negotiate a price that works best for you and fits comfortably within your budget. We strive to ensure you receive quality legal services at a price you can afford.
               </p>
             </div>
