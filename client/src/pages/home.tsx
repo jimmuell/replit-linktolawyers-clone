@@ -38,6 +38,8 @@ export default function Home() {
     captcha: '',
     agreeToTerms: false
   });
+
+  const [prefillChecked, setPrefillChecked] = useState(false);
   const { user, logout } = useAuth();
 
   // Fetch case types for dropdown
@@ -90,6 +92,39 @@ export default function Home() {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handlePrefillToggle = (checked: boolean) => {
+    setPrefillChecked(checked);
+    if (checked) {
+      setFormData({
+        firstName: 'John',
+        lastName: 'Doe',
+        caseType: 'family-based-immediate-relative',
+        email: 'john.doe@example.com',
+        phoneNumber: '(555) 123-4567',
+        caseDescription: 'I need assistance with filing a family-based immigrant visa petition for my spouse. We have been married for 2 years and have all the required documentation ready. Looking for guidance on the process and timeline.',
+        urgencyLevel: 'moderate',
+        budgetRange: '2500-5000',
+        location: 'Los Angeles, CA',
+        captcha: '4',
+        agreeToTerms: false
+      });
+    } else {
+      setFormData({
+        firstName: '',
+        lastName: '',
+        caseType: '',
+        email: '',
+        phoneNumber: '',
+        caseDescription: '',
+        urgencyLevel: '',
+        budgetRange: '',
+        location: '',
+        captcha: '',
+        agreeToTerms: false
+      });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -483,6 +518,17 @@ export default function Home() {
             </DialogDescription>
           </DialogHeader>
           
+          <div className="flex items-center space-x-2 mb-4">
+            <Checkbox
+              id="prefill"
+              checked={prefillChecked}
+              onCheckedChange={handlePrefillToggle}
+            />
+            <Label htmlFor="prefill" className="text-sm font-medium">
+              Prefill form with sample data
+            </Label>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
