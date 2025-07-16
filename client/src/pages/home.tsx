@@ -1,13 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import girlThinkingImage from "@assets/girl-thinking-new.png";
+import girlThinkingImage from "@assets/girl-thinking copy_1752667446482.png";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    category: '',
+    nationality: '',
+    email: '',
+    zipCode: '',
+    legalNeed: '',
+    agreeToTerms: false
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -38,6 +55,17 @@ export default function Home() {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMenuOpen(false);
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log('Form submitted:', formData);
+    setIsQuoteModalOpen(false);
   };
 
   return (
@@ -87,7 +115,10 @@ export default function Home() {
             </div>
             
             <div className="hidden md:flex items-center space-x-4">
-              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6">
+              <Button 
+                className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
+                onClick={() => setIsQuoteModalOpen(true)}
+              >
                 Free Quote
               </Button>
               <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
@@ -135,7 +166,10 @@ export default function Home() {
                   Blog
                 </button>
                 <div className="flex flex-col space-y-2 pt-4">
-                  <Button className="bg-black text-white hover:bg-gray-800 rounded-full">
+                  <Button 
+                    className="bg-black text-white hover:bg-gray-800 rounded-full"
+                    onClick={() => setIsQuoteModalOpen(true)}
+                  >
                     Free Quote
                   </Button>
                   <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
@@ -169,7 +203,10 @@ export default function Home() {
                 Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
               </p>
               
-              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg">
+              <Button 
+                className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg"
+                onClick={() => setIsQuoteModalOpen(true)}
+              >
                 Get A Free Legal Quote!
               </Button>
             </div>
@@ -341,6 +378,151 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Free Quote Modal */}
+      <Dialog open={isQuoteModalOpen} onOpenChange={setIsQuoteModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-center">
+              Receive a <span className="font-bold">FREE</span> quote! Please fill out the form below and submit it.
+            </DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">First name / Nombre</Label>
+                <Input
+                  id="firstName"
+                  placeholder="First name"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName">Last name / Apellido</Label>
+                <Input
+                  id="lastName"
+                  placeholder="Last name"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="category">Category / Categoría</Label>
+                <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose category..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="immigration">Immigration Law</SelectItem>
+                    <SelectItem value="family">Family Law</SelectItem>
+                    <SelectItem value="criminal">Criminal Law</SelectItem>
+                    <SelectItem value="business">Business Law</SelectItem>
+                    <SelectItem value="personal-injury">Personal Injury</SelectItem>
+                    <SelectItem value="estate">Estate Planning</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="nationality">Nationality / Nacionalidad</Label>
+                <Select value={formData.nationality} onValueChange={(value) => handleInputChange('nationality', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose nationality..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="us">United States</SelectItem>
+                    <SelectItem value="mx">Mexico</SelectItem>
+                    <SelectItem value="ca">Canada</SelectItem>
+                    <SelectItem value="co">Colombia</SelectItem>
+                    <SelectItem value="ve">Venezuela</SelectItem>
+                    <SelectItem value="ar">Argentina</SelectItem>
+                    <SelectItem value="br">Brazil</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="email">Email / Correo electrónico</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="zipCode">Zip Code / Correo electrónico</Label>
+                <Input
+                  id="zipCode"
+                  placeholder="99999"
+                  value={formData.zipCode}
+                  onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="legalNeed">Please describe your legal need / Por favor, describa su necesidad legal</Label>
+              <Textarea
+                id="legalNeed"
+                placeholder="Type your message here..."
+                value={formData.legalNeed}
+                onChange={(e) => handleInputChange('legalNeed', e.target.value)}
+                rows={4}
+                required
+              />
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="agree"
+                  checked={formData.agreeToTerms}
+                  onCheckedChange={(checked) => handleInputChange('agreeToTerms', checked as boolean)}
+                />
+                <div className="text-sm text-gray-600 leading-relaxed">
+                  <p className="mb-2">
+                    By clicking Submit you agree to share your information with a law firm and consent to be contacted by them. You will 
+                    be matched with a firm closest to your zip code. Certain inquiries may require a manual review in which we will contact 
+                    you prior to matching with a law firm. Your information will not be treated as confidential nor will it create an attorney-
+                    client relationship. You agree to our <a href="#" className="text-blue-600 hover:underline">terms and conditions</a> and 
+                    our <a href="#" className="text-blue-600 hover:underline">privacy policy</a>.
+                  </p>
+                  <p className="text-gray-500">
+                    Al hacer clic en "Enviar", acepta compartir su información con un bufete de abogados y da su consentimiento para que 
+                    dicho bufete se comunique con usted. Se le asignará el bufete más cercano a su código postal. Ciertas consultas 
+                    pueden requerir una revisión manual, en cuyo caso nos pondremos en contacto con usted antes de asignarle un 
+                    bufete. Su información no será tratada como confidencial ni creará una relación abogado-cliente. Usted acepta 
+                    nuestros <a href="#" className="text-blue-600 hover:underline">términos y condiciones</a> y 
+                    nuestra <a href="#" className="text-blue-600 hover:underline">política de privacidad</a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full bg-gray-400 hover:bg-gray-500 text-white py-3 rounded-md"
+              disabled={!formData.agreeToTerms}
+            >
+              Submit
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
