@@ -6,15 +6,20 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X, ChevronDown, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import LoginModal from "@/components/LoginModal";
 import girlThinkingImage from "@assets/girl-thinking copy_1752667446482.png";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -25,6 +30,7 @@ export default function Home() {
     legalNeed: '',
     agreeToTerms: false
   });
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -115,12 +121,46 @@ export default function Home() {
             </div>
             
             <div className="hidden md:flex items-center space-x-4">
-              <Button 
-                className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
-                onClick={() => setIsQuoteModalOpen(true)}
-              >
-                Free Quote
-              </Button>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center space-x-2">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src="" />
+                        <AvatarFallback>
+                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{user.firstName} {user.lastName}</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {user.role === 'admin' && (
+                      <DropdownMenuItem onClick={() => window.location.href = '/admin'}>
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button 
+                  className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
+                  onClick={() => setIsLoginModalOpen(true)}
+                >
+                  Sign In
+                </Button>
+              )}
               <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
                 Español
               </Button>
@@ -166,12 +206,27 @@ export default function Home() {
                   Blog
                 </button>
                 <div className="flex flex-col space-y-2 pt-4">
-                  <Button 
-                    className="bg-black text-white hover:bg-gray-800 rounded-full"
-                    onClick={() => setIsQuoteModalOpen(true)}
-                  >
-                    Free Quote
-                  </Button>
+                  {user ? (
+                    <div className="flex items-center space-x-2 p-2">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src="" />
+                        <AvatarFallback>
+                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{user.firstName} {user.lastName}</span>
+                      <Button variant="ghost" size="sm" onClick={logout}>
+                        Sign Out
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      className="bg-black text-white hover:bg-gray-800 rounded-full"
+                      onClick={() => setIsLoginModalOpen(true)}
+                    >
+                      Sign In
+                    </Button>
+                  )}
                   <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
                     Español
                   </Button>
@@ -515,6 +570,12 @@ export default function Home() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Login Modal */}
+      <LoginModal
+        open={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </div>
   );
 }
