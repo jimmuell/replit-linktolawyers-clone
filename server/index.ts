@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { seedCaseTypes } from "./seed-case-types";
 
 const app = express();
 app.use(express.json());
@@ -54,6 +55,13 @@ app.use((req, res, next) => {
     await setupVite(app, server);
   } else {
     serveStatic(app);
+  }
+
+  // Seed case types on startup
+  try {
+    await seedCaseTypes();
+  } catch (error) {
+    console.error("Failed to seed case types:", error);
   }
 
   // ALWAYS serve the app on port 5000

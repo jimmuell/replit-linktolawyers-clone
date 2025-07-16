@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X, ChevronDown, Settings, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
@@ -25,7 +26,7 @@ export default function Home() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    category: '',
+    caseType: '',
     nationality: '',
     email: '',
     zipCode: '',
@@ -33,6 +34,14 @@ export default function Home() {
     agreeToTerms: false
   });
   const { user, logout } = useAuth();
+
+  // Fetch case types for dropdown
+  const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
+    queryKey: ['/api/case-types'],
+    retry: false,
+  });
+
+  const caseTypes = caseTypesData?.data || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -483,19 +492,17 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="category">Category</Label>
-                <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                <Label htmlFor="caseType">Case Type</Label>
+                <Select value={formData.caseType} onValueChange={(value) => handleInputChange('caseType', value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose category..." />
+                    <SelectValue placeholder={caseTypesLoading ? "Loading..." : "Choose case type..."} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="immigration">Immigration Law</SelectItem>
-                    <SelectItem value="family">Family Law</SelectItem>
-                    <SelectItem value="criminal">Criminal Law</SelectItem>
-                    <SelectItem value="business">Business Law</SelectItem>
-                    <SelectItem value="personal-injury">Personal Injury</SelectItem>
-                    <SelectItem value="estate">Estate Planning</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    {caseTypes.map((caseType: any) => (
+                      <SelectItem key={caseType.id} value={caseType.value}>
+                        {caseType.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

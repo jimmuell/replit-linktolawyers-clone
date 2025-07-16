@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 
 // Simple session store for demo
@@ -105,6 +105,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get user error:', error);
       res.status(500).json({ error: 'Server error' });
+    }
+  });
+
+  // Case Types API routes
+  // Public endpoint for client-side dropdown
+  app.get("/api/case-types", async (req, res) => {
+    try {
+      const caseTypes = await storage.getAllCaseTypes();
+      const language = req.query.lang as string || 'en';
+      
+      // Transform case types based on language
+      const transformedCaseTypes = caseTypes.map(caseType => ({
+        ...caseType,
+        label: language === 'es' && caseType.labelEs ? caseType.labelEs : caseType.label,
+        description: language === 'es' && caseType.descriptionEs ? caseType.descriptionEs : caseType.description
+      }));
+      
+      res.json({ success: true, data: transformedCaseTypes });
+    } catch (error) {
+      console.error("Error fetching case types:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch case types" });
+    }
+  });
+
+  // Admin endpoints for case type management
+  app.get("/api/admin/case-types", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const caseTypes = await storage.getAllCaseTypes();
+      res.json(caseTypes);
+    } catch (error) {
+      console.error("Error fetching case types:", error);
+      res.status(500).json({ error: "Failed to fetch case types" });
+    }
+  });
+
+  app.post("/api/admin/case-types", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const validatedData = insertCaseTypeSchema.parse(req.body);
+      const caseType = await storage.createCaseType(validatedData);
+      res.json(caseType);
+    } catch (error) {
+      console.error("Error creating case type:", error);
+      res.status(500).json({ error: "Failed to create case type" });
+    }
+  });
+
+  app.put("/api/admin/case-types/:id", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertCaseTypeSchema.partial().parse(req.body);
+      const caseType = await storage.updateCaseType(id, validatedData);
+      res.json(caseType);
+    } catch (error) {
+      console.error("Error updating case type:", error);
+      res.status(500).json({ error: "Failed to update case type" });
+    }
+  });
+
+  app.delete("/api/admin/case-types/:id", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteCaseType(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting case type:", error);
+      res.status(500).json({ error: "Failed to delete case type" });
     }
   });
 
