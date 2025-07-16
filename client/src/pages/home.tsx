@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -42,6 +42,28 @@ export default function Home() {
   });
 
   const caseTypes = caseTypesData?.data || [];
+
+  // Group case types by category for hierarchical display
+  const groupedCaseTypes = caseTypes.reduce((acc: any, caseType: any) => {
+    const category = caseType.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(caseType);
+    return acc;
+  }, {});
+
+  // Sort categories and case types by displayOrder
+  const sortedCategories = Object.keys(groupedCaseTypes).sort((a, b) => {
+    const aMinOrder = Math.min(...groupedCaseTypes[a].map((ct: any) => ct.displayOrder));
+    const bMinOrder = Math.min(...groupedCaseTypes[b].map((ct: any) => ct.displayOrder));
+    return aMinOrder - bMinOrder;
+  });
+
+  // Sort case types within each category
+  Object.keys(groupedCaseTypes).forEach(category => {
+    groupedCaseTypes[category].sort((a: any, b: any) => a.displayOrder - b.displayOrder);
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -500,11 +522,25 @@ export default function Home() {
                   <SelectTrigger>
                     <SelectValue placeholder={caseTypesLoading ? "Loading..." : "Choose case type..."} />
                   </SelectTrigger>
-                  <SelectContent>
-                    {caseTypes.map((caseType: any) => (
-                      <SelectItem key={caseType.id} value={caseType.value}>
-                        {caseType.label}
-                      </SelectItem>
+                  <SelectContent className="max-h-80 overflow-y-auto">
+                    {sortedCategories.map((category, categoryIndex) => (
+                      <SelectGroup key={category}>
+                        <SelectLabel className="text-sm font-semibold text-gray-700 px-2 py-1 bg-gray-50">
+                          {category}
+                        </SelectLabel>
+                        {groupedCaseTypes[category].map((caseType: any) => (
+                          <SelectItem 
+                            key={caseType.id} 
+                            value={caseType.value}
+                            className="pl-6 text-sm"
+                          >
+                            <div className="flex flex-col">
+                              <span className="font-medium">{caseType.label}</span>
+                              <span className="text-xs text-gray-500 mt-1">{caseType.description}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     ))}
                   </SelectContent>
                 </Select>
