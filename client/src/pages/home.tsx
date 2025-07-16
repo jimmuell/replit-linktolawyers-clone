@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
+import { Link } from "wouter";
 import girlThinkingImage from "@assets/girl-thinking copy_1752667446482.png";
 
 export default function Home() {
@@ -106,15 +107,15 @@ export default function Home() {
               <button className="text-gray-700 hover:text-primary transition-colors">
                 Contact Us
               </button>
-              <button className="text-gray-700 hover:text-primary transition-colors">
+              <Link href="/free-resources" className="text-gray-700 hover:text-primary transition-colors">
                 Free resources
-              </button>
+              </Link>
               <button className="text-gray-700 hover:text-primary transition-colors">
                 Blog
               </button>
-              <button className="text-gray-700 hover:text-primary transition-colors">
+              <Link href="/help" className="text-gray-700 hover:text-primary transition-colors">
                 Help
-              </button>
+              </Link>
             </div>
             
             <div className="hidden md:flex items-center space-x-4">
@@ -193,15 +194,15 @@ export default function Home() {
                 <button className="text-gray-700 hover:text-primary transition-colors text-left">
                   Contact Us
                 </button>
-                <button className="text-gray-700 hover:text-primary transition-colors text-left">
+                <Link href="/free-resources" className="text-gray-700 hover:text-primary transition-colors text-left">
                   Free resources
-                </button>
+                </Link>
                 <button className="text-gray-700 hover:text-primary transition-colors text-left">
                   Blog
                 </button>
-                <button className="text-gray-700 hover:text-primary transition-colors text-left">
+                <Link href="/help" className="text-gray-700 hover:text-primary transition-colors text-left">
                   Help
-                </button>
+                </Link>
                 <div className="flex flex-col space-y-2 pt-4">
                   {user ? (
                     <div className="flex items-center space-x-2 p-2">

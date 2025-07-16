@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Home from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
+import FreeResources from "@/pages/free-resources";
+import Help from "@/pages/help";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,6 +15,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/free-resources" component={FreeResources} />
+      <Route path="/help" component={Help} />
       <Route component={NotFound} />
     </Switch>
   );
