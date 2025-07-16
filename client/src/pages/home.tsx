@@ -260,7 +260,7 @@ export default function Home() {
             <p className="text-lg text-gray-600 mb-8">Connecting You with Expert Legal Services</p>
             
             <div className="max-w-4xl mx-auto">
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed text-justify">
                 LinkToLawyers was created to empower consumers in making informed decisions when choosing an attorney, a decision that can profoundly impact your life. We prioritize educating consumers because we believe that a well-informed consumer is a satisfied one. By fostering working relationships with law firms of all sizes, we offer consumers a comprehensive range of options. Our AI powered comparative platform allows consumers to compare attorney fees nationwide, and to negotiate pricing with attorneys, ensuring they receive the best value. Our goal is to match consumers with an attorney who will passionately advocate for them, taking their unique needs into account, and receive the most competitive pricing.
               </p>
             </div>
@@ -270,7 +270,7 @@ export default function Home() {
             {/* Introduction */}
             <div className="text-center">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Introduction</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed text-justify">
                 "At LinkToLawyers, our mission is to simplify the process of securing reliable and experienced legal assistance. We are dedicated to bridging the gap between individuals in need of legal support and the professionals who can provide it."
               </p>
             </div>
@@ -278,7 +278,7 @@ export default function Home() {
             {/* Our Mission */}
             <div className="text-center">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed text-justify">
                 "Our mission is to streamline the connection between individuals seeking legal services and qualified legal professionals. We aim to make legal assistance accessible, efficient, and tailored to each user's specific needs."
               </p>
             </div>
@@ -286,7 +286,7 @@ export default function Home() {
             {/* Our Vision */}
             <div className="text-center">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Vision</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed text-justify">
                 "We envision a world where everyone has access to expert legal assistance, regardless of their location or background. By leveraging technology, we strive to create a platform that empowers individuals to navigate the complexities of law with confidence."
               </p>
             </div>
