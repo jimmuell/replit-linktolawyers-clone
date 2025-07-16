@@ -7,7 +7,7 @@ import { ChevronDown, Users, FileText, Settings, BarChart3 } from 'lucide-react'
 import { useEffect } from 'react';
 
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
 
   useEffect(() => {
     if (user && user.role !== 'admin') {
@@ -15,6 +15,18 @@ export default function AdminDashboard() {
       window.location.href = '/';
     }
   }, [user]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user || user.role !== 'admin') {
     return (

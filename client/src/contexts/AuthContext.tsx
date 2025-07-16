@@ -89,6 +89,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     localStorage.removeItem('sessionId');
     setUser(null);
+    // Redirect to home page after logout
+    window.location.href = '/';
   };
 
   return (
