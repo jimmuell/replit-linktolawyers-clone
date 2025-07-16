@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X, ChevronDown, Settings, ChevronUp } from "lucide-react";
@@ -28,10 +29,13 @@ export default function Home() {
     firstName: '',
     lastName: '',
     caseType: '',
-    nationality: '',
     email: '',
-    zipCode: '',
-    legalNeed: '',
+    phoneNumber: '',
+    caseDescription: '',
+    urgencyLevel: '',
+    budgetRange: '',
+    location: '',
+    captcha: '',
     agreeToTerms: false
   });
   const { user, logout } = useAuth();
@@ -90,6 +94,13 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate captcha
+    if (formData.captcha !== '4') {
+      alert('Please solve the captcha correctly.');
+      return;
+    }
+    
     // Handle form submission here
     console.log('Form submitted:', formData);
     setIsQuoteModalOpen(false);
@@ -507,59 +518,107 @@ export default function Home() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                required
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="nationality">Nationality</Label>
-                <Select value={formData.nationality} onValueChange={(value) => handleInputChange('nationality', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose nationality..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="us">United States</SelectItem>
-                    <SelectItem value="mx">Mexico</SelectItem>
-                    <SelectItem value="ca">Canada</SelectItem>
-                    <SelectItem value="co">Colombia</SelectItem>
-                    <SelectItem value="ve">Venezuela</SelectItem>
-                    <SelectItem value="ar">Argentina</SelectItem>
-                    <SelectItem value="br">Brazil</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  required
+                />
               </div>
               <div>
-                <Label htmlFor="zipCode">Zip Code</Label>
+                <Label htmlFor="phoneNumber">Phone Number</Label>
                 <Input
-                  id="zipCode"
-                  placeholder="99999"
-                  value={formData.zipCode}
-                  onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                  id="phoneNumber"
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={formData.phoneNumber}
+                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                   required
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="legalNeed">Please describe your legal need</Label>
+              <Label htmlFor="caseDescription">Case Description</Label>
               <Textarea
-                id="legalNeed"
-                placeholder="Type your message here..."
-                value={formData.legalNeed}
-                onChange={(e) => handleInputChange('legalNeed', e.target.value)}
+                id="caseDescription"
+                placeholder="Please describe your immigration situation, including any specific circumstances, deadlines, or concerns you have..."
+                value={formData.caseDescription}
+                onChange={(e) => handleInputChange('caseDescription', e.target.value)}
                 rows={4}
                 required
               />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Urgency Level</Label>
+                <RadioGroup value={formData.urgencyLevel} onValueChange={(value) => handleInputChange('urgencyLevel', value)}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="not-urgent" id="not-urgent" />
+                    <Label htmlFor="not-urgent">Not urgent (6+ months)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="moderate" id="moderate" />
+                    <Label htmlFor="moderate">Moderate (3-6 months)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="urgent" id="urgent" />
+                    <Label htmlFor="urgent">Urgent (1-3 months)</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="immediate" id="immediate" />
+                    <Label htmlFor="immediate">Immediate (less than 1 month)</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div>
+                <Label htmlFor="budgetRange">Budget Range</Label>
+                <Select value={formData.budgetRange} onValueChange={(value) => handleInputChange('budgetRange', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select budget range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="under-1000">Under $1,000</SelectItem>
+                    <SelectItem value="1000-2500">$1,000 - $2,500</SelectItem>
+                    <SelectItem value="2500-5000">$2,500 - $5,000</SelectItem>
+                    <SelectItem value="5000-10000">$5,000 - $10,000</SelectItem>
+                    <SelectItem value="over-10000">Over $10,000</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="location">Your Location (City, State)</Label>
+                <Input
+                  id="location"
+                  placeholder="e.g., Los Angeles, CA"
+                  value={formData.location}
+                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="captcha">Verify you are human</Label>
+                <div className="flex items-center space-x-2">
+                  <span className="text-lg font-mono bg-gray-100 px-3 py-2 rounded border">7 - 3 = ?</span>
+                  <Input
+                    id="captcha"
+                    placeholder="Answer"
+                    value={formData.captcha}
+                    onChange={(e) => handleInputChange('captcha', e.target.value)}
+                    className="w-20"
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-4">
