@@ -8,6 +8,14 @@ LinkToLawyers is a modern web application that connects clients with qualified a
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+- **Database Migration** (July 16, 2025): Successfully migrated from in-memory storage to PostgreSQL database using Neon Database
+  - Created PostgreSQL database with environment variables (DATABASE_URL, PGPORT, PGUSER, PGPASSWORD, PGDATABASE, PGHOST)
+  - Updated storage implementation from MemStorage to DatabaseStorage using Drizzle ORM
+  - Database schema pushed successfully with `npm run db:push`
+  - All user data now persists in PostgreSQL instead of memory
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -44,7 +52,7 @@ Preferred communication style: Simple, everyday language.
 ### Backend Components
 - **Express Server**: Main application server with middleware for JSON parsing and logging
 - **Route Handler**: Centralized route registration system
-- **Storage Interface**: Abstract storage layer with in-memory implementation for development
+- **Storage Interface**: Abstract storage layer with PostgreSQL database implementation using Drizzle ORM
 - **Development Tools**: Hot reloading with Vite integration in development mode
 
 ### Database Schema
