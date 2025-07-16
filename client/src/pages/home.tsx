@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import girlThinkingImage from "@assets/girl-thinking.jpg";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -175,7 +176,7 @@ export default function Home() {
             <div className="bg-gray-100 rounded-2xl p-8 relative">
               <div className="flex justify-center">
                 <img 
-                  src="/attached_assets/girl-thinking.jpg" 
+                  src={girlThinkingImage} 
                   alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($4,000), Law Firm B ($6,500), and Law Firm C ($5,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
                   className="rounded-xl max-w-full h-auto" 
                 />
