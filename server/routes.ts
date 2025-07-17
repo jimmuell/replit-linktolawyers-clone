@@ -744,52 +744,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       );
 
-      // Create email content
-      const subject = `New Legal Case Assignment - ${request.requestNumber}`;
-      const emailContent = `
-        <h2>New Legal Case Assignment</h2>
-        <p>Dear Attorney,</p>
-        
-        <p>You have been assigned to a new legal case. Please review the details below:</p>
-        
-        <h3>Case Information</h3>
-        <ul>
-          <li><strong>Request Number:</strong> ${request.requestNumber}</li>
-          <li><strong>Client Name:</strong> ${request.firstName} ${request.lastName}</li>
-          <li><strong>Email:</strong> ${request.email}</li>
-          <li><strong>Phone:</strong> ${request.phoneNumber}</li>
-          <li><strong>Case Type:</strong> ${request.caseType}</li>
-          <li><strong>Status:</strong> ${request.status}</li>
-          <li><strong>Submitted:</strong> ${new Date(request.createdAt).toLocaleDateString()}</li>
-        </ul>
-        
-        <h3>Case Details</h3>
-        <p><strong>Description:</strong></p>
-        <p>${request.description}</p>
-        
-        <h3>Additional Information</h3>
-        <ul>
-          <li><strong>Budget:</strong> $${request.budget}</li>
-          <li><strong>Timeline:</strong> ${request.timeline}</li>
-          <li><strong>Priority:</strong> ${request.priority}</li>
-          <li><strong>Preferred Language:</strong> ${request.preferredLanguage}</li>
-        </ul>
-        
-        <p>Please log into the attorney portal to review this case and take appropriate action.</p>
-        
-        <p>Best regards,<br>LinkToLawyers Team</p>
-      `;
+      // Create transporter
+      const transporter = await createTransporter();
 
       // Send emails to all unnotified attorneys
       const emailResults = [];
       for (const { assignment, attorney } of attorneyDetails) {
         try {
-          const emailResult = await sendEmail(
-            smtpSettings,
-            attorney.email,
-            subject,
-            emailContent
-          );
+          // Create email content for each attorney
+          const subject = `This Email is Intended for ${attorney.firstName} ${attorney.lastName}`;
+          const emailContent = `
+            <h2>New Legal Case Assignment</h2>
+            <p>Dear ${attorney.firstName} ${attorney.lastName},</p>
+            
+            <p>You have been assigned to a new legal case. Please review the details below:</p>
+            
+            <h3>Case Information</h3>
+            <ul>
+              <li><strong>Request Number:</strong> ${request.requestNumber}</li>
+              <li><strong>Client Name:</strong> ${request.firstName} ${request.lastName}</li>
+              <li><strong>Email:</strong> ${request.email}</li>
+              <li><strong>Phone:</strong> ${request.phoneNumber}</li>
+              <li><strong>Case Type:</strong> ${request.caseType}</li>
+              <li><strong>Status:</strong> ${request.status}</li>
+              <li><strong>Submitted:</strong> ${new Date(request.createdAt).toLocaleDateString()}</li>
+            </ul>
+            
+            <h3>Case Details</h3>
+            <p><strong>Description:</strong></p>
+            <p>${request.caseDescription}</p>
+            
+            <h3>Additional Information</h3>
+            <ul>
+              <li><strong>Budget:</strong> $${request.budget}</li>
+              <li><strong>Timeline:</strong> ${request.timeline}</li>
+              <li><strong>Priority:</strong> ${request.priority}</li>
+              <li><strong>Preferred Language:</strong> ${request.preferredLanguage}</li>
+            </ul>
+            
+            <p>Please log into the attorney portal to review this case and take appropriate action.</p>
+            
+            <p>Best regards,<br>LinkToLawyers Team</p>
+          `;
+
+          const mailOptions = {
+            from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
+            to: 'linktolawyers.us@gmail.com', // Override email address
+            subject: subject,
+            text: emailContent.replace(/<[^>]*>/g, ''), // Strip HTML for text version
+            html: emailContent,
+          };
+
+          await transporter.sendMail(mailOptions);
+
+          // Store successful email in history
+          await storage.createEmailHistory({
+            to: 'linktolawyers.us@gmail.com',
+            subject: subject,
+            message: emailContent,
+            status: 'sent',
+            sentAt: new Date(),
+            errorMessage: null,
+          });
 
           // Mark email as sent
           await storage.updateRequestAttorneyAssignmentEmail(assignment.id, true);
@@ -802,6 +818,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (error) {
           console.error(`Failed to send email to ${attorney.email}:`, error);
+          
+          // Store failed email in history
+          await storage.createEmailHistory({
+            to: 'linktolawyers.us@gmail.com',
+            subject: `This Email is Intended for ${attorney.firstName} ${attorney.lastName}`,
+            message: '',
+            status: 'failed',
+            sentAt: new Date(),
+            errorMessage: error.message,
+          });
+
           emailResults.push({
             attorneyId: attorney.id,
             attorneyName: `${attorney.firstName} ${attorney.lastName}`,
