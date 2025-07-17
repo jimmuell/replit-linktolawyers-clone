@@ -738,9 +738,12 @@ export default function Home() {
                         setCaptchaError(null);
                       }
                     }}
-                    className={`w-20 ${captchaError ? 'border-red-500' : ''}`}
+                    className={`w-20 ${captchaError ? 'border-red-500' : formData.captcha === '4' ? 'border-green-500' : ''}`}
                     required
                   />
+                  {formData.captcha === '4' && (
+                    <span className="text-green-600 font-medium">Correct!</span>
+                  )}
                 </div>
                 {captchaError && (
                   <p className="text-red-500 text-sm mt-1">{captchaError}</p>
