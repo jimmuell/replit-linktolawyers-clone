@@ -1014,8 +1014,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create blog post (admin only)
   app.post("/api/blog-posts", requireAuth, requireAdmin, async (req, res) => {
     try {
-      console.log('Blog post creation request body:', JSON.stringify(req.body, null, 2));
-      const result = insertBlogPostSchema.safeParse(req.body);
+      // Convert publishedAt string to Date object if it exists
+      const requestData = {
+        ...req.body,
+        publishedAt: req.body.publishedAt ? new Date(req.body.publishedAt) : null
+      };
+      
+      const result = insertBlogPostSchema.safeParse(requestData);
       if (!result.success) {
         console.log('Validation errors:', JSON.stringify(result.error.issues, null, 2));
         return res.status(400).json({ error: 'Invalid blog post data', details: result.error.issues });
@@ -1036,7 +1041,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/blog-posts/:id", requireAuth, requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      const result = insertBlogPostSchema.partial().safeParse(req.body);
+      
+      // Convert publishedAt string to Date object if it exists
+      const requestData = {
+        ...req.body,
+        publishedAt: req.body.publishedAt ? new Date(req.body.publishedAt) : null
+      };
+      
+      const result = insertBlogPostSchema.partial().safeParse(requestData);
       if (!result.success) {
         return res.status(400).json({ error: 'Invalid blog post data', details: result.error.issues });
       }
