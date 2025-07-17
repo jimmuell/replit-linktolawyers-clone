@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and } from "drizzle-orm";
 
@@ -43,6 +43,14 @@ export interface IStorage {
   updateAttorneyFeeSchedule(id: number, updates: Partial<InsertAttorneyFeeSchedule>): Promise<AttorneyFeeSchedule>;
   deleteAttorneyFeeSchedule(id: number): Promise<void>;
   bulkCreateAttorneyFeeSchedules(feeSchedules: InsertAttorneyFeeSchedule[]): Promise<AttorneyFeeSchedule[]>;
+  // Request Attorney Assignments
+  createRequestAttorneyAssignment(assignment: InsertRequestAttorneyAssignment): Promise<SelectRequestAttorneyAssignment>;
+  getRequestAttorneyAssignments(requestId: number): Promise<SelectRequestAttorneyAssignment[]>;
+  getAttorneyAssignments(attorneyId: number): Promise<SelectRequestAttorneyAssignment[]>;
+  updateRequestAttorneyAssignment(id: number, updates: Partial<InsertRequestAttorneyAssignment>): Promise<SelectRequestAttorneyAssignment>;
+  deleteRequestAttorneyAssignment(id: number): Promise<void>;
+  bulkCreateRequestAttorneyAssignments(assignments: InsertRequestAttorneyAssignment[]): Promise<SelectRequestAttorneyAssignment[]>;
+  getAttorneysByCaseType(caseTypeValue: string): Promise<Array<Attorney & { fee?: number; feeType?: string }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -295,6 +303,91 @@ export class DatabaseStorage implements IStorage {
       .insert(attorneyFeeSchedule)
       .values(feeSchedules)
       .returning();
+  }
+
+  // Request Attorney Assignments
+  async createRequestAttorneyAssignment(assignment: InsertRequestAttorneyAssignment): Promise<SelectRequestAttorneyAssignment> {
+    const [result] = await db
+      .insert(requestAttorneyAssignments)
+      .values(assignment)
+      .returning();
+    return result;
+  }
+
+  async getRequestAttorneyAssignments(requestId: number): Promise<SelectRequestAttorneyAssignment[]> {
+    return await db
+      .select()
+      .from(requestAttorneyAssignments)
+      .where(eq(requestAttorneyAssignments.requestId, requestId))
+      .orderBy(asc(requestAttorneyAssignments.assignedAt));
+  }
+
+  async getAttorneyAssignments(attorneyId: number): Promise<SelectRequestAttorneyAssignment[]> {
+    return await db
+      .select()
+      .from(requestAttorneyAssignments)
+      .where(eq(requestAttorneyAssignments.attorneyId, attorneyId))
+      .orderBy(desc(requestAttorneyAssignments.assignedAt));
+  }
+
+  async updateRequestAttorneyAssignment(id: number, updates: Partial<InsertRequestAttorneyAssignment>): Promise<SelectRequestAttorneyAssignment> {
+    const [result] = await db
+      .update(requestAttorneyAssignments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(requestAttorneyAssignments.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteRequestAttorneyAssignment(id: number): Promise<void> {
+    await db.delete(requestAttorneyAssignments).where(eq(requestAttorneyAssignments.id, id));
+  }
+
+  async bulkCreateRequestAttorneyAssignments(assignments: InsertRequestAttorneyAssignment[]): Promise<SelectRequestAttorneyAssignment[]> {
+    return await db
+      .insert(requestAttorneyAssignments)
+      .values(assignments)
+      .returning();
+  }
+
+  async getAttorneysByCaseType(caseTypeValue: string): Promise<Array<Attorney & { fee?: number; feeType?: string }>> {
+    // First get the case type ID
+    const [caseType] = await db
+      .select()
+      .from(caseTypes)
+      .where(eq(caseTypes.value, caseTypeValue))
+      .limit(1);
+
+    if (!caseType) {
+      return [];
+    }
+
+    // Get attorneys with their fee schedules for this case type
+    const result = await db
+      .select({
+        attorney: attorneys,
+        feeSchedule: attorneyFeeSchedule
+      })
+      .from(attorneys)
+      .leftJoin(
+        attorneyFeeSchedule,
+        and(
+          eq(attorneyFeeSchedule.attorneyId, attorneys.id),
+          eq(attorneyFeeSchedule.caseTypeId, caseType.id),
+          eq(attorneyFeeSchedule.isActive, true)
+        )
+      )
+      .where(and(
+        eq(attorneys.isActive, true),
+        eq(attorneys.isVerified, true)
+      ))
+      .orderBy(asc(attorneys.lastName), asc(attorneys.firstName));
+
+    return result.map(({ attorney, feeSchedule }) => ({
+      ...attorney,
+      fee: feeSchedule?.fee,
+      feeType: feeSchedule?.feeType
+    }));
   }
 }
 

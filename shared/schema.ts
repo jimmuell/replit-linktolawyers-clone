@@ -103,6 +103,17 @@ export const attorneyFeeSchedule = pgTable("attorney_fee_schedule", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const requestAttorneyAssignments = pgTable("request_attorney_assignments", {
+  id: serial("id").primaryKey(),
+  requestId: integer("request_id").notNull().references(() => legalRequests.id, { onDelete: "cascade" }),
+  attorneyId: integer("attorney_id").notNull().references(() => attorneys.id, { onDelete: "cascade" }),
+  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("assigned"), // assigned, accepted, declined, completed
+  notes: text("notes"), // Optional notes about the assignment
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
@@ -120,6 +131,13 @@ export const insertCaseTypeSchema = createInsertSchema(caseTypes).pick({
   category: true,
   displayOrder: true,
   isActive: true,
+});
+
+export const insertRequestAttorneyAssignmentSchema = createInsertSchema(requestAttorneyAssignments).pick({
+  requestId: true,
+  attorneyId: true,
+  status: true,
+  notes: true,
 });
 
 export const insertLegalRequestSchema = createInsertSchema(legalRequests).pick({
@@ -196,6 +214,8 @@ export const loginSchema = z.object({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertRequestAttorneyAssignment = z.infer<typeof insertRequestAttorneyAssignmentSchema>;
+export type SelectRequestAttorneyAssignment = typeof requestAttorneyAssignments.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 export type InsertCaseType = z.infer<typeof insertCaseTypeSchema>;

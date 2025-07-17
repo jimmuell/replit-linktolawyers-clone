@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminNavbar from '@/components/AdminNavbar';
-import { Eye, Edit, Trash2, Plus, Search, Filter } from 'lucide-react';
+import { Eye, Edit, Trash2, Plus, Search, Filter, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -48,9 +48,12 @@ export default function RequestManagementPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [isAttorneyAssignmentModalOpen, setIsAttorneyAssignmentModalOpen] = useState(false);
   const [selectedRequestIds, setSelectedRequestIds] = useState<number[]>([]);
   
   const [editFormData, setEditFormData] = useState<Partial<LegalRequest>>({});
+  const [selectedAttorneyIds, setSelectedAttorneyIds] = useState<number[]>([]);
+  const [assignmentNotes, setAssignmentNotes] = useState('');
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
@@ -62,6 +65,18 @@ export default function RequestManagementPage() {
   const { data: requests, isLoading, error } = useQuery<LegalRequest[]>({
     queryKey: ['/api/legal-requests'],
     retry: false,
+  });
+
+  // Fetch attorneys by case type for assignment
+  const { data: availableAttorneys = [], isLoading: attorneysLoading } = useQuery({
+    queryKey: ['/api/attorneys/case-type', selectedRequest?.caseType],
+    enabled: !!selectedRequest?.caseType && isAttorneyAssignmentModalOpen,
+  });
+
+  // Fetch current assignments for the selected request
+  const { data: currentAssignments = [], isLoading: assignmentsLoading } = useQuery({
+    queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'],
+    enabled: !!selectedRequest?.id && isAttorneyAssignmentModalOpen,
   });
 
   // Delete mutation
@@ -143,6 +158,39 @@ export default function RequestManagementPage() {
     },
   });
 
+  // Attorney assignment mutation
+  const assignAttorneysMutation = useMutation({
+    mutationFn: async ({ requestId, attorneyIds, notes }: { requestId: number; attorneyIds: number[]; notes?: string }) => {
+      const response = await apiRequest(`/api/requests/${requestId}/attorneys`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ attorneyIds, notes }),
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
+      setIsAttorneyAssignmentModalOpen(false);
+      setSelectedAttorneyIds([]);
+      setAssignmentNotes('');
+      toast({
+        title: 'Success',
+        description: 'Attorneys assigned successfully',
+      });
+    },
+    onError: (error) => {
+      console.error('Error assigning attorneys:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to assign attorneys',
+        variant: 'destructive',
+      });
+    },
+  });
+
   if (loading || !user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -189,6 +237,41 @@ export default function RequestManagementPage() {
     if (selectedRequest) {
       deleteMutation.mutate(selectedRequest.id);
     }
+  };
+
+  const handleAssignAttorneys = (request: LegalRequest) => {
+    setSelectedRequest(request);
+    setIsAttorneyAssignmentModalOpen(true);
+    setSelectedAttorneyIds([]);
+    setAssignmentNotes('');
+  };
+
+  const handleAttorneyAssignmentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedRequest && selectedAttorneyIds.length > 0) {
+      assignAttorneysMutation.mutate({
+        requestId: selectedRequest.id,
+        attorneyIds: selectedAttorneyIds,
+        notes: assignmentNotes,
+      });
+    }
+  };
+
+  const handleAttorneyToggle = (attorneyId: number) => {
+    setSelectedAttorneyIds(prev => 
+      prev.includes(attorneyId) 
+        ? prev.filter(id => id !== attorneyId)
+        : [...prev, attorneyId]
+    );
+  };
+
+  const formatCurrency = (cents: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
   };
 
   const handleBulkDelete = () => {
@@ -446,6 +529,15 @@ export default function RequestManagementPage() {
                 <Label className="text-sm font-medium text-gray-600">Case Description</Label>
                 <p className="mt-1 text-sm text-gray-700 leading-relaxed">{selectedRequest.caseDescription}</p>
               </div>
+              <div className="flex justify-end pt-4 border-t">
+                <Button 
+                  onClick={() => handleAssignAttorneys(selectedRequest)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Assign Attorneys
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -616,6 +708,134 @@ export default function RequestManagementPage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attorney Assignment Modal */}
+      <Dialog open={isAttorneyAssignmentModalOpen} onOpenChange={setIsAttorneyAssignmentModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Assign Attorneys to Request</DialogTitle>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-6">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-medium mb-2">Request Information</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Request:</span> {selectedRequest.requestNumber}
+                  </div>
+                  <div>
+                    <span className="font-medium">Client:</span> {selectedRequest.firstName} {selectedRequest.lastName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Case Type:</span> {selectedRequest.caseType}
+                  </div>
+                  <div>
+                    <span className="font-medium">Budget:</span> {selectedRequest.budgetRange || 'Not specified'}
+                  </div>
+                </div>
+              </div>
+
+              {attorneysLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading attorneys...</p>
+                </div>
+              ) : availableAttorneys.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600">No attorneys available for this case type</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Please ensure attorneys have fee schedules set up for "{selectedRequest.caseType}"
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <h3 className="font-medium mb-3">Available Attorneys ({availableAttorneys.length})</h3>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {availableAttorneys.map((attorney: any) => (
+                        <div key={attorney.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <Checkbox
+                                id={`attorney-${attorney.id}`}
+                                checked={selectedAttorneyIds.includes(attorney.id)}
+                                onCheckedChange={() => handleAttorneyToggle(attorney.id)}
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2">
+                                  <h4 className="font-medium">{attorney.firstName} {attorney.lastName}</h4>
+                                  {attorney.isVerified && (
+                                    <Badge variant="outline" className="text-xs">Verified</Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-600">{attorney.email}</p>
+                                <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                  <span>📍 {attorney.licenseState}</span>
+                                  <span>⚖️ {attorney.yearsOfExperience} years</span>
+                                  {attorney.firmName && <span>🏢 {attorney.firmName}</span>}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              {attorney.fee ? (
+                                <div>
+                                  <p className="font-medium text-green-600">
+                                    {formatCurrency(attorney.fee)}
+                                  </p>
+                                  <p className="text-xs text-gray-500 capitalize">
+                                    {attorney.feeType} fee
+                                  </p>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-500">No fee set</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleAttorneyAssignmentSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="assignmentNotes">Assignment Notes (Optional)</Label>
+                      <Textarea
+                        id="assignmentNotes"
+                        placeholder="Add any specific instructions or notes for the assigned attorneys..."
+                        value={assignmentNotes}
+                        onChange={(e) => setAssignmentNotes(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-4 border-t">
+                      <p className="text-sm text-gray-600">
+                        {selectedAttorneyIds.length} attorney{selectedAttorneyIds.length !== 1 ? 's' : ''} selected
+                      </p>
+                      <div className="flex space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsAttorneyAssignmentModalOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={selectedAttorneyIds.length === 0 || assignAttorneysMutation.isPending}
+                        >
+                          {assignAttorneysMutation.isPending ? 'Assigning...' : 'Assign Attorneys'}
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

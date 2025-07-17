@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
@@ -642,6 +642,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error bulk creating attorney fee schedules:', error);
       res.status(400).json({ error: 'Failed to bulk create attorney fee schedules' });
+    }
+  });
+
+  // ========== REQUEST ATTORNEY ASSIGNMENT ROUTES ==========
+
+  // Get attorneys by case type for assignment
+  app.get('/api/attorneys/case-type/:caseType', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const attorneys = await storage.getAttorneysByCaseType(req.params.caseType);
+      res.json(attorneys);
+    } catch (error) {
+      console.error('Error fetching attorneys by case type:', error);
+      res.status(500).json({ error: 'Failed to fetch attorneys' });
+    }
+  });
+
+  // Get attorney assignments for a request
+  app.get('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const assignments = await storage.getRequestAttorneyAssignments(parseInt(req.params.requestId));
+      res.json(assignments);
+    } catch (error) {
+      console.error('Error fetching request attorney assignments:', error);
+      res.status(500).json({ error: 'Failed to fetch assignments' });
+    }
+  });
+
+  // Assign attorneys to a request
+  app.post('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.requestId);
+      const { attorneyIds, notes } = req.body;
+      
+      if (!Array.isArray(attorneyIds) || attorneyIds.length === 0) {
+        return res.status(400).json({ error: 'Attorney IDs are required' });
+      }
+
+      const assignments = attorneyIds.map((attorneyId: number) => ({
+        requestId,
+        attorneyId,
+        status: 'assigned',
+        notes: notes || null
+      }));
+
+      const validatedAssignments = assignments.map(assignment => 
+        insertRequestAttorneyAssignmentSchema.parse(assignment)
+      );
+
+      const createdAssignments = await storage.bulkCreateRequestAttorneyAssignments(validatedAssignments);
+      res.json(createdAssignments);
+    } catch (error) {
+      console.error('Error assigning attorneys to request:', error);
+      res.status(400).json({ error: 'Failed to assign attorneys' });
+    }
+  });
+
+  // Update attorney assignment status
+  app.put('/api/assignments/:assignmentId', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const assignmentData = insertRequestAttorneyAssignmentSchema.partial().parse(req.body);
+      const assignment = await storage.updateRequestAttorneyAssignment(parseInt(req.params.assignmentId), assignmentData);
+      res.json(assignment);
+    } catch (error) {
+      console.error('Error updating attorney assignment:', error);
+      res.status(400).json({ error: 'Failed to update assignment' });
+    }
+  });
+
+  // Remove attorney assignment
+  app.delete('/api/assignments/:assignmentId', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      await storage.deleteRequestAttorneyAssignment(parseInt(req.params.assignmentId));
+      res.json({ message: 'Attorney assignment removed successfully' });
+    } catch (error) {
+      console.error('Error removing attorney assignment:', error);
+      res.status(500).json({ error: 'Failed to remove assignment' });
     }
   });
 

@@ -18,6 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Assignment System** (July 17, 2025): Built comprehensive attorney assignment functionality for legal requests
+  - Created request_attorney_assignments database table with assignment tracking and status management
+  - Added API routes for attorney assignment: get attorneys by case type, assign attorneys to requests, update assignment status
+  - Implemented attorney assignment modal in request management with case type-specific attorney filtering
+  - Added "Assign Attorneys" button to request details modal for streamlined workflow
+  - System shows attorneys with their fee schedules, verification status, and experience for informed assignment decisions
+  - Supports bulk attorney assignment with optional notes and real-time status updates
+  - Integrated with existing attorney fee schedule system to show relevant pricing information
+
 - **Uniform Admin Card Design System** (July 17, 2025): Created consistent card format across all admin dashboard components
   - Built AdminCard base component with standardized layout (title, description, icon, content area, action button)
   - Implemented consistent loading states, error handling, and hover effects
