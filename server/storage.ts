@@ -369,7 +369,7 @@ export class DatabaseStorage implements IStorage {
         feeSchedule: attorneyFeeSchedule
       })
       .from(attorneys)
-      .leftJoin(
+      .innerJoin(
         attorneyFeeSchedule,
         and(
           eq(attorneyFeeSchedule.attorneyId, attorneys.id),
@@ -377,10 +377,7 @@ export class DatabaseStorage implements IStorage {
           eq(attorneyFeeSchedule.isActive, true)
         )
       )
-      .where(and(
-        eq(attorneys.isActive, true),
-        eq(attorneys.isVerified, true)
-      ))
+      .where(eq(attorneys.isActive, true))
       .orderBy(asc(attorneys.lastName), asc(attorneys.firstName));
 
     return result.map(({ attorney, feeSchedule }) => ({
