@@ -1,7 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mail, Send, X } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Mail, Send, X, TestTube } from 'lucide-react';
+import { useState } from 'react';
 
 interface EmailPreview {
   subject: string;
@@ -14,7 +16,7 @@ interface EmailPreviewModalProps {
   onClose: () => void;
   emailPreview: EmailPreview | null;
   recipientEmail: string;
-  onSendEmail: () => void;
+  onSendEmail: (email: string) => void;
   isSending: boolean;
 }
 
@@ -26,7 +28,12 @@ export default function EmailPreviewModal({
   onSendEmail,
   isSending
 }: EmailPreviewModalProps) {
+  const [useTestEmail, setUseTestEmail] = useState(false);
+  const testEmailAddress = "linktolawyers.us@gmail.com";
+  
   if (!emailPreview) return null;
+  
+  const effectiveEmail = useTestEmail ? testEmailAddress : recipientEmail;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -44,7 +51,12 @@ export default function EmailPreviewModal({
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-600">To:</span>
-                <span className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">{recipientEmail}</span>
+                <span className={`text-sm font-mono px-2 py-1 rounded ${useTestEmail ? 'bg-blue-100 text-blue-800' : 'bg-gray-100'}`}>
+                  {effectiveEmail}
+                </span>
+                {useTestEmail && (
+                  <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">TEST</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-gray-600">Subject:</span>
@@ -78,6 +90,19 @@ export default function EmailPreviewModal({
             </TabsContent>
           </Tabs>
           
+          {/* Test Email Override */}
+          <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <Checkbox
+              id="useTestEmail"
+              checked={useTestEmail}
+              onCheckedChange={setUseTestEmail}
+            />
+            <TestTube className="w-4 h-4 text-yellow-600" />
+            <label htmlFor="useTestEmail" className="text-sm font-medium text-yellow-800">
+              Send to test email ({testEmailAddress}) instead
+            </label>
+          </div>
+          
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Button
@@ -89,7 +114,7 @@ export default function EmailPreviewModal({
               Cancel
             </Button>
             <Button
-              onClick={onSendEmail}
+              onClick={() => onSendEmail(effectiveEmail)}
               disabled={isSending}
               className="bg-blue-600 hover:bg-blue-700"
             >

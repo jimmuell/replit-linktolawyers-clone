@@ -194,7 +194,7 @@ export default function Home() {
     }
   };
 
-  const handleSendEmail = async () => {
+  const handleSendEmail = async (emailAddress: string) => {
     if (!emailPreview || !submittedRequestNumber) return;
     
     setIsSendingEmail(true);
@@ -202,7 +202,10 @@ export default function Home() {
     try {
       const response = await apiRequest(`/api/legal-requests/${submittedRequestNumber}/send-confirmation`, {
         method: 'POST',
-        body: { emailTemplate: emailPreview }
+        body: { 
+          emailTemplate: emailPreview,
+          overrideEmail: emailAddress 
+        }
       });
       
       const result = await response.json();
@@ -210,7 +213,7 @@ export default function Home() {
       if (result.success) {
         toast({
           title: "Email sent successfully!",
-          description: "Confirmation email has been sent to the client.",
+          description: `Confirmation email has been sent to ${emailAddress}`,
         });
         setIsEmailPreviewOpen(false);
       } else {

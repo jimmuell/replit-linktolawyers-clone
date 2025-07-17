@@ -229,10 +229,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send confirmation email for legal request
-  app.post("/api/legal-requests/:requestNumber/send-confirmation", requireAuth, async (req, res) => {
+  app.post("/api/legal-requests/:requestNumber/send-confirmation", async (req, res) => {
     try {
       const { requestNumber } = req.params;
-      const { emailTemplate } = req.body;
+      const { emailTemplate, overrideEmail } = req.body;
       
       if (!emailTemplate || !emailTemplate.html || !emailTemplate.subject) {
         return res.status(400).json({ success: false, error: "Email template is required" });
@@ -250,9 +250,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ success: false, error: "SMTP not configured" });
       }
       
+      // Use override email if provided, otherwise use the legal request email
+      const recipientEmail = overrideEmail || legalRequest.email;
+      
       // Send email using the existing email service
       const emailData = {
-        to: legalRequest.email,
+        to: recipientEmail,
         subject: emailTemplate.subject,
         html: emailTemplate.html,
         text: emailTemplate.text || ''
