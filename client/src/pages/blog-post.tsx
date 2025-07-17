@@ -39,7 +39,12 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar hideUserDropdown={true} />
+      <Navbar 
+        activeSection="" 
+        scrollToSection={() => {}} 
+        setIsLoginModalOpen={() => {}} 
+        hideUserDropdown={true} 
+      />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
@@ -74,19 +79,19 @@ export default function BlogPostPage() {
         ) : blogPost ? (
           <article className="bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-12">
+            <div className="bg-black text-white px-8 py-12">
               <div className="mb-4">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                <Badge variant="secondary" className="bg-gray-100 text-gray-800">
                   Immigration Law
                 </Badge>
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 {blogPost.title}
               </h1>
-              <p className="text-xl text-blue-100 mb-6">
+              <p className="text-xl text-gray-300 mb-6">
                 {blogPost.excerpt}
               </p>
-              <div className="flex items-center gap-6 text-blue-100">
+              <div className="flex items-center gap-6 text-gray-300">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
                   {blogPost.publishedAt && formatDate(blogPost.publishedAt)}
@@ -140,7 +145,7 @@ export default function BlogPostPage() {
               </p>
               <Button 
                 size="lg" 
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-black hover:bg-gray-800"
                 asChild
               >
                 <Link href="/#quote-form">

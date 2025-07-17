@@ -28,16 +28,21 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar hideUserDropdown={true} />
+      <Navbar 
+        activeSection="" 
+        scrollToSection={() => {}} 
+        setIsLoginModalOpen={() => {}} 
+        hideUserDropdown={true} 
+      />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+      <div className="bg-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               LinkToLawyers Blog
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
               Stay informed with the latest immigration news, legal insights, and expert guidance
             </p>
           </div>
@@ -69,11 +74,11 @@ export default function Blog() {
               <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                    <Badge variant="secondary" className="bg-gray-100 text-gray-800">
                       Immigration Law
                     </Badge>
                   </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+                  <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors">
                     {post.title}
                   </CardTitle>
                 </CardHeader>
@@ -127,7 +132,7 @@ export default function Blog() {
               </p>
               <Button 
                 size="lg" 
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-black hover:bg-gray-800"
                 asChild
               >
                 <Link href="/#quote-form">
