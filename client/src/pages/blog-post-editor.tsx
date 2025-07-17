@@ -40,12 +40,6 @@ export default function BlogPostEditor() {
 
   const { data: blogPost, isLoading } = useQuery<BlogPost>({
     queryKey: ['/api/blog-posts', id],
-    queryFn: async () => {
-      if (!id) return null;
-      const response = await fetch(`/api/blog-posts/${id}`);
-      if (!response.ok) throw new Error('Blog post not found');
-      return response.json();
-    },
     enabled: !!id,
   });
 
