@@ -26,7 +26,7 @@ interface BlogHeaderProps {
 export default function BlogHeader({ title, showBackButton = false }: BlogHeaderProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, login, logout } = useAuth();
   const { toast } = useToast();
 
   const form = useForm<LoginForm>({

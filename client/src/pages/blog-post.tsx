@@ -1,33 +1,13 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'wouter';
 import { Calendar, User, ArrowLeft, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import Navbar from '@/components/Navbar';
+import BlogHeader from '@/components/BlogHeader';
 import type { BlogPost } from '@shared/schema';
-
-const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-type LoginForm = z.infer<typeof loginSchema>;
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('');
-  const { login } = useAuth();
-  const { toast } = useToast();
   
   const { data: blogPost, isLoading, error } = useQuery<BlogPost>({
     queryKey: ['/api/blog-posts/slug', slug],
@@ -39,32 +19,6 @@ export default function BlogPostPage() {
       return response.json();
     },
   });
-
-  const form = useForm<LoginForm>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
-
-  const handleLogin = async (data: LoginForm) => {
-    try {
-      await login(data.email, data.password);
-      setIsLoginModalOpen(false);
-      toast({ title: 'Login successful!' });
-    } catch (error: any) {
-      toast({ 
-        title: 'Login failed', 
-        description: error.message || 'Please check your credentials and try again.',
-        variant: 'destructive' 
-      });
-    }
-  };
-
-  const scrollToSection = (section: string) => {
-    setActiveSection(section);
-  };
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -85,12 +39,7 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar 
-        activeSection={activeSection} 
-        scrollToSection={scrollToSection} 
-        setIsLoginModalOpen={setIsLoginModalOpen} 
-        hideUserDropdown={true} 
-      />
+      <BlogHeader title={blogPost?.title || "Blog Post"} showBackButton={false} />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
@@ -202,48 +151,6 @@ export default function BlogPostPage() {
           </div>
         )}
       </div>
-
-      {/* Login Modal */}
-      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign In</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" className="w-full bg-black hover:bg-gray-800">
-                Sign In
-              </Button>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
