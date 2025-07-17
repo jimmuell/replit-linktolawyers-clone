@@ -479,16 +479,18 @@ export default function Home() {
             </div>
           )}
           
-          <div className="flex items-center space-x-2 mb-4">
-            <Checkbox
-              id="prefill"
-              checked={prefillChecked}
-              onCheckedChange={handlePrefillToggle}
-            />
-            <Label htmlFor="prefill" className="text-sm font-medium">
-              Prefill form with sample data
-            </Label>
-          </div>
+          {!submittedRequestNumber && (
+            <div className="flex items-center space-x-2 mb-4">
+              <Checkbox
+                id="prefill"
+                checked={prefillChecked}
+                onCheckedChange={handlePrefillToggle}
+              />
+              <Label htmlFor="prefill" className="text-sm font-medium">
+                Prefill form with sample data
+              </Label>
+            </div>
+          )}
 
           {submittedRequestNumber ? (
             <div className="text-center space-y-4">
@@ -505,14 +507,21 @@ export default function Home() {
                   </span>
                 </div>
                 <p className="text-sm text-green-600 mt-3">
-                  Please save this number for your records. You will receive a confirmation email shortly.
+                  Please save this number for your records.
                 </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                  <p className="text-sm text-blue-800">
+                    📧 <strong>Confirmation email sent!</strong> Please check your email inbox and spam/junk folders for the confirmation details.
+                  </p>
+                </div>
               </div>
               <Button
                 type="button"
                 onClick={() => {
                   setSubmittedRequestNumber(null);
                   setIsQuoteModalOpen(false);
+                  setIsEmailPreviewOpen(false);
+                  setEmailPreview(null);
                   // Reset form
                   setFormData({
                     firstName: '',
