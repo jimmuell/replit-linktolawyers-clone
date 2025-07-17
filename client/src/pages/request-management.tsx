@@ -238,18 +238,19 @@ export default function RequestManagementPage() {
       {/* Navigation Bar */}
       <nav className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/admin-dashboard')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Dashboard</span>
-            </Button>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <h1 className="text-xl font-semibold text-gray-900">Request Management</h1>
-          </div>
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/admin-dashboard')}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Dashboard</span>
+          </Button>
+          
+          <h1 className="text-xl font-semibold text-gray-900">Request Management</h1>
+          
+          {/* Empty div to balance the layout */}
+          <div className="w-32"></div>
         </div>
       </nav>
 
