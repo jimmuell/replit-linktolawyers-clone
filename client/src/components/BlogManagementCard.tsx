@@ -16,9 +16,11 @@ export default function BlogManagementCard() {
         description="Loading blog posts..."
         icon={FileText}
         iconColor="text-purple-600"
-        bgColor="bg-purple-100"
+        route="/blog-management"
         isLoading={true}
-      />
+      >
+        <div></div>
+      </AdminCard>
     );
   }
 
@@ -29,13 +31,11 @@ export default function BlogManagementCard() {
         description="Error loading blog posts"
         icon={FileText}
         iconColor="text-red-600"
-        bgColor="bg-red-100"
-        actionButton={{
-          label: 'Manage Blog',
-          href: '/blog-management',
-          variant: 'outline'
-        }}
-      />
+        route="/blog-management"
+        error={error}
+      >
+        <div></div>
+      </AdminCard>
     );
   }
 
@@ -49,11 +49,8 @@ export default function BlogManagementCard() {
       description="Create and manage blog posts"
       icon={FileText}
       iconColor="text-purple-600"
-      bgColor="bg-purple-100"
-      actionButton={{
-        label: 'Manage Blog',
-        href: '/blog-management'
-      }}
+      route="/blog-management"
+      actionText="Manage Blog"
     >
       <div className="grid grid-cols-3 gap-4 mb-4">
         <div className="text-center">
