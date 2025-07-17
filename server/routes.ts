@@ -183,7 +183,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Legal Request API routes
   app.post("/api/legal-requests", async (req, res) => {
     try {
-      const requestNumber = generateRequestNumber();
+      // Use the request number from the frontend, or generate one if not provided
+      const requestNumber = req.body.requestNumber || generateRequestNumber();
       const validatedData = insertLegalRequestSchema.parse({
         ...req.body,
         requestNumber

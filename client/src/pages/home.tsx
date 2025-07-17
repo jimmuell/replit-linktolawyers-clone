@@ -43,6 +43,7 @@ export default function Home() {
   const [submittedRequestNumber, setSubmittedRequestNumber] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaError, setCaptchaError] = useState<string | null>(null);
+  const [currentRequestNumber, setCurrentRequestNumber] = useState<string>('');
   const { user, logout } = useAuth();
 
   // Fetch case types for dropdown
@@ -91,6 +92,12 @@ export default function Home() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Generate request number when form opens
+  const generateRequestNumber = () => {
+    const randomNumber = Math.floor(100000 + Math.random() * 900000);
+    return `lr-${randomNumber}`;
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -150,7 +157,10 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          requestNumber: currentRequestNumber
+        }),
       });
       
       const result = await response.json();
@@ -535,7 +545,12 @@ export default function Home() {
       </footer>
 
       {/* Free Quote Modal */}
-      <Dialog open={isQuoteModalOpen} onOpenChange={setIsQuoteModalOpen}>
+      <Dialog open={isQuoteModalOpen} onOpenChange={(open) => {
+        setIsQuoteModalOpen(open);
+        if (open && !currentRequestNumber) {
+          setCurrentRequestNumber(generateRequestNumber());
+        }
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl text-center">
@@ -545,6 +560,18 @@ export default function Home() {
               Tell us about your immigration case and get personalized quotes from qualified attorneys
             </DialogDescription>
           </DialogHeader>
+          
+          {currentRequestNumber && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-blue-800">Legal Request Number:</span>
+                <span className="text-sm font-mono font-bold text-blue-900">{currentRequestNumber}</span>
+              </div>
+              <p className="text-xs text-blue-600 mt-1">
+                This number will be assigned to your request upon submission
+              </p>
+            </div>
+          )}
           
           <div className="flex items-center space-x-2 mb-4">
             <Checkbox
