@@ -11,9 +11,10 @@ interface NavbarProps {
   activeSection: string;
   scrollToSection: (section: string) => void;
   setIsLoginModalOpen: (open: boolean) => void;
+  hideUserDropdown?: boolean;
 }
 
-export default function Navbar({ activeSection, scrollToSection, setIsLoginModalOpen }: NavbarProps) {
+export default function Navbar({ activeSection, scrollToSection, setIsLoginModalOpen, hideUserDropdown = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
 
@@ -59,7 +60,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+            {user && !hideUserDropdown ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="flex items-center space-x-2">
@@ -168,7 +169,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
               <div className="border-t border-gray-200 my-3"></div>
               
               <div className="space-y-3">
-                {user ? (
+                {user && !hideUserDropdown ? (
                   <div className="space-y-3">
                     <div className="flex items-center space-x-3 px-3 py-2 bg-gray-50 rounded-md">
                       <Avatar className="w-8 h-8">

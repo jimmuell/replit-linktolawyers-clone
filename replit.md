@@ -18,6 +18,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Authentication Flow Improvements** (July 17, 2025): Updated login/logout navigation behavior
+  - Users are now redirected to admin dashboard immediately after successful login
+  - Home page hides user dropdown menu and redirects authenticated users to dashboard
+  - Logout from dashboard properly redirects users back to home page
+  - Added hideUserDropdown prop to Navbar component for flexible user menu display
+  - Improved user experience by preventing authenticated users from staying on public home page
+
 - **Request Management Bulk Delete Feature** (July 17, 2025): Added bulk delete functionality to legal requests management
   - Added checkboxes for individual request selection and select-all functionality
   - Implemented bulk delete button that appears when requests are selected

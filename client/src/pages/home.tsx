@@ -54,6 +54,13 @@ export default function Home() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user) {
+      window.location.href = '/admin-dashboard';
+    }
+  }, [user]);
+
   // Fetch case types for dropdown
   const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
     queryKey: ['/api/case-types'],
@@ -243,6 +250,7 @@ export default function Home() {
         activeSection={activeSection}
         scrollToSection={scrollToSection}
         setIsLoginModalOpen={setIsLoginModalOpen}
+        hideUserDropdown={true}
       />
       <div className="min-h-screen bg-white w-full">
 

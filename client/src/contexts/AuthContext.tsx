@@ -63,6 +63,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       localStorage.setItem('sessionId', data.sessionId);
       setUser(data.user);
+      
+      // Redirect to admin dashboard after successful login
+      if (data.user.role === 'admin') {
+        window.location.href = '/admin-dashboard';
+      } else {
+        // For other roles, redirect to appropriate dashboard if exists
+        window.location.href = '/admin-dashboard';
+      }
     } catch (error) {
       throw error;
     }
@@ -100,6 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     localStorage.removeItem('sessionId');
     setUser(null);
+    setLoading(false);
     // Redirect to home page after logout
     window.location.href = '/';
   };
