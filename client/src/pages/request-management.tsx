@@ -243,10 +243,30 @@ export default function RequestManagementPage() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'] });
-      toast({
-        title: 'Success',
-        description: `Email sent to ${data.totalSent} attorneys${data.totalFailed > 0 ? `, ${data.totalFailed} failed` : ''}`,
-      });
+      
+      // Handle different response formats
+      if (data.message) {
+        // Simple message response (like "All assigned attorneys have already been emailed")
+        toast({
+          title: 'Info',
+          description: data.message,
+        });
+      } else if (data.results) {
+        // Detailed results response
+        const successful = data.results.filter((r: any) => r.success).length;
+        const failed = data.results.filter((r: any) => !r.success).length;
+        
+        toast({
+          title: 'Success',
+          description: `Email sent to ${successful} attorney${successful !== 1 ? 's' : ''}${failed > 0 ? `, ${failed} failed` : ''}`,
+        });
+      } else {
+        // Fallback
+        toast({
+          title: 'Success',
+          description: 'Email operation completed',
+        });
+      }
     },
     onError: (error) => {
       console.error('Error sending emails:', error);
