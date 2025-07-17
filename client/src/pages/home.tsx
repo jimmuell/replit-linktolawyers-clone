@@ -42,6 +42,7 @@ export default function Home() {
   const [prefillChecked, setPrefillChecked] = useState(false);
   const [submittedRequestNumber, setSubmittedRequestNumber] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
   const { user, logout } = useAuth();
 
   // Fetch case types for dropdown
@@ -132,9 +133,12 @@ export default function Home() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Clear previous captcha error
+    setCaptchaError(null);
+    
     // Validate captcha
     if (formData.captcha !== '4') {
-      alert('Please solve the captcha correctly.');
+      setCaptchaError('Please solve the captcha correctly. 7 - 3 = ?');
       return;
     }
     
@@ -727,11 +731,20 @@ export default function Home() {
                     id="captcha"
                     placeholder="Answer"
                     value={formData.captcha}
-                    onChange={(e) => handleInputChange('captcha', e.target.value)}
-                    className="w-20"
+                    onChange={(e) => {
+                      handleInputChange('captcha', e.target.value);
+                      // Clear error when user starts typing
+                      if (captchaError) {
+                        setCaptchaError(null);
+                      }
+                    }}
+                    className={`w-20 ${captchaError ? 'border-red-500' : ''}`}
                     required
                   />
                 </div>
+                {captchaError && (
+                  <p className="text-red-500 text-sm mt-1">{captchaError}</p>
+                )}
               </div>
             </div>
 
@@ -757,7 +770,7 @@ export default function Home() {
             <Button 
               type="submit" 
               className="w-full bg-gray-400 hover:bg-gray-500 text-white py-3 rounded-md"
-              disabled={!formData.agreeToTerms || isSubmitting}
+              disabled={!formData.agreeToTerms || isSubmitting || formData.captcha !== '4'}
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
             </Button>
