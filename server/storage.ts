@@ -1,4 +1,4 @@
-import { users, caseTypes, type User, type InsertUser, type CaseType, type InsertCaseType } from "@shared/schema";
+import { users, caseTypes, legalRequests, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc } from "drizzle-orm";
 
@@ -15,6 +15,10 @@ export interface IStorage {
   createCaseType(caseType: InsertCaseType): Promise<CaseType>;
   updateCaseType(id: number, caseType: Partial<InsertCaseType>): Promise<CaseType>;
   deleteCaseType(id: number): Promise<void>;
+  createLegalRequest(legalRequest: InsertLegalRequest): Promise<LegalRequest>;
+  getLegalRequest(id: number): Promise<LegalRequest | undefined>;
+  getLegalRequestByNumber(requestNumber: string): Promise<LegalRequest | undefined>;
+  getAllLegalRequests(): Promise<LegalRequest[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -80,6 +84,38 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCaseType(id: number): Promise<void> {
     await db.delete(caseTypes).where(eq(caseTypes.id, id));
+  }
+
+  // Legal Request operations
+  async createLegalRequest(insertLegalRequest: InsertLegalRequest): Promise<LegalRequest> {
+    const [legalRequest] = await db
+      .insert(legalRequests)
+      .values(insertLegalRequest)
+      .returning();
+    return legalRequest;
+  }
+
+  async getLegalRequest(id: number): Promise<LegalRequest | undefined> {
+    const [legalRequest] = await db
+      .select()
+      .from(legalRequests)
+      .where(eq(legalRequests.id, id));
+    return legalRequest || undefined;
+  }
+
+  async getLegalRequestByNumber(requestNumber: string): Promise<LegalRequest | undefined> {
+    const [legalRequest] = await db
+      .select()
+      .from(legalRequests)
+      .where(eq(legalRequests.requestNumber, requestNumber));
+    return legalRequest || undefined;
+  }
+
+  async getAllLegalRequests(): Promise<LegalRequest[]> {
+    return await db
+      .select()
+      .from(legalRequests)
+      .orderBy(asc(legalRequests.createdAt));
   }
 }
 

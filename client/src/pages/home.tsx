@@ -40,6 +40,8 @@ export default function Home() {
   });
 
   const [prefillChecked, setPrefillChecked] = useState(false);
+  const [submittedRequestNumber, setSubmittedRequestNumber] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, logout } = useAuth();
 
   // Fetch case types for dropdown
@@ -127,7 +129,7 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate captcha
@@ -136,9 +138,31 @@ export default function Home() {
       return;
     }
     
-    // Handle form submission here
-    console.log('Form submitted:', formData);
-    setIsQuoteModalOpen(false);
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/legal-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setSubmittedRequestNumber(result.data.requestNumber);
+        // Keep the form open to show the request number
+      } else {
+        alert('Error submitting request: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Error submitting request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -529,8 +553,52 @@ export default function Home() {
             </Label>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {submittedRequestNumber ? (
+            <div className="text-center space-y-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="text-lg font-semibold text-green-800 mb-2">
+                  Request Submitted Successfully!
+                </h3>
+                <p className="text-green-700 mb-3">
+                  Your legal request has been submitted and assigned the following number:
+                </p>
+                <div className="bg-white border border-green-300 rounded-lg p-3 inline-block">
+                  <span className="text-xl font-mono font-bold text-green-800">
+                    {submittedRequestNumber}
+                  </span>
+                </div>
+                <p className="text-sm text-green-600 mt-3">
+                  Please save this number for your records. You will receive a confirmation email shortly.
+                </p>
+              </div>
+              <Button
+                type="button"
+                onClick={() => {
+                  setSubmittedRequestNumber(null);
+                  setIsQuoteModalOpen(false);
+                  // Reset form
+                  setFormData({
+                    firstName: '',
+                    lastName: '',
+                    caseType: '',
+                    email: '',
+                    phoneNumber: '',
+                    caseDescription: '',
+                    urgencyLevel: '',
+                    budgetRange: '',
+                    location: '',
+                    captcha: '',
+                    agreeToTerms: false
+                  });
+                }}
+                className="w-full"
+              >
+                Close
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName">First name</Label>
                 <Input
@@ -689,11 +757,12 @@ export default function Home() {
             <Button 
               type="submit" 
               className="w-full bg-gray-400 hover:bg-gray-500 text-white py-3 rounded-md"
-              disabled={!formData.agreeToTerms}
+              disabled={!formData.agreeToTerms || isSubmitting}
             >
-              Submit
+              {isSubmitting ? 'Submitting...' : 'Submit'}
             </Button>
           </form>
+          )}
         </DialogContent>
       </Dialog>
 

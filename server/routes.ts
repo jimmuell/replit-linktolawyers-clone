@@ -1,11 +1,17 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 
 // Simple session store for demo
 const sessions = new Map<string, { userId: number; role: string }>();
+
+// Generate legal request number
+function generateRequestNumber(): string {
+  const randomNumber = Math.floor(100000 + Math.random() * 900000);
+  return `lr-${randomNumber}`;
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication middleware
@@ -171,6 +177,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting case type:", error);
       res.status(500).json({ error: "Failed to delete case type" });
+    }
+  });
+
+  // Legal Request API routes
+  app.post("/api/legal-requests", async (req, res) => {
+    try {
+      const requestNumber = generateRequestNumber();
+      const validatedData = insertLegalRequestSchema.parse({
+        ...req.body,
+        requestNumber
+      });
+      
+      const legalRequest = await storage.createLegalRequest(validatedData);
+      res.json({ success: true, data: legalRequest });
+    } catch (error) {
+      console.error("Error creating legal request:", error);
+      res.status(500).json({ success: false, error: "Failed to create legal request" });
+    }
+  });
+
+  app.get("/api/legal-requests/:requestNumber", async (req, res) => {
+    try {
+      const requestNumber = req.params.requestNumber;
+      const legalRequest = await storage.getLegalRequestByNumber(requestNumber);
+      
+      if (!legalRequest) {
+        return res.status(404).json({ success: false, error: "Legal request not found" });
+      }
+      
+      res.json({ success: true, data: legalRequest });
+    } catch (error) {
+      console.error("Error fetching legal request:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch legal request" });
+    }
+  });
+
+  app.get("/api/admin/legal-requests", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const legalRequests = await storage.getAllLegalRequests();
+      res.json({ success: true, data: legalRequests });
+    } catch (error) {
+      console.error("Error fetching legal requests:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch legal requests" });
     }
   });
 
