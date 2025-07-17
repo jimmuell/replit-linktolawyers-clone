@@ -56,10 +56,14 @@ const BlogManagementCard = () => {
 
   const createMutation = useMutation({
     mutationFn: async (data: BlogPostForm) => {
-      const postData: InsertBlogPost = {
-        ...data,
+      const postData: any = {
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        excerpt: data.excerpt,
         authorId: user?.id || 0,
-        publishedAt: data.isPublished ? new Date() : null,
+        isPublished: data.isPublished,
+        publishedAt: data.isPublished ? new Date().toISOString() : null,
       };
       return await apiRequest('/api/blog-posts', {
         method: 'POST',
@@ -80,9 +84,13 @@ const BlogManagementCard = () => {
   const updateMutation = useMutation({
     mutationFn: async (data: BlogPostForm) => {
       if (!selectedPost) return;
-      const postData: Partial<InsertBlogPost> = {
-        ...data,
-        publishedAt: data.isPublished ? (selectedPost.publishedAt || new Date()) : null,
+      const postData: any = {
+        title: data.title,
+        slug: data.slug,
+        content: data.content,
+        excerpt: data.excerpt,
+        isPublished: data.isPublished,
+        publishedAt: data.isPublished ? (selectedPost.publishedAt || new Date().toISOString()) : null,
       };
       return await apiRequest(`/api/blog-posts/${selectedPost.id}`, {
         method: 'PUT',
