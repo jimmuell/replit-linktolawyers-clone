@@ -1,6 +1,6 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule } from "@shared/schema";
 import { db } from "./db";
-import { eq, asc, desc } from "drizzle-orm";
+import { eq, asc, desc, and } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -34,6 +34,15 @@ export interface IStorage {
   getAllAttorneys(): Promise<Attorney[]>;
   updateAttorney(id: number, updates: Partial<InsertAttorney>): Promise<Attorney>;
   deleteAttorney(id: number): Promise<void>;
+  // Attorney Fee Schedule
+  createAttorneyFeeSchedule(feeSchedule: InsertAttorneyFeeSchedule): Promise<AttorneyFeeSchedule>;
+  getAttorneyFeeSchedule(id: number): Promise<AttorneyFeeSchedule | undefined>;
+  getAttorneyFeeScheduleByAttorney(attorneyId: number): Promise<AttorneyFeeSchedule[]>;
+  getAttorneyFeeScheduleByAttorneyAndCaseType(attorneyId: number, caseTypeId: number): Promise<AttorneyFeeSchedule | undefined>;
+  getAllAttorneyFeeSchedules(): Promise<AttorneyFeeSchedule[]>;
+  updateAttorneyFeeSchedule(id: number, updates: Partial<InsertAttorneyFeeSchedule>): Promise<AttorneyFeeSchedule>;
+  deleteAttorneyFeeSchedule(id: number): Promise<void>;
+  bulkCreateAttorneyFeeSchedules(feeSchedules: InsertAttorneyFeeSchedule[]): Promise<AttorneyFeeSchedule[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -223,6 +232,69 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAttorney(id: number): Promise<void> {
     await db.delete(attorneys).where(eq(attorneys.id, id));
+  }
+
+  // Attorney Fee Schedule operations
+  async createAttorneyFeeSchedule(insertFeeSchedule: InsertAttorneyFeeSchedule): Promise<AttorneyFeeSchedule> {
+    const [feeSchedule] = await db
+      .insert(attorneyFeeSchedule)
+      .values(insertFeeSchedule)
+      .returning();
+    return feeSchedule;
+  }
+
+  async getAttorneyFeeSchedule(id: number): Promise<AttorneyFeeSchedule | undefined> {
+    const [feeSchedule] = await db
+      .select()
+      .from(attorneyFeeSchedule)
+      .where(eq(attorneyFeeSchedule.id, id));
+    return feeSchedule || undefined;
+  }
+
+  async getAttorneyFeeScheduleByAttorney(attorneyId: number): Promise<AttorneyFeeSchedule[]> {
+    return await db
+      .select()
+      .from(attorneyFeeSchedule)
+      .where(eq(attorneyFeeSchedule.attorneyId, attorneyId))
+      .orderBy(asc(attorneyFeeSchedule.caseTypeId));
+  }
+
+  async getAttorneyFeeScheduleByAttorneyAndCaseType(attorneyId: number, caseTypeId: number): Promise<AttorneyFeeSchedule | undefined> {
+    const [feeSchedule] = await db
+      .select()
+      .from(attorneyFeeSchedule)
+      .where(and(
+        eq(attorneyFeeSchedule.attorneyId, attorneyId),
+        eq(attorneyFeeSchedule.caseTypeId, caseTypeId)
+      ));
+    return feeSchedule || undefined;
+  }
+
+  async getAllAttorneyFeeSchedules(): Promise<AttorneyFeeSchedule[]> {
+    return await db
+      .select()
+      .from(attorneyFeeSchedule)
+      .orderBy(asc(attorneyFeeSchedule.attorneyId), asc(attorneyFeeSchedule.caseTypeId));
+  }
+
+  async updateAttorneyFeeSchedule(id: number, updates: Partial<InsertAttorneyFeeSchedule>): Promise<AttorneyFeeSchedule> {
+    const [feeSchedule] = await db
+      .update(attorneyFeeSchedule)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(attorneyFeeSchedule.id, id))
+      .returning();
+    return feeSchedule;
+  }
+
+  async deleteAttorneyFeeSchedule(id: number): Promise<void> {
+    await db.delete(attorneyFeeSchedule).where(eq(attorneyFeeSchedule.id, id));
+  }
+
+  async bulkCreateAttorneyFeeSchedules(feeSchedules: InsertAttorneyFeeSchedule[]): Promise<AttorneyFeeSchedule[]> {
+    return await db
+      .insert(attorneyFeeSchedule)
+      .values(feeSchedules)
+      .returning();
   }
 }
 

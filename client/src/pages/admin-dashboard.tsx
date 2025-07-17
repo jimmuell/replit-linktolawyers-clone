@@ -4,6 +4,7 @@ import AdminNavbar from '@/components/AdminNavbar';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
 import RequestManagementCard from '@/components/RequestManagementCard';
 import AttorneyOnboardingCard from '@/components/AttorneyOnboardingCard';
+import AttorneyFeeScheduleCard from '@/components/AttorneyFeeScheduleCard';
 
 export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
           <SmtpStatusCard />
           <RequestManagementCard />
           <AttorneyOnboardingCard />
+          <AttorneyFeeScheduleCard />
         </div>
       </div>
     </div>

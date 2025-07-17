@@ -91,6 +91,18 @@ export const attorneys = pgTable("attorneys", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const attorneyFeeSchedule = pgTable("attorney_fee_schedule", {
+  id: serial("id").primaryKey(),
+  attorneyId: integer("attorney_id").notNull().references(() => attorneys.id, { onDelete: "cascade" }),
+  caseTypeId: integer("case_type_id").notNull().references(() => caseTypes.id, { onDelete: "cascade" }),
+  fee: integer("fee").notNull(), // Fee amount in cents to avoid floating point issues
+  feeType: varchar("fee_type", { length: 50 }).notNull().default("flat"), // flat, hourly, consultation
+  notes: text("notes"), // Optional notes about the fee
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
@@ -163,6 +175,15 @@ export const insertAttorneySchema = createInsertSchema(attorneys).pick({
   isVerified: true,
 });
 
+export const insertAttorneyFeeScheduleSchema = createInsertSchema(attorneyFeeSchedule).pick({
+  attorneyId: true,
+  caseTypeId: true,
+  fee: true,
+  feeType: true,
+  notes: true,
+  isActive: true,
+});
+
 export const sendEmailSchema = z.object({
   to: z.string().email("Please enter a valid email address"),
   subject: z.string().min(1, "Subject is required"),
@@ -187,4 +208,6 @@ export type InsertEmailHistory = z.infer<typeof insertEmailHistorySchema>;
 export type EmailHistory = typeof emailHistory.$inferSelect;
 export type InsertAttorney = z.infer<typeof insertAttorneySchema>;
 export type Attorney = typeof attorneys.$inferSelect;
+export type InsertAttorneyFeeSchedule = z.infer<typeof insertAttorneyFeeScheduleSchema>;
+export type AttorneyFeeSchedule = typeof attorneyFeeSchedule.$inferSelect;
 export type SendEmail = z.infer<typeof sendEmailSchema>;

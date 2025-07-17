@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
@@ -555,6 +555,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting attorney:', error);
       res.status(500).json({ error: 'Failed to delete attorney' });
+    }
+  });
+
+  // Attorney Fee Schedule Routes
+  // Create attorney fee schedule entry
+  app.post('/api/attorney-fee-schedule', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const feeScheduleData = insertAttorneyFeeScheduleSchema.parse(req.body);
+      const feeSchedule = await storage.createAttorneyFeeSchedule(feeScheduleData);
+      res.json(feeSchedule);
+    } catch (error) {
+      console.error('Error creating attorney fee schedule:', error);
+      res.status(400).json({ error: 'Failed to create attorney fee schedule' });
+    }
+  });
+
+  // Get all attorney fee schedules
+  app.get('/api/attorney-fee-schedule', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const feeSchedules = await storage.getAllAttorneyFeeSchedules();
+      res.json(feeSchedules);
+    } catch (error) {
+      console.error('Error fetching attorney fee schedules:', error);
+      res.status(500).json({ error: 'Failed to fetch attorney fee schedules' });
+    }
+  });
+
+  // Get attorney fee schedule by attorney ID
+  app.get('/api/attorney-fee-schedule/attorney/:attorneyId', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const feeSchedules = await storage.getAttorneyFeeScheduleByAttorney(parseInt(req.params.attorneyId));
+      res.json(feeSchedules);
+    } catch (error) {
+      console.error('Error fetching attorney fee schedule:', error);
+      res.status(500).json({ error: 'Failed to fetch attorney fee schedule' });
+    }
+  });
+
+  // Get specific attorney fee schedule by attorney and case type
+  app.get('/api/attorney-fee-schedule/attorney/:attorneyId/case-type/:caseTypeId', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const feeSchedule = await storage.getAttorneyFeeScheduleByAttorneyAndCaseType(
+        parseInt(req.params.attorneyId),
+        parseInt(req.params.caseTypeId)
+      );
+      if (!feeSchedule) {
+        return res.status(404).json({ error: 'Fee schedule not found' });
+      }
+      res.json(feeSchedule);
+    } catch (error) {
+      console.error('Error fetching attorney fee schedule:', error);
+      res.status(500).json({ error: 'Failed to fetch attorney fee schedule' });
+    }
+  });
+
+  // Update attorney fee schedule
+  app.put('/api/attorney-fee-schedule/:id', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const feeScheduleData = insertAttorneyFeeScheduleSchema.partial().parse(req.body);
+      const feeSchedule = await storage.updateAttorneyFeeSchedule(parseInt(req.params.id), feeScheduleData);
+      res.json(feeSchedule);
+    } catch (error) {
+      console.error('Error updating attorney fee schedule:', error);
+      res.status(400).json({ error: 'Failed to update attorney fee schedule' });
+    }
+  });
+
+  // Delete attorney fee schedule
+  app.delete('/api/attorney-fee-schedule/:id', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      await storage.deleteAttorneyFeeSchedule(parseInt(req.params.id));
+      res.json({ message: 'Attorney fee schedule deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting attorney fee schedule:', error);
+      res.status(500).json({ error: 'Failed to delete attorney fee schedule' });
+    }
+  });
+
+  // Bulk create attorney fee schedules
+  app.post('/api/attorney-fee-schedule/bulk', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const feeSchedulesData = req.body.map((item: any) => insertAttorneyFeeScheduleSchema.parse(item));
+      const feeSchedules = await storage.bulkCreateAttorneyFeeSchedules(feeSchedulesData);
+      res.json(feeSchedules);
+    } catch (error) {
+      console.error('Error bulk creating attorney fee schedules:', error);
+      res.status(400).json({ error: 'Failed to bulk create attorney fee schedules' });
     }
   });
 

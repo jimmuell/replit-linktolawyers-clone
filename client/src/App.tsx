@@ -11,6 +11,7 @@ import RequestManagementPage from "@/pages/request-management";
 import FreeResources from "@/pages/free-resources";
 import Help from "@/pages/help";
 import AttorneyOnboarding from "@/pages/attorney-onboarding";
+import AttorneyFeeSchedule from "@/pages/attorney-fee-schedule";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/smtp-config" component={SmtpConfigPage} />
       <Route path="/request-management" component={RequestManagementPage} />
       <Route path="/attorney-onboarding" component={AttorneyOnboarding} />
+      <Route path="/attorney-fee-schedule" component={AttorneyFeeSchedule} />
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/help" component={Help} />
       <Route component={NotFound} />
