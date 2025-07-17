@@ -71,6 +71,26 @@ export const emailHistory = pgTable("email_history", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
+export const attorneys = pgTable("attorneys", {
+  id: serial("id").primaryKey(),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  phoneNumber: varchar("phone_number", { length: 50 }),
+  barNumber: varchar("bar_number", { length: 100 }),
+  licenseState: varchar("license_state", { length: 50 }),
+  practiceAreas: text("practice_areas").array(),
+  yearsOfExperience: integer("years_of_experience"),
+  hourlyRate: integer("hourly_rate"),
+  firmName: varchar("firm_name", { length: 255 }),
+  firmAddress: text("firm_address"),
+  bio: text("bio"),
+  isActive: boolean("is_active").default(true),
+  isVerified: boolean("is_verified").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
@@ -126,6 +146,23 @@ export const insertEmailHistorySchema = createInsertSchema(emailHistory).pick({
   errorMessage: true,
 });
 
+export const insertAttorneySchema = createInsertSchema(attorneys).pick({
+  firstName: true,
+  lastName: true,
+  email: true,
+  phoneNumber: true,
+  barNumber: true,
+  licenseState: true,
+  practiceAreas: true,
+  yearsOfExperience: true,
+  hourlyRate: true,
+  firmName: true,
+  firmAddress: true,
+  bio: true,
+  isActive: true,
+  isVerified: true,
+});
+
 export const sendEmailSchema = z.object({
   to: z.string().email("Please enter a valid email address"),
   subject: z.string().min(1, "Subject is required"),
@@ -148,4 +185,6 @@ export type InsertSmtpSettings = z.infer<typeof insertSmtpSettingsSchema>;
 export type SmtpSettings = typeof smtpSettings.$inferSelect;
 export type InsertEmailHistory = z.infer<typeof insertEmailHistorySchema>;
 export type EmailHistory = typeof emailHistory.$inferSelect;
+export type InsertAttorney = z.infer<typeof insertAttorneySchema>;
+export type Attorney = typeof attorneys.$inferSelect;
 export type SendEmail = z.infer<typeof sendEmailSchema>;

@@ -7,6 +7,7 @@ import { ChevronDown, Settings } from 'lucide-react';
 import { useEffect } from 'react';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
 import RequestManagementCard from '@/components/RequestManagementCard';
+import AttorneyOnboardingCard from '@/components/AttorneyOnboardingCard';
 
 export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
@@ -80,6 +81,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <SmtpStatusCard />
           <RequestManagementCard />
+          <AttorneyOnboardingCard />
         </div>
       </div>
     </div>

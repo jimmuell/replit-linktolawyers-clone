@@ -18,6 +18,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Onboarding System** (July 17, 2025): Built comprehensive attorney management system with full CRUD functionality
+  - Created attorneys database table with complete profile information (name, email, phone, bar number, license state, practice areas, experience, hourly rate, firm details, bio, verification status)
+  - Added attorney API routes with admin-only authentication for create, read, update, delete operations
+  - Built AttorneyOnboarding page with professional table interface and advanced filtering (by state, verification status, search)
+  - Implemented detailed attorney profile modals with view, edit, and delete functionality
+  - Added practice areas selection with 15 legal specialties and US states dropdown
+  - Created AttorneyOnboardingCard component for admin dashboard with attorney statistics
+  - Added attorney verification system with visual indicators and status badges
+  - Integrated attorney routing and navigation throughout admin interface
+  - System tracks attorney creation, updates, and verification status with timestamps
+
 - **Legal Request Status Management System** (July 17, 2025): Implemented comprehensive status tracking for legal requests
   - Added status field to legal requests table with default "under_review" status
   - Created statusCodes.ts utility with 12 status codes covering complete legal service workflow

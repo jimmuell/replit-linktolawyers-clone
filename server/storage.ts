@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc } from "drizzle-orm";
 
@@ -28,6 +28,12 @@ export interface IStorage {
   // Email History
   createEmailHistory(emailHistory: InsertEmailHistory): Promise<EmailHistory>;
   getAllEmailHistory(): Promise<EmailHistory[]>;
+  // Attorney Management
+  createAttorney(attorney: InsertAttorney): Promise<Attorney>;
+  getAttorney(id: number): Promise<Attorney | undefined>;
+  getAllAttorneys(): Promise<Attorney[]>;
+  updateAttorney(id: number, updates: Partial<InsertAttorney>): Promise<Attorney>;
+  deleteAttorney(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -180,6 +186,43 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(emailHistory)
       .orderBy(asc(emailHistory.timestamp));
+  }
+
+  // Attorney Management operations
+  async createAttorney(insertAttorney: InsertAttorney): Promise<Attorney> {
+    const [attorney] = await db
+      .insert(attorneys)
+      .values(insertAttorney)
+      .returning();
+    return attorney;
+  }
+
+  async getAttorney(id: number): Promise<Attorney | undefined> {
+    const [attorney] = await db
+      .select()
+      .from(attorneys)
+      .where(eq(attorneys.id, id));
+    return attorney || undefined;
+  }
+
+  async getAllAttorneys(): Promise<Attorney[]> {
+    return await db
+      .select()
+      .from(attorneys)
+      .orderBy(asc(attorneys.lastName), asc(attorneys.firstName));
+  }
+
+  async updateAttorney(id: number, updates: Partial<InsertAttorney>): Promise<Attorney> {
+    const [attorney] = await db
+      .update(attorneys)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(attorneys.id, id))
+      .returning();
+    return attorney;
+  }
+
+  async deleteAttorney(id: number): Promise<void> {
+    await db.delete(attorneys).where(eq(attorneys.id, id));
   }
 }
 

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
@@ -494,6 +494,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching email history:', error);
       res.status(500).json({ error: 'Failed to fetch email history' });
+    }
+  });
+
+  // Attorney Management Routes
+  // Create attorney
+  app.post('/api/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const attorneyData = insertAttorneySchema.parse(req.body);
+      const attorney = await storage.createAttorney(attorneyData);
+      res.json(attorney);
+    } catch (error) {
+      console.error('Error creating attorney:', error);
+      res.status(400).json({ error: 'Failed to create attorney' });
+    }
+  });
+
+  // Get all attorneys
+  app.get('/api/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const attorneys = await storage.getAllAttorneys();
+      res.json(attorneys);
+    } catch (error) {
+      console.error('Error fetching attorneys:', error);
+      res.status(500).json({ error: 'Failed to fetch attorneys' });
+    }
+  });
+
+  // Get attorney by ID
+  app.get('/api/attorneys/:id', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const attorney = await storage.getAttorney(parseInt(req.params.id));
+      if (!attorney) {
+        return res.status(404).json({ error: 'Attorney not found' });
+      }
+      res.json(attorney);
+    } catch (error) {
+      console.error('Error fetching attorney:', error);
+      res.status(500).json({ error: 'Failed to fetch attorney' });
+    }
+  });
+
+  // Update attorney
+  app.put('/api/attorneys/:id', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const attorneyData = insertAttorneySchema.partial().parse(req.body);
+      const attorney = await storage.updateAttorney(parseInt(req.params.id), attorneyData);
+      res.json(attorney);
+    } catch (error) {
+      console.error('Error updating attorney:', error);
+      res.status(400).json({ error: 'Failed to update attorney' });
+    }
+  });
+
+  // Delete attorney
+  app.delete('/api/attorneys/:id', requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      await storage.deleteAttorney(parseInt(req.params.id));
+      res.json({ message: 'Attorney deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting attorney:', error);
+      res.status(500).json({ error: 'Failed to delete attorney' });
     }
   });
 
