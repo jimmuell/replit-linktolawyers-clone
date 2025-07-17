@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
@@ -60,6 +60,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
+
+  const requireAdmin = requireRole('admin');
 
   // Register
   app.post('/api/auth/register', async (req, res) => {
@@ -953,6 +955,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error sending attorney emails:', error);
       res.status(500).json({ error: 'Failed to send attorney emails' });
+    }
+  });
+
+  // Blog Posts API Routes
+  // Get all blog posts (admin only)
+  app.get("/api/blog-posts", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const blogPosts = await storage.getAllBlogPosts();
+      res.json(blogPosts);
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+      res.status(500).json({ error: 'Failed to fetch blog posts' });
+    }
+  });
+
+  // Get published blog posts (public)
+  app.get("/api/blog-posts/published", async (req, res) => {
+    try {
+      const publishedPosts = await storage.getPublishedBlogPosts();
+      res.json(publishedPosts);
+    } catch (error) {
+      console.error('Error fetching published blog posts:', error);
+      res.status(500).json({ error: 'Failed to fetch published blog posts' });
+    }
+  });
+
+  // Get blog post by ID (admin only)
+  app.get("/api/blog-posts/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const blogPost = await storage.getBlogPost(Number(id));
+      if (!blogPost) {
+        return res.status(404).json({ error: 'Blog post not found' });
+      }
+      res.json(blogPost);
+    } catch (error) {
+      console.error('Error fetching blog post:', error);
+      res.status(500).json({ error: 'Failed to fetch blog post' });
+    }
+  });
+
+  // Get blog post by slug (public)
+  app.get("/api/blog-posts/slug/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const blogPost = await storage.getBlogPostBySlug(slug);
+      if (!blogPost) {
+        return res.status(404).json({ error: 'Blog post not found' });
+      }
+      res.json(blogPost);
+    } catch (error) {
+      console.error('Error fetching blog post by slug:', error);
+      res.status(500).json({ error: 'Failed to fetch blog post' });
+    }
+  });
+
+  // Create blog post (admin only)
+  app.post("/api/blog-posts", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const result = insertBlogPostSchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: 'Invalid blog post data', details: result.error.issues });
+      }
+
+      const blogPost = await storage.createBlogPost({
+        ...result.data,
+        authorId: req.user.userId,
+      });
+      res.status(201).json(blogPost);
+    } catch (error) {
+      console.error('Error creating blog post:', error);
+      res.status(500).json({ error: 'Failed to create blog post' });
+    }
+  });
+
+  // Update blog post (admin only)
+  app.put("/api/blog-posts/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = insertBlogPostSchema.partial().safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: 'Invalid blog post data', details: result.error.issues });
+      }
+
+      const blogPost = await storage.updateBlogPost(Number(id), result.data);
+      res.json(blogPost);
+    } catch (error) {
+      console.error('Error updating blog post:', error);
+      res.status(500).json({ error: 'Failed to update blog post' });
+    }
+  });
+
+  // Delete blog post (admin only)
+  app.delete("/api/blog-posts/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteBlogPost(Number(id));
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error deleting blog post:', error);
+      res.status(500).json({ error: 'Failed to delete blog post' });
     }
   });
 

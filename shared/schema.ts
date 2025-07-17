@@ -116,6 +116,19 @@ export const requestAttorneyAssignments = pgTable("request_attorney_assignments"
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt"),
+  authorId: integer("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  isPublished: boolean("is_published").default(false),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
@@ -204,6 +217,16 @@ export const insertAttorneyFeeScheduleSchema = createInsertSchema(attorneyFeeSch
   isActive: true,
 });
 
+export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
+  title: true,
+  slug: true,
+  content: true,
+  excerpt: true,
+  authorId: true,
+  isPublished: true,
+  publishedAt: true,
+});
+
 export const sendEmailSchema = z.object({
   to: z.string().email("Please enter a valid email address"),
   subject: z.string().min(1, "Subject is required"),
@@ -233,4 +256,6 @@ export type InsertAttorney = z.infer<typeof insertAttorneySchema>;
 export type Attorney = typeof attorneys.$inferSelect;
 export type InsertAttorneyFeeSchedule = z.infer<typeof insertAttorneyFeeScheduleSchema>;
 export type AttorneyFeeSchedule = typeof attorneyFeeSchedule.$inferSelect;
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type BlogPost = typeof blogPosts.$inferSelect;
 export type SendEmail = z.infer<typeof sendEmailSchema>;
