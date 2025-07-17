@@ -8,14 +8,27 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
   url: string,
-  data?: unknown | undefined,
+  options: {
+    method: string;
+    body?: unknown;
+  }
 ): Promise<Response> {
+  const headers: Record<string, string> = {};
+  
+  if (options.body) {
+    headers["Content-Type"] = "application/json";
+  }
+  
+  const sessionId = localStorage.getItem('sessionId');
+  if (sessionId) {
+    headers["Authorization"] = `Bearer ${sessionId}`;
+  }
+
   const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
+    method: options.method,
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
     credentials: "include",
   });
 
@@ -29,7 +42,15 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
+    const headers: Record<string, string> = {};
+    
+    const sessionId = localStorage.getItem('sessionId');
+    if (sessionId) {
+      headers["Authorization"] = `Bearer ${sessionId}`;
+    }
+
     const res = await fetch(queryKey.join("/") as string, {
+      headers,
       credentials: "include",
     });
 
