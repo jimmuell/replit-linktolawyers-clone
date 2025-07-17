@@ -15,6 +15,7 @@ import AttorneyFeeSchedule from "@/pages/attorney-fee-schedule";
 import BlogManagement from "@/pages/blog-management";
 import Blog from "@/pages/blog";
 import BlogPostPage from "@/pages/blog-post";
+import BlogPostEditor from "@/pages/blog-post-editor";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,8 @@ function Router() {
       <Route path="/attorney-onboarding" component={AttorneyOnboarding} />
       <Route path="/attorney-fee-schedule" component={AttorneyFeeSchedule} />
       <Route path="/blog-management" component={BlogManagement} />
+      <Route path="/blog-management/create" component={BlogPostEditor} />
+      <Route path="/blog-management/edit/:id" component={BlogPostEditor} />
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/free-resources" component={FreeResources} />

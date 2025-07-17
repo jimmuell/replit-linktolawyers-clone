@@ -4,113 +4,25 @@ import { ArrowLeft, Plus, Edit, Trash2, Eye, EyeOff, Calendar, User, FileText, T
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import { formatDistanceToNow } from 'date-fns';
-import type { BlogPost, InsertBlogPost } from '@shared/schema';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-
-const blogPostSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
-  content: z.string().min(1, 'Content is required'),
-  excerpt: z.string().min(1, 'Excerpt is required'),
-  isPublished: z.boolean().default(false),
-  publishedAt: z.date().nullable().optional(),
-});
-
-type BlogPostForm = z.infer<typeof blogPostSchema>;
+import type { BlogPost } from '@shared/schema';
 
 const BlogManagementCard = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [, navigate] = useLocation();
 
   const { data: blogPosts, isLoading } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog-posts'],
   });
 
-  const form = useForm<BlogPostForm>({
-    resolver: zodResolver(blogPostSchema),
-    defaultValues: {
-      title: '',
-      slug: '',
-      content: '',
-      excerpt: '',
-      isPublished: false,
-      publishedAt: null,
-    },
-  });
 
-  const createMutation = useMutation({
-    mutationFn: async (data: BlogPostForm) => {
-      const postData: any = {
-        title: data.title,
-        slug: data.slug,
-        content: data.content,
-        excerpt: data.excerpt,
-        authorId: user?.id || 0,
-        isPublished: data.isPublished,
-        publishedAt: data.isPublished ? new Date().toISOString() : null,
-      };
-      return await apiRequest('/api/blog-posts', {
-        method: 'POST',
-        body: postData,
-      });
-    },
-    onSuccess: () => {
-      toast({ title: 'Blog post created successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/blog-posts'] });
-      setIsModalOpen(false);
-      form.reset();
-    },
-    onError: (error: any) => {
-      toast({ title: 'Error creating blog post', description: error.message, variant: 'destructive' });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (data: BlogPostForm) => {
-      if (!selectedPost) return;
-      const postData: any = {
-        title: data.title,
-        slug: data.slug,
-        content: data.content,
-        excerpt: data.excerpt,
-        isPublished: data.isPublished,
-        publishedAt: data.isPublished ? (selectedPost.publishedAt || new Date().toISOString()) : null,
-      };
-      return await apiRequest(`/api/blog-posts/${selectedPost.id}`, {
-        method: 'PUT',
-        body: postData,
-      });
-    },
-    onSuccess: () => {
-      toast({ title: 'Blog post updated successfully' });
-      queryClient.invalidateQueries({ queryKey: ['/api/blog-posts'] });
-      setIsModalOpen(false);
-      setIsEditing(false);
-      setSelectedPost(null);
-      form.reset();
-    },
-    onError: (error: any) => {
-      toast({ title: 'Error updating blog post', description: error.message, variant: 'destructive' });
-    },
-  });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -127,55 +39,9 @@ const BlogManagementCard = () => {
     },
   });
 
-  const handleCreatePost = () => {
-    setSelectedPost(null);
-    setIsEditing(false);
-    form.reset();
-    setIsModalOpen(true);
-  };
-
-  const handleEditPost = (post: BlogPost) => {
-    setSelectedPost(post);
-    setIsEditing(true);
-    form.reset({
-      title: post.title,
-      slug: post.slug,
-      content: post.content,
-      excerpt: post.excerpt,
-      isPublished: post.isPublished,
-      publishedAt: post.publishedAt ? new Date(post.publishedAt) : null,
-    });
-    setIsModalOpen(true);
-  };
-
   const handleDeletePost = (post: BlogPost) => {
     if (window.confirm('Are you sure you want to delete this blog post?')) {
       deleteMutation.mutate(post.id);
-    }
-  };
-
-  const onSubmit = (data: BlogPostForm) => {
-    if (isEditing) {
-      updateMutation.mutate(data);
-    } else {
-      createMutation.mutate(data);
-    }
-  };
-
-  // Generate slug from title
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
-  };
-
-  const handleTitleChange = (title: string) => {
-    form.setValue('title', title);
-    if (!isEditing) {
-      form.setValue('slug', generateSlug(title));
     }
   };
 
@@ -195,7 +61,7 @@ const BlogManagementCard = () => {
           </div>
         </div>
         <Button 
-          onClick={handleCreatePost}
+          onClick={() => navigate('/blog-management/create')}
           className="bg-blue-600 hover:bg-blue-700"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -267,7 +133,7 @@ const BlogManagementCard = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleEditPost(post)}
+                        onClick={() => navigate(`/blog-management/edit/${post.id}`)}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -287,147 +153,7 @@ const BlogManagementCard = () => {
           </div>
         )}
 
-        {/* Create/Edit Dialog */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>
-                {isEditing ? 'Edit Blog Post' : 'Create Blog Post'}
-              </DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          onChange={(e) => handleTitleChange(e.target.value)}
-                          placeholder="Enter blog post title"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="slug"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Slug</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="url-friendly-slug"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="excerpt"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Excerpt</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          placeholder="Brief description of the blog post"
-                          rows={3}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Content</FormLabel>
-                      <FormControl>
-                        <ReactQuill
-                          theme="snow"
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Write your blog post content here..."
-                          modules={{
-                            toolbar: [
-                              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                              ['bold', 'italic', 'underline', 'strike'],
-                              [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                              [{ 'script': 'sub'}, { 'script': 'super' }],
-                              [{ 'indent': '-1'}, { 'indent': '+1' }],
-                              [{ 'direction': 'rtl' }],
-                              [{ 'size': ['small', false, 'large', 'huge'] }],
-                              [{ 'color': [] }, { 'background': [] }],
-                              [{ 'font': [] }],
-                              [{ 'align': [] }],
-                              ['link', 'image', 'video'],
-                              ['clean']
-                            ]
-                          }}
-                          formats={[
-                            'header', 'font', 'size',
-                            'bold', 'italic', 'underline', 'strike', 'blockquote',
-                            'list', 'bullet', 'indent',
-                            'link', 'image', 'video', 'color', 'background',
-                            'align', 'script'
-                          ]}
-                          style={{ height: '300px', marginBottom: '50px' }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="isPublished"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <div>
-                        <FormLabel>Published</FormLabel>
-                        <p className="text-sm text-gray-600">
-                          {field.value ? 'This post will be visible to the public' : 'Save as draft'}
-                        </p>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsModalOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={createMutation.isPending || updateMutation.isPending}
-                  >
-                    {isEditing ? 'Update' : 'Create'} Post
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+
       </CardContent>
     </Card>
   );
