@@ -799,11 +799,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Store successful email in history
           await storage.createEmailHistory({
-            to: 'linktolawyers.us@gmail.com',
+            toAddress: 'linktolawyers.us@gmail.com',
             subject: subject,
             message: emailContent,
             status: 'sent',
-            sentAt: new Date(),
             errorMessage: null,
           });
 
@@ -821,11 +820,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Store failed email in history
           await storage.createEmailHistory({
-            to: 'linktolawyers.us@gmail.com',
+            toAddress: 'linktolawyers.us@gmail.com',
             subject: `This Email is Intended for ${attorney.firstName} ${attorney.lastName}`,
             message: '',
             status: 'failed',
-            sentAt: new Date(),
             errorMessage: error.message,
           });
 
