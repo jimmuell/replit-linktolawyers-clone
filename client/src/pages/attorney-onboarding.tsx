@@ -61,8 +61,8 @@ export default function AttorneyOnboarding() {
   const queryClient = useQueryClient();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterState, setFilterState] = useState('');
-  const [filterVerified, setFilterVerified] = useState('');
+  const [filterState, setFilterState] = useState('all');
+  const [filterVerified, setFilterVerified] = useState('all');
   const [selectedAttorney, setSelectedAttorney] = useState<Attorney | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -254,8 +254,8 @@ export default function AttorneyOnboarding() {
       attorney.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       attorney.firmName?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesState = !filterState || attorney.licenseState === filterState;
-    const matchesVerified = !filterVerified || 
+    const matchesState = !filterState || filterState === 'all' || attorney.licenseState === filterState;
+    const matchesVerified = !filterVerified || filterVerified === 'all' || 
       (filterVerified === 'verified' && attorney.isVerified) ||
       (filterVerified === 'unverified' && !attorney.isVerified);
     
@@ -311,7 +311,7 @@ export default function AttorneyOnboarding() {
                     <SelectValue placeholder="Filter by state" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All States</SelectItem>
+                    <SelectItem value="all">All States</SelectItem>
                     {US_STATES.map(state => (
                       <SelectItem key={state} value={state}>{state}</SelectItem>
                     ))}
@@ -322,7 +322,7 @@ export default function AttorneyOnboarding() {
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Statuses</SelectItem>
+                    <SelectItem value="all">All Statuses</SelectItem>
                     <SelectItem value="verified">Verified</SelectItem>
                     <SelectItem value="unverified">Unverified</SelectItem>
                   </SelectContent>
