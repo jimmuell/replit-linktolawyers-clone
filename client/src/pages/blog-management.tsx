@@ -63,7 +63,7 @@ const BlogManagementCard = () => {
       };
       return await apiRequest('/api/blog-posts', {
         method: 'POST',
-        body: JSON.stringify(postData),
+        body: postData,
       });
     },
     onSuccess: () => {
@@ -86,7 +86,7 @@ const BlogManagementCard = () => {
       };
       return await apiRequest(`/api/blog-posts/${selectedPost.id}`, {
         method: 'PUT',
-        body: JSON.stringify(postData),
+        body: postData,
       });
     },
     onSuccess: () => {
