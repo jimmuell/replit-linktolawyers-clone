@@ -513,12 +513,12 @@ export default function RequestManagementPage() {
 
       {/* View Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Request Details</DialogTitle>
           </DialogHeader>
           {selectedRequest && (
-            <div className="space-y-4">
+            <div className="space-y-4 pb-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-sm font-medium text-gray-600">Request Number</Label>
@@ -658,12 +658,12 @@ export default function RequestManagementPage() {
 
       {/* Edit Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Request</DialogTitle>
           </DialogHeader>
           {selectedRequest && (
-            <form onSubmit={handleUpdateSubmit} className="space-y-4">
+            <form onSubmit={handleUpdateSubmit} className="space-y-4 pb-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="firstName">First Name</Label>
@@ -825,14 +825,14 @@ export default function RequestManagementPage() {
 
       {/* Attorney Assignment Modal */}
       <Dialog open={isAttorneyAssignmentModalOpen} onOpenChange={setIsAttorneyAssignmentModalOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {currentAssignments.length > 0 ? 'Edit Attorney Assignments' : 'Assign Attorneys to Request'}
             </DialogTitle>
           </DialogHeader>
           {selectedRequest && (
-            <div className="space-y-6">
+            <div className="space-y-6 pb-4">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="font-medium mb-2">Request Information</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
