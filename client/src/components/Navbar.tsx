@@ -77,7 +77,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {user.role === 'admin' && (
-                    <DropdownMenuItem onClick={() => window.location.href = '/admin'}>
+                    <DropdownMenuItem onClick={() => window.location.href = '/admin-dashboard'}>
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}

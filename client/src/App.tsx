@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Home from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
+import SmtpConfigPage from "@/pages/smtp-config";
 import FreeResources from "@/pages/free-resources";
 import Help from "@/pages/help";
 import NotFound from "@/pages/not-found";
@@ -14,7 +15,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/smtp-config" component={SmtpConfigPage} />
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/help" component={Help} />
       <Route component={NotFound} />
