@@ -8,6 +8,14 @@ LinkToLawyers is a modern web application that connects clients with qualified a
 
 Preferred communication style: Simple, everyday language.
 
+### Admin Dashboard Navigation Design Pattern
+- All admin dashboard pages should use centered navigation titles
+- Navigation layout: Left (Back button) - Center (Page title) - Right (Empty space balancer with w-32)
+- Use `justify-between` with three-column layout for consistent centering
+- Back button should navigate to `/admin-dashboard` with ArrowLeft icon
+- Title should be `text-xl font-semibold text-gray-900`
+- Apply this pattern to all future admin dashboard pages without requiring manual updates
+
 ## Recent Changes
 
 - **Request Management Bulk Delete Feature** (July 17, 2025): Added bulk delete functionality to legal requests management

@@ -1,6 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import AdminNavbar from '@/components/AdminNavbar';
 import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import SmtpConfigCard from '@/components/SmtpConfigCard';
@@ -28,24 +27,7 @@ export default function SmtpConfigPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Dashboard</span>
-          </Button>
-          
-          <h1 className="text-xl font-semibold text-gray-900">SMTP Configuration</h1>
-          
-          {/* Empty div to balance the layout */}
-          <div className="w-32"></div>
-        </div>
-      </nav>
+      <AdminNavbar title="SMTP Configuration" />
 
       {/* Main Content */}
       <div className="p-6">

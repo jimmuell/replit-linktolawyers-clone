@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Eye, Edit, Trash2, Plus, Search, Filter } from 'lucide-react';
+import AdminNavbar from '@/components/AdminNavbar';
+import { Eye, Edit, Trash2, Plus, Search, Filter } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -235,24 +236,7 @@ export default function RequestManagementPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/admin-dashboard')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Dashboard</span>
-          </Button>
-          
-          <h1 className="text-xl font-semibold text-gray-900">Request Management</h1>
-          
-          {/* Empty div to balance the layout */}
-          <div className="w-32"></div>
-        </div>
-      </nav>
+      <AdminNavbar title="Request Management" />
 
       {/* Main Content */}
       <div className="p-6">
