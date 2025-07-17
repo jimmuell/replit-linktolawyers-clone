@@ -41,6 +41,7 @@ export const legalRequests = pgTable("legal_requests", {
   location: varchar("location", { length: 255 }),
   captcha: varchar("captcha", { length: 10 }),
   agreeToTerms: boolean("agree_to_terms").default(false),
+  status: varchar("status", { length: 50 }).notNull().default("under_review"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -102,6 +103,7 @@ export const insertLegalRequestSchema = createInsertSchema(legalRequests).pick({
   location: true,
   captcha: true,
   agreeToTerms: true,
+  status: true,
 });
 
 export const insertSmtpSettingsSchema = createInsertSchema(smtpSettings).pick({

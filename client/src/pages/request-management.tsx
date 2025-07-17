@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminNavbar from '@/components/AdminNavbar';
 import { Eye, Edit, Trash2, Plus, Search, Filter } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { REQUEST_STATUS, STATUS_LABELS, getStatusInfo } from '@shared/statusCodes';
 
 interface LegalRequest {
   id: number;
@@ -29,6 +31,7 @@ interface LegalRequest {
   urgencyLevel: string;
   budgetRange: string;
   location: string;
+  status: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -303,6 +306,7 @@ export default function RequestManagementPage() {
                         <TableHead>Client</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Case Type</TableHead>
+                        <TableHead>Status</TableHead>
                         <TableHead>Urgency</TableHead>
                         <TableHead>Budget</TableHead>
                         <TableHead>Date</TableHead>
@@ -330,6 +334,13 @@ export default function RequestManagementPage() {
                             <div className="truncate" title={request.caseType}>
                               {request.caseType}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={getStatusInfo(request.status).color === 'green' ? 'default' : 
+                                         getStatusInfo(request.status).color === 'yellow' ? 'secondary' : 
+                                         getStatusInfo(request.status).color === 'red' ? 'destructive' : 'outline'}>
+                              {getStatusInfo(request.status).label}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             {getUrgencyBadge(request.urgencyLevel)}
@@ -416,6 +427,16 @@ export default function RequestManagementPage() {
                   <Label className="text-sm font-medium text-gray-600">Budget Range</Label>
                   <p>{selectedRequest.budgetRange || 'Not specified'}</p>
                 </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Status</Label>
+                  <div className="mt-1">
+                    <Badge variant={getStatusInfo(selectedRequest.status).color === 'green' ? 'default' : 
+                                 getStatusInfo(selectedRequest.status).color === 'yellow' ? 'secondary' : 
+                                 getStatusInfo(selectedRequest.status).color === 'red' ? 'destructive' : 'outline'}>
+                      {getStatusInfo(selectedRequest.status).label}
+                    </Badge>
+                  </div>
+                </div>
               </div>
               <div>
                 <Label className="text-sm font-medium text-gray-600">Case Type</Label>
@@ -487,6 +508,19 @@ export default function RequestManagementPage() {
                     value={editFormData.budgetRange || ''}
                     onChange={(e) => setEditFormData({...editFormData, budgetRange: e.target.value})}
                   />
+                </div>
+                <div>
+                  <Label htmlFor="status">Status</Label>
+                  <Select value={editFormData.status || REQUEST_STATUS.UNDER_REVIEW} onValueChange={(value) => setEditFormData({...editFormData, status: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div>

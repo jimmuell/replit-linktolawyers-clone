@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
+import { getStatusInfo } from '@shared/statusCodes';
 
 interface TrackRequestModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface LegalRequest {
   urgencyLevel: string;
   budgetRange: string;
   location: string;
+  status: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -173,8 +175,12 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                   <div className="space-y-2">
                     <Label className="text-sm font-medium text-gray-600">Status</Label>
                     <div className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4 text-yellow-600" />
-                      <span className="text-sm text-yellow-600">Under Review</span>
+                      <Clock className="w-4 h-4" />
+                      <Badge variant={getStatusInfo(request.status).color === 'green' ? 'default' : 
+                                   getStatusInfo(request.status).color === 'yellow' ? 'secondary' : 
+                                   getStatusInfo(request.status).color === 'red' ? 'destructive' : 'outline'}>
+                        {getStatusInfo(request.status).label}
+                      </Badge>
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -235,6 +241,8 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                 </div>
 
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">Current Status</h4>
+                  <p className="text-sm text-blue-800 mb-3">{getStatusInfo(request.status).description}</p>
                   <h4 className="font-medium text-blue-900 mb-2">What's Next?</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Our system is matching you with qualified attorneys</li>
