@@ -186,21 +186,48 @@ export default function RequestManagementPage() {
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'] });
       queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
       setIsAttorneyAssignmentModalOpen(false);
+      
+      const { attorneyIds } = variables;
+      const currentAssignmentCount = currentAssignments.length;
+      const newAssignmentCount = attorneyIds.length;
+      
+      let title = 'Success';
+      let description = '';
+      
+      if (newAssignmentCount === 0 && currentAssignmentCount > 0) {
+        // All attorneys were unassigned
+        description = `All ${currentAssignmentCount} attorney${currentAssignmentCount === 1 ? '' : 's'} unassigned successfully`;
+      } else if (newAssignmentCount > currentAssignmentCount) {
+        // More attorneys were assigned
+        const addedCount = newAssignmentCount - currentAssignmentCount;
+        description = `${addedCount} additional attorney${addedCount === 1 ? '' : 's'} assigned successfully`;
+      } else if (newAssignmentCount < currentAssignmentCount) {
+        // Some attorneys were unassigned
+        const removedCount = currentAssignmentCount - newAssignmentCount;
+        description = `${removedCount} attorney${removedCount === 1 ? '' : 's'} unassigned successfully`;
+      } else if (newAssignmentCount === currentAssignmentCount && newAssignmentCount > 0) {
+        // Assignment updated (same count but different attorneys)
+        description = `Attorney assignment updated successfully`;
+      } else {
+        // New assignment
+        description = `${newAssignmentCount} attorney${newAssignmentCount === 1 ? '' : 's'} assigned successfully`;
+      }
+      
       setSelectedAttorneyIds([]);
       toast({
-        title: 'Success',
-        description: 'Attorneys assigned successfully',
+        title,
+        description,
       });
     },
     onError: (error) => {
-      console.error('Error assigning attorneys:', error);
+      console.error('Error updating attorney assignments:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign attorneys',
+        description: 'Failed to update attorney assignments',
         variant: 'destructive',
       });
     },
