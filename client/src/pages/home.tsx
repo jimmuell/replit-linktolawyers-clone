@@ -273,12 +273,24 @@ export default function Home() {
                 </p>
               </div>
               
-              <Button 
-                className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg self-start"
-                onClick={() => setIsQuoteModalOpen(true)}
-              >
-                Get A Free Legal Quote!
-              </Button>
+              <div className="flex gap-4">
+                <Button 
+                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg"
+                  onClick={() => setIsQuoteModalOpen(true)}
+                >
+                  Get A Free Legal Quote!
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg"
+                  onClick={() => {
+                    // TODO: Implement track request functionality
+                    console.log('Track request clicked');
+                  }}
+                >
+                  Track Your Request
+                </Button>
+              </div>
             </div>
             
             <div className="flex justify-center items-center">
