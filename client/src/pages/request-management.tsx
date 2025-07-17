@@ -72,10 +72,18 @@ export default function RequestManagementPage() {
     enabled: !!selectedRequest?.caseType && isAttorneyAssignmentModalOpen,
   });
 
-  // Fetch current assignments for the selected request
+  // Fetch current assignments for the selected request (for assignment modal)
   const { data: currentAssignments = [], isLoading: assignmentsLoading } = useQuery({
     queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'],
     enabled: !!selectedRequest?.id && isAttorneyAssignmentModalOpen,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache the results
+  });
+
+  // Fetch current assignments for the selected request (for view modal)
+  const { data: viewAssignments = [], isLoading: viewAssignmentsLoading } = useQuery({
+    queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'],
+    enabled: !!selectedRequest?.id && isViewModalOpen,
     staleTime: 0, // Always fetch fresh data
     cacheTime: 0, // Don't cache the results
   });
@@ -574,9 +582,9 @@ export default function RequestManagementPage() {
                       size="sm"
                     >
                       <Users className="w-4 h-4 mr-2" />
-                      {currentAssignments.length > 0 ? 'Edit Assigned Attorneys' : 'Assign Attorneys'}
+                      {viewAssignments.length > 0 ? 'Edit Assigned Attorneys' : 'Assign Attorneys'}
                     </Button>
-                    {currentAssignments.length > 0 && (
+                    {viewAssignments.length > 0 && (
                       <Button 
                         onClick={() => handleSendEmailToAttorneys(selectedRequest)}
                         className="bg-green-600 hover:bg-green-700"
@@ -590,19 +598,19 @@ export default function RequestManagementPage() {
                   </div>
                 </div>
                 
-                {assignmentsLoading ? (
+                {viewAssignmentsLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                     <span className="ml-2 text-sm text-gray-600">Loading assignments...</span>
                   </div>
-                ) : currentAssignments.length === 0 ? (
+                ) : viewAssignments.length === 0 ? (
                   <div className="text-center py-4 bg-gray-50 rounded-lg">
                     <Users className="w-6 h-6 text-gray-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">No attorneys assigned yet</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {currentAssignments.map((assignment: any) => (
+                    {viewAssignments.map((assignment: any) => (
                       <div key={assignment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">

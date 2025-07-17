@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and } from "drizzle-orm";
 
@@ -45,7 +45,7 @@ export interface IStorage {
   bulkCreateAttorneyFeeSchedules(feeSchedules: InsertAttorneyFeeSchedule[]): Promise<AttorneyFeeSchedule[]>;
   // Request Attorney Assignments
   createRequestAttorneyAssignment(assignment: InsertRequestAttorneyAssignment): Promise<SelectRequestAttorneyAssignment>;
-  getRequestAttorneyAssignments(requestId: number): Promise<SelectRequestAttorneyAssignment[]>;
+  getRequestAttorneyAssignments(requestId: number): Promise<RequestAttorneyAssignmentWithAttorney[]>;
   getAttorneyAssignments(attorneyId: number): Promise<SelectRequestAttorneyAssignment[]>;
   updateRequestAttorneyAssignment(id: number, updates: Partial<InsertRequestAttorneyAssignment>): Promise<SelectRequestAttorneyAssignment>;
   deleteRequestAttorneyAssignment(id: number): Promise<void>;
@@ -316,7 +316,7 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getRequestAttorneyAssignments(requestId: number): Promise<SelectRequestAttorneyAssignment[]> {
+  async getRequestAttorneyAssignments(requestId: number): Promise<RequestAttorneyAssignmentWithAttorney[]> {
     const result = await db
       .select({
         assignment: requestAttorneyAssignments,

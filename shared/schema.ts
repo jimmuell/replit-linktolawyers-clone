@@ -218,6 +218,7 @@ export const loginSchema = z.object({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertRequestAttorneyAssignment = z.infer<typeof insertRequestAttorneyAssignmentSchema>;
 export type SelectRequestAttorneyAssignment = typeof requestAttorneyAssignments.$inferSelect;
+export type RequestAttorneyAssignmentWithAttorney = SelectRequestAttorneyAssignment & { attorney: Attorney | null };
 export type User = typeof users.$inferSelect;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 export type InsertCaseType = z.infer<typeof insertCaseTypeSchema>;
