@@ -17,6 +17,7 @@ import { apiRequest } from "@/lib/queryClient";
 import LoginModal from "@/components/LoginModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
+import TrackRequestModal from "@/components/TrackRequestModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
@@ -26,6 +27,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -283,10 +285,7 @@ export default function Home() {
                 <Button 
                   variant="outline"
                   className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg"
-                  onClick={() => {
-                    // TODO: Implement track request functionality
-                    console.log('Track request clicked');
-                  }}
+                  onClick={() => setIsTrackRequestModalOpen(true)}
                 >
                   Track Your Request
                 </Button>
@@ -753,6 +752,12 @@ export default function Home() {
         recipientEmail={formData.email}
         onSendEmail={handleSendEmail}
         isSending={isSendingEmail}
+      />
+
+      {/* Track Request Modal */}
+      <TrackRequestModal
+        isOpen={isTrackRequestModalOpen}
+        onClose={() => setIsTrackRequestModalOpen(false)}
       />
 
       {/* Scroll to Top Button */}
