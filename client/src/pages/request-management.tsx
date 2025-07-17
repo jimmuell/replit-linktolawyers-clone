@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminNavbar from '@/components/AdminNavbar';
-import { Eye, Edit, Trash2, Plus, Search, Filter, Users } from 'lucide-react';
+import { Eye, Edit, Trash2, Plus, Search, Filter, Users, Mail } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -186,6 +186,31 @@ export default function RequestManagementPage() {
     },
   });
 
+  // Email sending mutation
+  const sendEmailMutation = useMutation({
+    mutationFn: async (requestId: number) => {
+      const response = await apiRequest(`/api/requests/${requestId}/send-attorney-emails`, {
+        method: 'POST',
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'] });
+      toast({
+        title: 'Success',
+        description: `Email sent to ${data.totalSent} attorneys${data.totalFailed > 0 ? `, ${data.totalFailed} failed` : ''}`,
+      });
+    },
+    onError: (error) => {
+      console.error('Error sending emails:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to send emails to attorneys',
+        variant: 'destructive',
+      });
+    },
+  });
+
   if (loading || !user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -258,6 +283,10 @@ export default function RequestManagementPage() {
         ? prev.filter(id => id !== attorneyId)
         : [...prev, attorneyId]
     );
+  };
+
+  const handleSendEmailToAttorneys = (request: LegalRequest) => {
+    sendEmailMutation.mutate(request.id);
   };
 
   const formatCurrency = (cents: number) => {
@@ -528,14 +557,27 @@ export default function RequestManagementPage() {
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center mb-3">
                   <Label className="text-sm font-medium text-gray-600">Assigned Attorneys</Label>
-                  <Button 
-                    onClick={() => handleAssignAttorneys(selectedRequest)}
-                    className="bg-blue-600 hover:bg-blue-700"
-                    size="sm"
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    {currentAssignments.length > 0 ? 'Edit Assigned Attorneys' : 'Assign Attorneys'}
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={() => handleAssignAttorneys(selectedRequest)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                      size="sm"
+                    >
+                      <Users className="w-4 h-4 mr-2" />
+                      {currentAssignments.length > 0 ? 'Edit Assigned Attorneys' : 'Assign Attorneys'}
+                    </Button>
+                    {currentAssignments.length > 0 && (
+                      <Button 
+                        onClick={() => handleSendEmailToAttorneys(selectedRequest)}
+                        className="bg-green-600 hover:bg-green-700"
+                        size="sm"
+                        disabled={sendEmailMutation.isPending}
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        {sendEmailMutation.isPending ? 'Sending...' : 'Send Email to Attorneys'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 
                 {assignmentsLoading ? (
@@ -566,12 +608,25 @@ export default function RequestManagementPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <Badge variant="outline" className="text-xs">
-                            {assignment.status}
-                          </Badge>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <Badge variant="outline" className="text-xs">
+                              {assignment.status}
+                            </Badge>
+                            {assignment.emailSent && (
+                              <Badge variant="default" className="text-xs bg-green-100 text-green-800">
+                                <Mail className="w-3 h-3 mr-1" />
+                                Emailed
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500">
                             Assigned {format(new Date(assignment.assignedAt), 'MMM d, yyyy')}
                           </p>
+                          {assignment.emailSent && assignment.emailSentAt && (
+                            <p className="text-xs text-gray-500">
+                              Emailed {format(new Date(assignment.emailSentAt), 'MMM d, yyyy')}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}

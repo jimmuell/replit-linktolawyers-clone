@@ -110,6 +110,8 @@ export const requestAttorneyAssignments = pgTable("request_attorney_assignments"
   assignedAt: timestamp("assigned_at").defaultNow().notNull(),
   status: varchar("status", { length: 50 }).notNull().default("assigned"), // assigned, accepted, declined, completed
   notes: text("notes"), // Optional notes about the assignment
+  emailSent: boolean("email_sent").default(false).notNull(),
+  emailSentAt: timestamp("email_sent_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

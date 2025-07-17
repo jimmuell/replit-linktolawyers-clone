@@ -51,6 +51,7 @@ export interface IStorage {
   deleteRequestAttorneyAssignment(id: number): Promise<void>;
   bulkCreateRequestAttorneyAssignments(assignments: InsertRequestAttorneyAssignment[]): Promise<SelectRequestAttorneyAssignment[]>;
   updateRequestAttorneyAssignments(requestId: number, attorneyIds: number[]): Promise<SelectRequestAttorneyAssignment[]>;
+  updateRequestAttorneyAssignmentEmail(assignmentId: number, emailSent: boolean): Promise<SelectRequestAttorneyAssignment>;
   getAttorneysByCaseType(caseTypeValue: string): Promise<Array<Attorney & { fee?: number; feeType?: string }>>;
 }
 
@@ -381,6 +382,19 @@ export class DatabaseStorage implements IStorage {
       .insert(requestAttorneyAssignments)
       .values(assignments)
       .returning();
+  }
+
+  async updateRequestAttorneyAssignmentEmail(assignmentId: number, emailSent: boolean): Promise<SelectRequestAttorneyAssignment> {
+    const [result] = await db
+      .update(requestAttorneyAssignments)
+      .set({ 
+        emailSent,
+        emailSentAt: emailSent ? new Date() : null,
+        updatedAt: new Date()
+      })
+      .where(eq(requestAttorneyAssignments.id, assignmentId))
+      .returning();
+    return result;
   }
 
   async getAttorneysByCaseType(caseTypeValue: string): Promise<Array<Attorney & { fee?: number; feeType?: string }>> {
