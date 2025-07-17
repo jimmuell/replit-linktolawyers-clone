@@ -7,20 +7,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit3, CheckSquare, DollarSign, Handshake, Menu, X, ChevronDown, Settings, ChevronUp } from "lucide-react";
+import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
+import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
 import girlThinkingImage from "@assets/girl-final_1752714322954.png";
 
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -181,163 +179,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white w-full overflow-x-hidden">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
-            </div>
-            
-            <div className="hidden md:flex items-center space-x-8">
-              <button
-                onClick={() => scrollToSection('how-it-works')}
-                className={cn(
-                  "text-gray-700 hover:text-primary transition-colors",
-                  activeSection === 'how-it-works' && "text-primary"
-                )}
-              >
-                How it works
-              </button>
-              <button
-                onClick={() => scrollToSection('about')}
-                className={cn(
-                  "text-gray-700 hover:text-primary transition-colors",
-                  activeSection === 'about' && "text-primary"
-                )}
-              >
-                About
-              </button>
-              <button className="text-gray-700 hover:text-primary transition-colors">
-                Contact Us
-              </button>
-              <Link href="/free-resources" className="text-gray-700 hover:text-primary transition-colors">
-                Free resources
-              </Link>
-              <button className="text-gray-700 hover:text-primary transition-colors">
-                Blog
-              </button>
-              <Link href="/help" className="text-gray-700 hover:text-primary transition-colors">
-                Help
-              </Link>
-            </div>
-            
-            <div className="hidden md:flex items-center space-x-4">
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="" />
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.firstName} {user.lastName}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {user.role === 'admin' && (
-                      <DropdownMenuItem onClick={() => window.location.href = '/admin'}>
-                        Admin Dashboard
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => logout()}>
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button 
-                  className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
-                  onClick={() => setIsLoginModalOpen(true)}
-                >
-                  Sign In
-                </Button>
-              )}
-              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
-                Español
-              </Button>
-            </div>
-
-            <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile menu */}
-          {isMenuOpen && (
-            <div className="md:hidden py-4 border-t">
-              <div className="flex flex-col space-y-4">
-                <button
-                  onClick={() => scrollToSection('how-it-works')}
-                  className="text-gray-700 hover:text-primary transition-colors text-left"
-                >
-                  How it works
-                </button>
-                <button
-                  onClick={() => scrollToSection('about')}
-                  className="text-gray-700 hover:text-primary transition-colors text-left"
-                >
-                  About
-                </button>
-                <button className="text-gray-700 hover:text-primary transition-colors text-left">
-                  Contact Us
-                </button>
-                <Link href="/free-resources" className="text-gray-700 hover:text-primary transition-colors text-left">
-                  Free resources
-                </Link>
-                <button className="text-gray-700 hover:text-primary transition-colors text-left">
-                  Blog
-                </button>
-                <Link href="/help" className="text-gray-700 hover:text-primary transition-colors text-left">
-                  Help
-                </Link>
-                <div className="flex flex-col space-y-2 pt-4">
-                  {user ? (
-                    <div className="flex items-center space-x-2 p-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="" />
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.firstName} {user.lastName}</span>
-                      <Button variant="ghost" size="sm" onClick={() => logout()}>
-                        Sign Out
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button 
-                      className="bg-black text-white hover:bg-gray-800 rounded-full"
-                      onClick={() => setIsLoginModalOpen(true)}
-                    >
-                      Sign In
-                    </Button>
-                  )}
-                  <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
-                    Español
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </nav>
-      </header>
+      <Navbar 
+        activeSection={activeSection}
+        scrollToSection={scrollToSection}
+        setIsLoginModalOpen={setIsLoginModalOpen}
+      />
 
       {/* Hero Section */}
       <section id="home" className="bg-white py-12 lg:py-20">
