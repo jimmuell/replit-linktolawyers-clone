@@ -76,7 +76,19 @@ export default function RequestManagementPage() {
   const { data: currentAssignments = [], isLoading: assignmentsLoading } = useQuery({
     queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'],
     enabled: !!selectedRequest?.id && isAttorneyAssignmentModalOpen,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache the results
   });
+
+  // Update selected attorney IDs when current assignments load
+  useEffect(() => {
+    if (currentAssignments.length > 0 && isAttorneyAssignmentModalOpen) {
+      const assignedIds = currentAssignments.map((assignment: any) => assignment.attorneyId);
+      setSelectedAttorneyIds(assignedIds);
+    } else if (isAttorneyAssignmentModalOpen) {
+      setSelectedAttorneyIds([]);
+    }
+  }, [currentAssignments, isAttorneyAssignmentModalOpen]);
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -262,9 +274,7 @@ export default function RequestManagementPage() {
   const handleAssignAttorneys = (request: LegalRequest) => {
     setSelectedRequest(request);
     setIsAttorneyAssignmentModalOpen(true);
-    // Pre-select currently assigned attorneys
-    const currentAssignedIds = currentAssignments.map((assignment: any) => assignment.attorneyId);
-    setSelectedAttorneyIds(currentAssignedIds);
+    // Note: selectedAttorneyIds will be updated via useEffect when currentAssignments loads
   };
 
   const handleAttorneyAssignmentSubmit = (e: React.FormEvent) => {
