@@ -534,7 +534,7 @@ export default function RequestManagementPage() {
                     size="sm"
                   >
                     <Users className="w-4 h-4 mr-2" />
-                    Edit Assigned Attorneys
+                    {currentAssignments.length > 0 ? 'Edit Assigned Attorneys' : 'Assign Attorneys'}
                   </Button>
                 </div>
                 
@@ -754,7 +754,9 @@ export default function RequestManagementPage() {
       <Dialog open={isAttorneyAssignmentModalOpen} onOpenChange={setIsAttorneyAssignmentModalOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Edit Attorney Assignments</DialogTitle>
+            <DialogTitle>
+              {currentAssignments.length > 0 ? 'Edit Attorney Assignments' : 'Assign Attorneys to Request'}
+            </DialogTitle>
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-6">
@@ -855,7 +857,10 @@ export default function RequestManagementPage() {
                           type="submit"
                           disabled={assignAttorneysMutation.isPending}
                         >
-                          {assignAttorneysMutation.isPending ? 'Updating...' : 'Update Assignments'}
+                          {assignAttorneysMutation.isPending ? 
+                            (currentAssignments.length > 0 ? 'Updating...' : 'Assigning...') : 
+                            (currentAssignments.length > 0 ? 'Update Assignments' : 'Assign Attorneys')
+                          }
                         </Button>
                       </div>
                     </div>
