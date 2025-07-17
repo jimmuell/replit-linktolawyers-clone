@@ -253,20 +253,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use override email if provided, otherwise use the legal request email
       const recipientEmail = overrideEmail || legalRequest.email;
       
-      // Send email using the existing email service
-      const emailData = {
+      // Create transporter and send email
+      const transporter = await createTransporter();
+      
+      const mailOptions = {
+        from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
         to: recipientEmail,
         subject: emailTemplate.subject,
         html: emailTemplate.html,
         text: emailTemplate.text || ''
       };
-      
-      const result = await sendEmail(smtpSettings, emailData);
-      
-      if (result.success) {
-        res.json({ success: true, message: "Confirmation email sent successfully" });
-      } else {
-        res.status(500).json({ success: false, error: result.error });
+
+      try {
+        const result = await transporter.sendMail(mailOptions);
+        
+        // Store successful email in history
+        await storage.createEmailHistory({
+          toAddress: recipientEmail,
+          subject: emailTemplate.subject,
+          message: emailTemplate.html,
+          status: 'sent',
+          errorMessage: null,
+        });
+
+        res.json({ 
+          success: true, 
+          message: "Confirmation email sent successfully",
+          messageId: result.messageId 
+        });
+      } catch (emailError: any) {
+        // Store failed email in history
+        await storage.createEmailHistory({
+          toAddress: recipientEmail,
+          subject: emailTemplate.subject,
+          message: emailTemplate.html,
+          status: 'failed',
+          errorMessage: emailError.message,
+        });
+
+        res.status(500).json({ 
+          success: false, 
+          error: `Failed to send email: ${emailError.message}` 
+        });
       }
     } catch (error) {
       console.error("Error sending confirmation email:", error);
