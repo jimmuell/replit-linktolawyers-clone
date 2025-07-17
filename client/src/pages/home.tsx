@@ -377,11 +377,13 @@ export default function Home() {
             </div>
             
             <div className="flex justify-center items-center">
-              <img 
-                src={girlThinkingImage} 
-                alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($1,200), Law Firm B ($1,750), and Law Firm C ($2,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
-                className="max-w-lg w-full h-auto" 
-              />
+              <div className="overflow-hidden max-w-lg">
+                <img 
+                  src={girlThinkingImage} 
+                  alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($1,200), Law Firm B ($1,750), and Law Firm C ($2,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
+                  className="w-full h-auto transform translate-x-2" 
+                />
+              </div>
             </div>
           </div>
         </div>
