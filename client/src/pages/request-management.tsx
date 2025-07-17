@@ -618,11 +618,10 @@ export default function RequestManagementPage() {
               </div>
               <div>
                 <Label htmlFor="caseDescription">Case Description</Label>
-                <Textarea
+                <Input
                   id="caseDescription"
                   value={editFormData.caseDescription || ''}
                   onChange={(e) => setEditFormData({...editFormData, caseDescription: e.target.value})}
-                  rows={4}
                 />
               </div>
               <div className="flex justify-end space-x-2 pt-4">
