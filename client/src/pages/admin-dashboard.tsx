@@ -1,10 +1,6 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChevronDown, Settings } from 'lucide-react';
 import { useEffect } from 'react';
+import AdminNavbar from '@/components/AdminNavbar';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
 import RequestManagementCard from '@/components/RequestManagementCard';
 import AttorneyOnboardingCard from '@/components/AttorneyOnboardingCard';
@@ -33,45 +29,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-gray-900">LinkToLawyers</h1>
-            <span className="text-sm text-gray-500">Admin Dashboard</span>
-          </div>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2">
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src="" />
-                  <AvatarFallback>
-                    {user.firstName?.charAt(0) || 'A'}{user.lastName?.charAt(0) || 'D'}
-                  </AvatarFallback>
-                </Avatar>
-                <span>{user.firstName} {user.lastName}</span>
-                <ChevronDown className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => logout()}>
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </nav>
-
+      <AdminNavbar title="Admin Dashboard" showBackButton={false} />
+      
       {/* Main Content */}
-      <div className="p-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back, {user.firstName}!</h2>
           <p className="text-gray-600">Manage your legal services platform from here.</p>
