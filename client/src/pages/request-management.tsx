@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminNavbar from '@/components/AdminNavbar';
@@ -53,7 +53,6 @@ export default function RequestManagementPage() {
   
   const [editFormData, setEditFormData] = useState<Partial<LegalRequest>>({});
   const [selectedAttorneyIds, setSelectedAttorneyIds] = useState<number[]>([]);
-  const [assignmentNotes, setAssignmentNotes] = useState('');
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
@@ -160,13 +159,10 @@ export default function RequestManagementPage() {
 
   // Attorney assignment mutation
   const assignAttorneysMutation = useMutation({
-    mutationFn: async ({ requestId, attorneyIds, notes }: { requestId: number; attorneyIds: number[]; notes?: string }) => {
+    mutationFn: async ({ requestId, attorneyIds }: { requestId: number; attorneyIds: number[] }) => {
       const response = await apiRequest(`/api/requests/${requestId}/attorneys`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ attorneyIds, notes }),
+        body: { attorneyIds },
       });
       return response.json();
     },
@@ -175,7 +171,6 @@ export default function RequestManagementPage() {
       queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
       setIsAttorneyAssignmentModalOpen(false);
       setSelectedAttorneyIds([]);
-      setAssignmentNotes('');
       toast({
         title: 'Success',
         description: 'Attorneys assigned successfully',
@@ -243,7 +238,6 @@ export default function RequestManagementPage() {
     setSelectedRequest(request);
     setIsAttorneyAssignmentModalOpen(true);
     setSelectedAttorneyIds([]);
-    setAssignmentNotes('');
   };
 
   const handleAttorneyAssignmentSubmit = (e: React.FormEvent) => {
@@ -252,7 +246,6 @@ export default function RequestManagementPage() {
       assignAttorneysMutation.mutate({
         requestId: selectedRequest.id,
         attorneyIds: selectedAttorneyIds,
-        notes: assignmentNotes,
       });
     }
   };
@@ -800,17 +793,6 @@ export default function RequestManagementPage() {
                   </div>
 
                   <form onSubmit={handleAttorneyAssignmentSubmit} className="space-y-4">
-                    <div>
-                      <Label htmlFor="assignmentNotes">Assignment Notes (Optional)</Label>
-                      <Textarea
-                        id="assignmentNotes"
-                        placeholder="Add any specific instructions or notes for the assigned attorneys..."
-                        value={assignmentNotes}
-                        onChange={(e) => setAssignmentNotes(e.target.value)}
-                        rows={3}
-                      />
-                    </div>
-                    
                     <div className="flex justify-between items-center pt-4 border-t">
                       <p className="text-sm text-gray-600">
                         {selectedAttorneyIds.length} attorney{selectedAttorneyIds.length !== 1 ? 's' : ''} selected
