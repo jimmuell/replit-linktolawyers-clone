@@ -274,26 +274,20 @@ export default function BlogPostEditor() {
                           placeholder="Write your blog post content here..."
                           modules={{
                             toolbar: [
-                              [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                              [{ 'header': [1, 2, 3, false] }],
                               ['bold', 'italic', 'underline', 'strike'],
                               [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                              [{ 'script': 'sub'}, { 'script': 'super' }],
                               [{ 'indent': '-1'}, { 'indent': '+1' }],
-                              [{ 'direction': 'rtl' }],
-                              [{ 'size': ['small', false, 'large', 'huge'] }],
-                              [{ 'color': [] }, { 'background': [] }],
-                              [{ 'font': [] }],
                               [{ 'align': [] }],
-                              ['link', 'image', 'video'],
+                              ['link', 'blockquote', 'code-block'],
+                              [{ 'color': [] }, { 'background': [] }],
                               ['clean']
                             ]
                           }}
                           formats={[
-                            'header', 'font', 'size',
-                            'bold', 'italic', 'underline', 'strike', 'blockquote',
-                            'list', 'bullet', 'indent',
-                            'link', 'image', 'video', 'color', 'background',
-                            'align', 'script'
+                            'header', 'bold', 'italic', 'underline', 'strike',
+                            'blockquote', 'list', 'bullet', 'indent',
+                            'link', 'color', 'background', 'align', 'code-block'
                           ]}
                           style={{ height: '400px', marginBottom: '50px' }}
                         />
