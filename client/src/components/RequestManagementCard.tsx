@@ -1,36 +1,20 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Users, Eye, Plus } from 'lucide-react';
-import { useLocation } from 'wouter';
+import { FileText, TrendingUp } from 'lucide-react';
+import AdminCard from './AdminCard';
 
 export default function RequestManagementCard() {
-  const [, navigate] = useLocation();
-
-  // Fetch legal requests count
-  const { data: requests, isLoading } = useQuery({
+  const { data: requests, isLoading, error } = useQuery({
     queryKey: ['/api/legal-requests'],
     enabled: true,
     retry: false,
   });
 
-  const handleManageClick = () => {
-    navigate('/request-management');
-  };
-
   const getRequestsInfo = () => {
-    if (isLoading) {
-      return {
-        count: '...',
-        recentCount: '...',
-        description: 'Loading requests...',
-      };
-    }
-
     if (!requests || !Array.isArray(requests)) {
       return {
-        count: '0',
-        recentCount: '0',
+        count: 0,
+        recentCount: 0,
         description: 'No requests found',
       };
     }
@@ -44,8 +28,8 @@ export default function RequestManagementCard() {
     });
 
     return {
-      count: requests.length.toString(),
-      recentCount: recentRequests.length.toString(),
+      count: requests.length,
+      recentCount: recentRequests.length,
       description: `${recentRequests.length} new requests this week`,
     };
   };
@@ -53,41 +37,43 @@ export default function RequestManagementCard() {
   const requestsInfo = getRequestsInfo();
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-medium flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          Request Management
-        </CardTitle>
-        <Users className="w-5 h-5 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold">{requestsInfo.count}</div>
-              <p className="text-xs text-muted-foreground">Total Requests</p>
-            </div>
-            <div className="text-right">
-              <div className="text-lg font-semibold text-green-600">{requestsInfo.recentCount}</div>
-              <p className="text-xs text-muted-foreground">This Week</p>
-            </div>
+    <AdminCard
+      title="Request Management"
+      description="Legal service requests and tracking"
+      icon={FileText}
+      iconColor="text-green-600"
+      route="/request-management"
+      isLoading={isLoading}
+      error={error}
+      actionText="View All"
+    >
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">{requestsInfo.count}</div>
+            <div className="text-sm text-gray-600">Total Requests</div>
           </div>
-          
-          <div className="text-xs text-muted-foreground">
-            {requestsInfo.description}
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{requestsInfo.recentCount}</div>
+            <div className="text-sm text-gray-600">This Week</div>
           </div>
-          
-          <Button 
-            onClick={handleManageClick}
-            className="w-full"
-            variant="outline"
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Manage Requests
-          </Button>
         </div>
-      </CardContent>
-    </Card>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-green-600" />
+            <span className="text-sm text-gray-600">Activity</span>
+          </div>
+          <Badge variant="outline">
+            {requestsInfo.recentCount > 0 ? 'Active' : 'Quiet'}
+          </Badge>
+        </div>
+        
+        <div>
+          <div className="text-sm text-gray-600 mb-1">Recent Activity</div>
+          <p className="text-sm font-medium">{requestsInfo.description}</p>
+        </div>
+      </div>
+    </AdminCard>
   );
 }
