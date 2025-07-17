@@ -776,10 +776,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             <h3>Additional Information</h3>
             <ul>
-              <li><strong>Budget:</strong> $${request.budget}</li>
-              <li><strong>Timeline:</strong> ${request.timeline}</li>
-              <li><strong>Priority:</strong> ${request.priority}</li>
-              <li><strong>Preferred Language:</strong> ${request.preferredLanguage}</li>
+              <li><strong>Budget Range:</strong> ${request.budgetRange || 'Not specified'}</li>
+              <li><strong>Urgency Level:</strong> ${request.urgencyLevel || 'Not specified'}</li>
+              <li><strong>Location:</strong> ${request.location || 'Not specified'}</li>
             </ul>
             
             <p>Please log into the attorney portal to review this case and take appropriate action.</p>
