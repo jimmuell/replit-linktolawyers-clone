@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import { Link } from "wouter";
-import girlThinkingImage from "@assets/thinking_girl_final.png";
+import girlThinkingImage from "@assets/girl-new_1752713874124.png";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
