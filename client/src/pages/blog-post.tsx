@@ -29,12 +29,8 @@ export default function BlogPostPage() {
   };
 
   const formatContent = (content: string) => {
-    // Simple formatting: convert line breaks to paragraphs
-    return content.split('\n\n').map((paragraph, index) => (
-      <p key={index} className="mb-4 leading-relaxed">
-        {paragraph}
-      </p>
-    ));
+    // Render HTML content from rich text editor
+    return <div dangerouslySetInnerHTML={{ __html: content }} />;
   };
 
   return (
