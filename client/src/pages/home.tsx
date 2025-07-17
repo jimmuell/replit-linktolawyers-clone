@@ -460,10 +460,13 @@ export default function Home() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl text-center">
-              Request Your Free Quote
+              {submittedRequestNumber ? "Your Quotes Are On The Way" : "Request Your Free Quote"}
             </DialogTitle>
             <DialogDescription className="text-center text-gray-600">
-              Tell us about your immigration case and get personalized quotes from qualified attorneys
+              {submittedRequestNumber 
+                ? "We're connecting you with qualified attorneys nationwide to provide personalized quotes for your case"
+                : "Tell us about your immigration case and get personalized quotes from qualified attorneys"
+              }
             </DialogDescription>
           </DialogHeader>
           
