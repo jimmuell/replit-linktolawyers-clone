@@ -275,16 +275,16 @@ export default function Home() {
                 </p>
               </div>
               
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
-                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg"
+                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsQuoteModalOpen(true)}
                 >
                   Get A Free Legal Quote!
                 </Button>
                 <Button 
                   variant="outline"
-                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg"
+                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsTrackRequestModalOpen(true)}
                 >
                   Track Your Request
