@@ -91,10 +91,12 @@ export default function AttorneyFeeSchedule() {
     enabled: user?.role === 'admin',
   });
 
-  const { data: caseTypes = [], isLoading: caseTypesLoading } = useQuery({
+  const { data: caseTypesResponse, isLoading: caseTypesLoading } = useQuery({
     queryKey: ['/api/case-types'],
     enabled: user?.role === 'admin',
   });
+
+  const caseTypes = caseTypesResponse?.data || [];
 
   const { data: feeSchedules = [], isLoading: feeSchedulesLoading } = useQuery({
     queryKey: ['/api/attorney-fee-schedule'],
