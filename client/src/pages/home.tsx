@@ -178,12 +178,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white w-full overflow-x-hidden">
+    <>
       <Navbar 
         activeSection={activeSection}
         scrollToSection={scrollToSection}
         setIsLoginModalOpen={setIsLoginModalOpen}
       />
+      <div className="min-h-screen bg-white w-full">
 
       {/* Hero Section */}
       <section id="home" className="bg-white py-12 lg:py-20">
@@ -671,6 +672,7 @@ export default function Home() {
           <ChevronUp className="h-6 w-6" />
         </button>
       )}
-    </div>
+      </div>
+    </>
   );
 }
