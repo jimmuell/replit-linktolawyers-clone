@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Eye, Edit, Trash2, Plus, Search, Filter } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
@@ -42,6 +43,8 @@ export default function RequestManagementPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+  const [selectedRequestIds, setSelectedRequestIds] = useState<number[]>([]);
   
   const [editFormData, setEditFormData] = useState<Partial<LegalRequest>>({});
 
@@ -78,6 +81,32 @@ export default function RequestManagementPage() {
       toast({
         title: "Failed to delete request",
         description: "An error occurred while deleting the request.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk delete mutation
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      const deletePromises = ids.map(id => 
+        apiRequest(`/api/legal-requests/${id}`, { method: 'DELETE' })
+      );
+      await Promise.all(deletePromises);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
+      toast({
+        title: "Requests deleted",
+        description: `${selectedRequestIds.length} legal requests have been successfully deleted.`,
+      });
+      setIsBulkDeleteModalOpen(false);
+      setSelectedRequestIds([]);
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to delete requests",
+        description: "An error occurred while deleting the requests.",
         variant: "destructive",
       });
     },
@@ -158,6 +187,37 @@ export default function RequestManagementPage() {
     }
   };
 
+  const handleBulkDelete = () => {
+    if (selectedRequestIds.length > 0) {
+      setIsBulkDeleteModalOpen(true);
+    }
+  };
+
+  const handleBulkDeleteConfirm = () => {
+    if (selectedRequestIds.length > 0) {
+      bulkDeleteMutation.mutate(selectedRequestIds);
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedRequestIds(filteredRequests.map(request => request.id));
+    } else {
+      setSelectedRequestIds([]);
+    }
+  };
+
+  const handleSelectRequest = (requestId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedRequestIds(prev => [...prev, requestId]);
+    } else {
+      setSelectedRequestIds(prev => prev.filter(id => id !== requestId));
+    }
+  };
+
+  const isAllSelected = filteredRequests.length > 0 && selectedRequestIds.length === filteredRequests.length;
+  const isIndeterminate = selectedRequestIds.length > 0 && selectedRequestIds.length < filteredRequests.length;
+
   const getUrgencyBadge = (urgency: string) => {
     switch (urgency?.toLowerCase()) {
       case 'urgent':
@@ -215,6 +275,16 @@ export default function RequestManagementPage() {
                       className="pl-10 w-64"
                     />
                   </div>
+                  {selectedRequestIds.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleBulkDelete}
+                      disabled={bulkDeleteMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete {selectedRequestIds.length} Selected
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -237,6 +307,13 @@ export default function RequestManagementPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={isAllSelected}
+                            onCheckedChange={handleSelectAll}
+                            aria-label="Select all requests"
+                          />
+                        </TableHead>
                         <TableHead>Request #</TableHead>
                         <TableHead>Client</TableHead>
                         <TableHead>Email</TableHead>
@@ -250,6 +327,13 @@ export default function RequestManagementPage() {
                     <TableBody>
                       {filteredRequests.map((request) => (
                         <TableRow key={request.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedRequestIds.includes(request.id)}
+                              onCheckedChange={(checked) => handleSelectRequest(request.id, checked as boolean)}
+                              aria-label={`Select request ${request.requestNumber}`}
+                            />
+                          </TableCell>
                           <TableCell className="font-mono text-sm">
                             {request.requestNumber}
                           </TableCell>
@@ -474,6 +558,42 @@ export default function RequestManagementPage() {
                 disabled={deleteMutation.isPending}
               >
                 {deleteMutation.isPending ? 'Deleting...' : 'Delete Request'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirmation Modal */}
+      <Dialog open={isBulkDeleteModalOpen} onOpenChange={setIsBulkDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Multiple Requests</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>Are you sure you want to delete {selectedRequestIds.length} selected requests? This action cannot be undone.</p>
+            <div className="bg-gray-50 p-3 rounded max-h-40 overflow-y-auto">
+              <p className="font-medium mb-2">Selected requests:</p>
+              <div className="space-y-1">
+                {filteredRequests
+                  .filter(request => selectedRequestIds.includes(request.id))
+                  .map(request => (
+                    <div key={request.id} className="text-sm">
+                      <span className="font-mono text-xs">{request.requestNumber}</span> - {request.firstName} {request.lastName}
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsBulkDeleteModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleBulkDeleteConfirm}
+                disabled={bulkDeleteMutation.isPending}
+              >
+                {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedRequestIds.length} Requests`}
               </Button>
             </div>
           </div>

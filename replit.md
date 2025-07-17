@@ -10,6 +10,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Request Management Bulk Delete Feature** (July 17, 2025): Added bulk delete functionality to legal requests management
+  - Added checkboxes for individual request selection and select-all functionality
+  - Implemented bulk delete button that appears when requests are selected
+  - Created bulk delete confirmation modal with list of selected requests
+  - Added bulk delete mutation that handles multiple simultaneous deletions
+  - Updated table UI to include selection column with proper accessibility labels
+  - Added proper state management for selected request IDs and bulk operations
+
 - **Legal Request Confirmation Email System** (July 17, 2025): Built complete email confirmation system for legal form submissions
   - Created professional HTML email templates with request summary and next steps information
   - Implemented email preview modal with HTML and plain text tabs for admin review
