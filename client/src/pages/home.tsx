@@ -7,13 +7,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp } from "lucide-react";
+import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import LoginModal from "@/components/LoginModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
+import EmailPreviewModal from "@/components/EmailPreviewModal";
+import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
 import girlThinkingImage from "@assets/girl-final_1752714322954.png";
@@ -42,7 +46,11 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [captchaError, setCaptchaError] = useState<string | null>(null);
   const [currentRequestNumber, setCurrentRequestNumber] = useState<string>('');
+  const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
+  const [emailPreview, setEmailPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const { user, logout } = useAuth();
+  const { toast } = useToast();
 
   // Fetch case types for dropdown
   const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
@@ -165,7 +173,16 @@ export default function Home() {
       
       if (result.success) {
         setSubmittedRequestNumber(result.data.requestNumber);
-        // Keep the form open to show the request number
+        
+        // Generate email preview
+        const selectedCaseType = caseTypes.find(ct => ct.value === formData.caseType);
+        const emailTemplate = generateConfirmationEmail({
+          ...formData,
+          requestNumber: result.data.requestNumber
+        }, selectedCaseType);
+        
+        setEmailPreview(emailTemplate);
+        setIsEmailPreviewOpen(true);
       } else {
         alert('Error submitting request: ' + result.error);
       }
@@ -174,6 +191,44 @@ export default function Home() {
       alert('Error submitting request. Please try again.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!emailPreview || !submittedRequestNumber) return;
+    
+    setIsSendingEmail(true);
+    
+    try {
+      const response = await apiRequest(`/api/legal-requests/${submittedRequestNumber}/send-confirmation`, {
+        method: 'POST',
+        body: { emailTemplate: emailPreview }
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "Email sent successfully!",
+          description: "Confirmation email has been sent to the client.",
+        });
+        setIsEmailPreviewOpen(false);
+      } else {
+        toast({
+          title: "Failed to send email",
+          description: result.error || "An error occurred while sending the email.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        title: "Failed to send email",
+        description: "An error occurred while sending the email.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -661,6 +716,16 @@ export default function Home() {
       <LoginModal
         open={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+      />
+
+      {/* Email Preview Modal */}
+      <EmailPreviewModal
+        isOpen={isEmailPreviewOpen}
+        onClose={() => setIsEmailPreviewOpen(false)}
+        emailPreview={emailPreview}
+        recipientEmail={formData.email}
+        onSendEmail={handleSendEmail}
+        isSending={isSendingEmail}
       />
 
       {/* Scroll to Top Button */}

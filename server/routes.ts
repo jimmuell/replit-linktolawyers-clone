@@ -228,6 +228,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send confirmation email for legal request
+  app.post("/api/legal-requests/:requestNumber/send-confirmation", requireAuth, async (req, res) => {
+    try {
+      const { requestNumber } = req.params;
+      const { emailTemplate } = req.body;
+      
+      if (!emailTemplate || !emailTemplate.html || !emailTemplate.subject) {
+        return res.status(400).json({ success: false, error: "Email template is required" });
+      }
+      
+      // Get the legal request to find the recipient email
+      const legalRequest = await storage.getLegalRequestByNumber(requestNumber);
+      if (!legalRequest) {
+        return res.status(404).json({ success: false, error: "Legal request not found" });
+      }
+      
+      // Get SMTP settings
+      const smtpSettings = await storage.getSmtpSettings();
+      if (!smtpSettings) {
+        return res.status(500).json({ success: false, error: "SMTP not configured" });
+      }
+      
+      // Send email using the existing email service
+      const emailData = {
+        to: legalRequest.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+        text: emailTemplate.text || ''
+      };
+      
+      const result = await sendEmail(smtpSettings, emailData);
+      
+      if (result.success) {
+        res.json({ success: true, message: "Confirmation email sent successfully" });
+      } else {
+        res.status(500).json({ success: false, error: result.error });
+      }
+    } catch (error) {
+      console.error("Error sending confirmation email:", error);
+      res.status(500).json({ success: false, error: "Failed to send confirmation email" });
+    }
+  });
+
   app.get("/api/legal-requests/:requestNumber", async (req, res) => {
     try {
       const requestNumber = req.params.requestNumber;

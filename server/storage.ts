@@ -118,6 +118,14 @@ export class DatabaseStorage implements IStorage {
     return legalRequest || undefined;
   }
 
+  async getLegalRequestByNumber(requestNumber: string): Promise<LegalRequest | undefined> {
+    const [legalRequest] = await db
+      .select()
+      .from(legalRequests)
+      .where(eq(legalRequests.requestNumber, requestNumber));
+    return legalRequest || undefined;
+  }
+
   async getAllLegalRequests(): Promise<LegalRequest[]> {
     return await db
       .select()
