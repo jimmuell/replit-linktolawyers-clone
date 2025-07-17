@@ -1,17 +1,66 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, User, ChevronRight, FileText } from 'lucide-react';
+import { Calendar, User, ChevronRight, FileText, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { Link } from 'wouter';
 import { formatDistanceToNow } from 'date-fns';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import Navbar from '@/components/Navbar';
 import type { BlogPost } from '@shared/schema';
 
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
+type LoginForm = z.infer<typeof loginSchema>;
+
 export default function Blog() {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
+  const { login } = useAuth();
+  const { toast } = useToast();
+
   const { data: blogPosts, isLoading, error } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog-posts/published'],
   });
+
+  const form = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const handleLogin = async (data: LoginForm) => {
+    try {
+      await login(data.email, data.password);
+      setIsLoginModalOpen(false);
+      toast({ title: 'Login successful!' });
+    } catch (error: any) {
+      toast({ 
+        title: 'Login failed', 
+        description: error.message || 'Please check your credentials and try again.',
+        variant: 'destructive' 
+      });
+    }
+  };
+
+  const scrollToSection = (section: string) => {
+    setActiveSection(section);
+    // Since this is the blog page, we might want to handle this differently
+    // For now, we'll just set the active section
+  };
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -29,9 +78,9 @@ export default function Blog() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar 
-        activeSection="" 
-        scrollToSection={() => {}} 
-        setIsLoginModalOpen={() => {}} 
+        activeSection={activeSection} 
+        scrollToSection={scrollToSection} 
+        setIsLoginModalOpen={setIsLoginModalOpen} 
         hideUserDropdown={true} 
       />
       
@@ -143,6 +192,48 @@ export default function Blog() {
           </div>
         )}
       </div>
+
+      {/* Login Modal */}
+      <Dialog open={isLoginModalOpen} onOpenChange={setIsLoginModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign In</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter your email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Enter your password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800">
+                Sign In
+              </Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
