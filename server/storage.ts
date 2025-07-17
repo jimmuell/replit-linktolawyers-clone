@@ -50,6 +50,7 @@ export interface IStorage {
   updateRequestAttorneyAssignment(id: number, updates: Partial<InsertRequestAttorneyAssignment>): Promise<SelectRequestAttorneyAssignment>;
   deleteRequestAttorneyAssignment(id: number): Promise<void>;
   bulkCreateRequestAttorneyAssignments(assignments: InsertRequestAttorneyAssignment[]): Promise<SelectRequestAttorneyAssignment[]>;
+  updateRequestAttorneyAssignments(requestId: number, attorneyIds: number[]): Promise<SelectRequestAttorneyAssignment[]>;
   getAttorneysByCaseType(caseTypeValue: string): Promise<Array<Attorney & { fee?: number; feeType?: string }>>;
 }
 
@@ -315,11 +316,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRequestAttorneyAssignments(requestId: number): Promise<SelectRequestAttorneyAssignment[]> {
-    return await db
-      .select()
+    const result = await db
+      .select({
+        assignment: requestAttorneyAssignments,
+        attorney: attorneys
+      })
       .from(requestAttorneyAssignments)
+      .leftJoin(attorneys, eq(requestAttorneyAssignments.attorneyId, attorneys.id))
       .where(eq(requestAttorneyAssignments.requestId, requestId))
       .orderBy(asc(requestAttorneyAssignments.assignedAt));
+
+    return result.map(({ assignment, attorney }) => ({
+      ...assignment,
+      attorney
+    }));
   }
 
   async getAttorneyAssignments(attorneyId: number): Promise<SelectRequestAttorneyAssignment[]> {
@@ -344,6 +354,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   async bulkCreateRequestAttorneyAssignments(assignments: InsertRequestAttorneyAssignment[]): Promise<SelectRequestAttorneyAssignment[]> {
+    return await db
+      .insert(requestAttorneyAssignments)
+      .values(assignments)
+      .returning();
+  }
+
+  async updateRequestAttorneyAssignments(requestId: number, attorneyIds: number[]): Promise<SelectRequestAttorneyAssignment[]> {
+    // First, remove all existing assignments for this request
+    await db.delete(requestAttorneyAssignments).where(eq(requestAttorneyAssignments.requestId, requestId));
+    
+    // If no attorney IDs provided, return empty array
+    if (attorneyIds.length === 0) {
+      return [];
+    }
+    
+    // Create new assignments
+    const assignments = attorneyIds.map((attorneyId: number) => ({
+      requestId,
+      attorneyId,
+      status: 'assigned' as const,
+      notes: null
+    }));
+
     return await db
       .insert(requestAttorneyAssignments)
       .values(assignments)

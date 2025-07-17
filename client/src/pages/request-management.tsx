@@ -237,12 +237,14 @@ export default function RequestManagementPage() {
   const handleAssignAttorneys = (request: LegalRequest) => {
     setSelectedRequest(request);
     setIsAttorneyAssignmentModalOpen(true);
-    setSelectedAttorneyIds([]);
+    // Pre-select currently assigned attorneys
+    const currentAssignedIds = currentAssignments.map((assignment: any) => assignment.attorneyId);
+    setSelectedAttorneyIds(currentAssignedIds);
   };
 
   const handleAttorneyAssignmentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedRequest && selectedAttorneyIds.length > 0) {
+    if (selectedRequest) {
       assignAttorneysMutation.mutate({
         requestId: selectedRequest.id,
         attorneyIds: selectedAttorneyIds,
@@ -522,14 +524,59 @@ export default function RequestManagementPage() {
                 <Label className="text-sm font-medium text-gray-600">Case Description</Label>
                 <p className="mt-1 text-sm text-gray-700 leading-relaxed">{selectedRequest.caseDescription}</p>
               </div>
-              <div className="flex justify-end pt-4 border-t">
-                <Button 
-                  onClick={() => handleAssignAttorneys(selectedRequest)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Users className="w-4 h-4 mr-2" />
-                  Assign Attorneys
-                </Button>
+              {/* Assigned Attorneys Section */}
+              <div className="pt-4 border-t">
+                <div className="flex justify-between items-center mb-3">
+                  <Label className="text-sm font-medium text-gray-600">Assigned Attorneys</Label>
+                  <Button 
+                    onClick={() => handleAssignAttorneys(selectedRequest)}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    size="sm"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Edit Assigned Attorneys
+                  </Button>
+                </div>
+                
+                {assignmentsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span className="ml-2 text-sm text-gray-600">Loading assignments...</span>
+                  </div>
+                ) : currentAssignments.length === 0 ? (
+                  <div className="text-center py-4 bg-gray-50 rounded-lg">
+                    <Users className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">No attorneys assigned yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {currentAssignments.map((assignment: any) => (
+                      <div key={assignment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Users className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {assignment.attorney?.firstName} {assignment.attorney?.lastName}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {assignment.attorney?.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant="outline" className="text-xs">
+                            {assignment.status}
+                          </Badge>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Assigned {format(new Date(assignment.assignedAt), 'MMM d, yyyy')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -707,7 +754,7 @@ export default function RequestManagementPage() {
       <Dialog open={isAttorneyAssignmentModalOpen} onOpenChange={setIsAttorneyAssignmentModalOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Assign Attorneys to Request</DialogTitle>
+            <DialogTitle>Edit Attorney Assignments</DialogTitle>
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-6">
@@ -806,9 +853,9 @@ export default function RequestManagementPage() {
                         </Button>
                         <Button
                           type="submit"
-                          disabled={selectedAttorneyIds.length === 0 || assignAttorneysMutation.isPending}
+                          disabled={assignAttorneysMutation.isPending}
                         >
-                          {assignAttorneysMutation.isPending ? 'Assigning...' : 'Assign Attorneys'}
+                          {assignAttorneysMutation.isPending ? 'Updating...' : 'Update Assignments'}
                         </Button>
                       </div>
                     </div>

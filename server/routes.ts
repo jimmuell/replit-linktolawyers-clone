@@ -673,28 +673,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
     try {
       const requestId = parseInt(req.params.requestId);
-      const { attorneyIds, notes } = req.body;
+      const { attorneyIds } = req.body;
       
-      if (!Array.isArray(attorneyIds) || attorneyIds.length === 0) {
-        return res.status(400).json({ error: 'Attorney IDs are required' });
+      if (!Array.isArray(attorneyIds)) {
+        return res.status(400).json({ error: 'Attorney IDs must be an array' });
       }
 
-      const assignments = attorneyIds.map((attorneyId: number) => ({
-        requestId,
-        attorneyId,
-        status: 'assigned',
-        notes: notes || null
-      }));
-
-      const validatedAssignments = assignments.map(assignment => 
-        insertRequestAttorneyAssignmentSchema.parse(assignment)
-      );
-
-      const createdAssignments = await storage.bulkCreateRequestAttorneyAssignments(validatedAssignments);
-      res.json(createdAssignments);
+      // Update assignments for this request
+      const updatedAssignments = await storage.updateRequestAttorneyAssignments(requestId, attorneyIds);
+      res.json(updatedAssignments);
     } catch (error) {
-      console.error('Error assigning attorneys to request:', error);
-      res.status(400).json({ error: 'Failed to assign attorneys' });
+      console.error('Error updating attorney assignments:', error);
+      res.status(500).json({ error: 'Failed to update attorney assignments' });
     }
   });
 
