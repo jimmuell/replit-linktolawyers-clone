@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc } from "drizzle-orm";
 
@@ -19,6 +19,13 @@ export interface IStorage {
   getLegalRequest(id: number): Promise<LegalRequest | undefined>;
   getLegalRequestByNumber(requestNumber: string): Promise<LegalRequest | undefined>;
   getAllLegalRequests(): Promise<LegalRequest[]>;
+  // SMTP Settings
+  getSmtpSettings(): Promise<SmtpSettings | undefined>;
+  createSmtpSettings(smtpSettings: InsertSmtpSettings): Promise<SmtpSettings>;
+  updateSmtpSettings(id: number, smtpSettings: Partial<InsertSmtpSettings>): Promise<SmtpSettings>;
+  // Email History
+  createEmailHistory(emailHistory: InsertEmailHistory): Promise<EmailHistory>;
+  getAllEmailHistory(): Promise<EmailHistory[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -116,6 +123,48 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(legalRequests)
       .orderBy(asc(legalRequests.createdAt));
+  }
+
+  // SMTP Settings operations
+  async getSmtpSettings(): Promise<SmtpSettings | undefined> {
+    const [settings] = await db
+      .select()
+      .from(smtpSettings)
+      .where(eq(smtpSettings.isActive, true));
+    return settings || undefined;
+  }
+
+  async createSmtpSettings(insertSmtpSettings: InsertSmtpSettings): Promise<SmtpSettings> {
+    const [settings] = await db
+      .insert(smtpSettings)
+      .values(insertSmtpSettings)
+      .returning();
+    return settings;
+  }
+
+  async updateSmtpSettings(id: number, updates: Partial<InsertSmtpSettings>): Promise<SmtpSettings> {
+    const [settings] = await db
+      .update(smtpSettings)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(smtpSettings.id, id))
+      .returning();
+    return settings;
+  }
+
+  // Email History operations
+  async createEmailHistory(insertEmailHistory: InsertEmailHistory): Promise<EmailHistory> {
+    const [history] = await db
+      .insert(emailHistory)
+      .values(insertEmailHistory)
+      .returning();
+    return history;
+  }
+
+  async getAllEmailHistory(): Promise<EmailHistory[]> {
+    return await db
+      .select()
+      .from(emailHistory)
+      .orderBy(asc(emailHistory.timestamp));
   }
 }
 

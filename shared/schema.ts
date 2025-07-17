@@ -45,6 +45,31 @@ export const legalRequests = pgTable("legal_requests", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const smtpSettings = pgTable("smtp_settings", {
+  id: serial("id").primaryKey(),
+  configurationName: text("configuration_name").notNull().default("SMTP2GO"),
+  smtpHost: text("smtp_host").notNull().default("mail.smtp2go.com"),
+  smtpPort: integer("smtp_port").notNull().default(2525),
+  username: text("username").notNull(),
+  password: text("password").notNull(),
+  fromEmail: text("from_email").notNull(),
+  fromName: text("from_name").notNull().default("LinkToLawyers"),
+  useSsl: boolean("use_ssl").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const emailHistory = pgTable("email_history", {
+  id: serial("id").primaryKey(),
+  toAddress: text("to_address").notNull(),
+  subject: text("subject").notNull(),
+  message: text("message").notNull(),
+  status: text("status").notNull(),
+  errorMessage: text("error_message"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
@@ -79,6 +104,32 @@ export const insertLegalRequestSchema = createInsertSchema(legalRequests).pick({
   agreeToTerms: true,
 });
 
+export const insertSmtpSettingsSchema = createInsertSchema(smtpSettings).pick({
+  configurationName: true,
+  smtpHost: true,
+  smtpPort: true,
+  username: true,
+  password: true,
+  fromEmail: true,
+  fromName: true,
+  useSsl: true,
+  isActive: true,
+});
+
+export const insertEmailHistorySchema = createInsertSchema(emailHistory).pick({
+  toAddress: true,
+  subject: true,
+  message: true,
+  status: true,
+  errorMessage: true,
+});
+
+export const sendEmailSchema = z.object({
+  to: z.string().email("Please enter a valid email address"),
+  subject: z.string().min(1, "Subject is required"),
+  message: z.string().min(1, "Message is required"),
+});
+
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
@@ -91,3 +142,8 @@ export type InsertCaseType = z.infer<typeof insertCaseTypeSchema>;
 export type CaseType = typeof caseTypes.$inferSelect;
 export type InsertLegalRequest = z.infer<typeof insertLegalRequestSchema>;
 export type LegalRequest = typeof legalRequests.$inferSelect;
+export type InsertSmtpSettings = z.infer<typeof insertSmtpSettingsSchema>;
+export type SmtpSettings = typeof smtpSettings.$inferSelect;
+export type InsertEmailHistory = z.infer<typeof insertEmailHistorySchema>;
+export type EmailHistory = typeof emailHistory.$inferSelect;
+export type SendEmail = z.infer<typeof sendEmailSchema>;
