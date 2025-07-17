@@ -1,6 +1,6 @@
 import { users, caseTypes, legalRequests, smtpSettings, emailHistory, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory } from "@shared/schema";
 import { db } from "./db";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, desc } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -19,6 +19,8 @@ export interface IStorage {
   getLegalRequest(id: number): Promise<LegalRequest | undefined>;
   getLegalRequestByNumber(requestNumber: string): Promise<LegalRequest | undefined>;
   getAllLegalRequests(): Promise<LegalRequest[]>;
+  updateLegalRequest(id: number, updates: Partial<InsertLegalRequest>): Promise<LegalRequest>;
+  deleteLegalRequest(id: number): Promise<void>;
   // SMTP Settings
   getSmtpSettings(): Promise<SmtpSettings | undefined>;
   createSmtpSettings(smtpSettings: InsertSmtpSettings): Promise<SmtpSettings>;
@@ -118,19 +120,24 @@ export class DatabaseStorage implements IStorage {
     return legalRequest || undefined;
   }
 
-  async getLegalRequestByNumber(requestNumber: string): Promise<LegalRequest | undefined> {
-    const [legalRequest] = await db
-      .select()
-      .from(legalRequests)
-      .where(eq(legalRequests.requestNumber, requestNumber));
-    return legalRequest || undefined;
-  }
-
   async getAllLegalRequests(): Promise<LegalRequest[]> {
     return await db
       .select()
       .from(legalRequests)
-      .orderBy(asc(legalRequests.createdAt));
+      .orderBy(desc(legalRequests.createdAt));
+  }
+
+  async updateLegalRequest(id: number, updates: Partial<InsertLegalRequest>): Promise<LegalRequest> {
+    const [legalRequest] = await db
+      .update(legalRequests)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(legalRequests.id, id))
+      .returning();
+    return legalRequest;
+  }
+
+  async deleteLegalRequest(id: number): Promise<void> {
+    await db.delete(legalRequests).where(eq(legalRequests.id, id));
   }
 
   // SMTP Settings operations

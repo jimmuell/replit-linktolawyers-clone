@@ -1,0 +1,484 @@
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { ArrowLeft, Eye, Edit, Trash2, Plus, Search, Filter } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+
+interface LegalRequest {
+  id: number;
+  requestNumber: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  caseType: string;
+  caseDescription: string;
+  urgencyLevel: string;
+  budgetRange: string;
+  location: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export default function RequestManagementPage() {
+  const { user, loading } = useAuth();
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRequest, setSelectedRequest] = useState<LegalRequest | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  
+  const [editFormData, setEditFormData] = useState<Partial<LegalRequest>>({});
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'admin')) {
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
+
+  // Fetch legal requests
+  const { data: requests, isLoading, error } = useQuery<LegalRequest[]>({
+    queryKey: ['/api/legal-requests'],
+    retry: false,
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest(`/api/legal-requests/${id}`, {
+        method: 'DELETE',
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
+      toast({
+        title: "Request deleted",
+        description: "The legal request has been successfully deleted.",
+      });
+      setIsDeleteModalOpen(false);
+      setSelectedRequest(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to delete request",
+        description: "An error occurred while deleting the request.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: async (data: { id: number; updates: Partial<LegalRequest> }) => {
+      const response = await apiRequest(`/api/legal-requests/${data.id}`, {
+        method: 'PUT',
+        body: data.updates,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
+      toast({
+        title: "Request updated",
+        description: "The legal request has been successfully updated.",
+      });
+      setIsEditModalOpen(false);
+      setSelectedRequest(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to update request",
+        description: "An error occurred while updating the request.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (loading || !user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredRequests = requests?.filter(request => 
+    request.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    request.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    request.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    request.requestNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    request.caseType.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
+
+  const handleView = (request: LegalRequest) => {
+    setSelectedRequest(request);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEdit = (request: LegalRequest) => {
+    setSelectedRequest(request);
+    setEditFormData(request);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (request: LegalRequest) => {
+    setSelectedRequest(request);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleUpdateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedRequest) {
+      updateMutation.mutate({ id: selectedRequest.id, updates: editFormData });
+    }
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedRequest) {
+      deleteMutation.mutate(selectedRequest.id);
+    }
+  };
+
+  const getUrgencyBadge = (urgency: string) => {
+    switch (urgency?.toLowerCase()) {
+      case 'urgent':
+        return <Badge variant="destructive">Urgent</Badge>;
+      case 'high':
+        return <Badge variant="destructive">High</Badge>;
+      case 'moderate':
+        return <Badge variant="secondary">Moderate</Badge>;
+      case 'low':
+        return <Badge variant="outline">Low</Badge>;
+      default:
+        return <Badge variant="outline">{urgency || 'Not specified'}</Badge>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation Bar */}
+      <nav className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/admin-dashboard')}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Dashboard</span>
+            </Button>
+            <div className="h-6 w-px bg-gray-300"></div>
+            <h1 className="text-xl font-semibold text-gray-900">Request Management</h1>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl">Legal Requests</CardTitle>
+                  <CardDescription>
+                    Manage and track all legal service requests
+                  </CardDescription>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <Input
+                      placeholder="Search requests..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-64"
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading requests...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-8">
+                  <p className="text-red-600">Error loading requests. Please try again.</p>
+                </div>
+              ) : filteredRequests.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">No requests found.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Request #</TableHead>
+                        <TableHead>Client</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Case Type</TableHead>
+                        <TableHead>Urgency</TableHead>
+                        <TableHead>Budget</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredRequests.map((request) => (
+                        <TableRow key={request.id}>
+                          <TableCell className="font-mono text-sm">
+                            {request.requestNumber}
+                          </TableCell>
+                          <TableCell>
+                            {request.firstName} {request.lastName}
+                          </TableCell>
+                          <TableCell>{request.email}</TableCell>
+                          <TableCell className="max-w-48">
+                            <div className="truncate" title={request.caseType}>
+                              {request.caseType}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {getUrgencyBadge(request.urgencyLevel)}
+                          </TableCell>
+                          <TableCell>{request.budgetRange || 'Not specified'}</TableCell>
+                          <TableCell>
+                            {format(new Date(request.createdAt), 'MMM d, yyyy')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleView(request)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(request)}
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(request)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* View Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Request Details</DialogTitle>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Request Number</Label>
+                  <p className="font-mono">{selectedRequest.requestNumber}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Date Created</Label>
+                  <p>{format(new Date(selectedRequest.createdAt), 'MMM d, yyyy h:mm a')}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Name</Label>
+                  <p>{selectedRequest.firstName} {selectedRequest.lastName}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Email</Label>
+                  <p>{selectedRequest.email}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Phone</Label>
+                  <p>{selectedRequest.phoneNumber || 'Not provided'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Location</Label>
+                  <p>{selectedRequest.location || 'Not provided'}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Urgency Level</Label>
+                  <div className="mt-1">{getUrgencyBadge(selectedRequest.urgencyLevel)}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Budget Range</Label>
+                  <p>{selectedRequest.budgetRange || 'Not specified'}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Case Type</Label>
+                <p className="mt-1">{selectedRequest.caseType}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Case Description</Label>
+                <p className="mt-1 text-sm text-gray-700 leading-relaxed">{selectedRequest.caseDescription}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Request</DialogTitle>
+          </DialogHeader>
+          {selectedRequest && (
+            <form onSubmit={handleUpdateSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={editFormData.firstName || ''}
+                    onChange={(e) => setEditFormData({...editFormData, firstName: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={editFormData.lastName || ''}
+                    onChange={(e) => setEditFormData({...editFormData, lastName: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={editFormData.email || ''}
+                    onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phoneNumber">Phone Number</Label>
+                  <Input
+                    id="phoneNumber"
+                    value={editFormData.phoneNumber || ''}
+                    onChange={(e) => setEditFormData({...editFormData, phoneNumber: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={editFormData.location || ''}
+                    onChange={(e) => setEditFormData({...editFormData, location: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="budgetRange">Budget Range</Label>
+                  <Input
+                    id="budgetRange"
+                    value={editFormData.budgetRange || ''}
+                    onChange={(e) => setEditFormData({...editFormData, budgetRange: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="caseType">Case Type</Label>
+                <Input
+                  id="caseType"
+                  value={editFormData.caseType || ''}
+                  onChange={(e) => setEditFormData({...editFormData, caseType: e.target.value})}
+                />
+              </div>
+              <div>
+                <Label htmlFor="caseDescription">Case Description</Label>
+                <Textarea
+                  id="caseDescription"
+                  value={editFormData.caseDescription || ''}
+                  onChange={(e) => setEditFormData({...editFormData, caseDescription: e.target.value})}
+                  rows={4}
+                />
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsEditModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Updating...' : 'Update Request'}
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Request</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>Are you sure you want to delete this request? This action cannot be undone.</p>
+            {selectedRequest && (
+              <div className="bg-gray-50 p-3 rounded">
+                <p className="font-medium">{selectedRequest.firstName} {selectedRequest.lastName}</p>
+                <p className="text-sm text-gray-600">{selectedRequest.requestNumber}</p>
+              </div>
+            )}
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteConfirm}
+                disabled={deleteMutation.isPending}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete Request'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

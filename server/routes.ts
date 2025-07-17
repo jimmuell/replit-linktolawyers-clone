@@ -318,6 +318,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all legal requests (for admin)
+  app.get("/api/legal-requests", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const legalRequests = await storage.getAllLegalRequests();
+      res.json(legalRequests);
+    } catch (error) {
+      console.error("Error fetching legal requests:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch legal requests" });
+    }
+  });
+
+  // Update legal request
+  app.put("/api/legal-requests/:id", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertLegalRequestSchema.partial().parse(req.body);
+      const legalRequest = await storage.updateLegalRequest(id, validatedData);
+      res.json(legalRequest);
+    } catch (error) {
+      console.error("Error updating legal request:", error);
+      res.status(500).json({ success: false, error: "Failed to update legal request" });
+    }
+  });
+
+  // Delete legal request
+  app.delete("/api/legal-requests/:id", requireAuth, requireRole('admin'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteLegalRequest(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting legal request:", error);
+      res.status(500).json({ success: false, error: "Failed to delete legal request" });
+    }
+  });
+
   app.get("/api/admin/legal-requests", requireAuth, requireRole('admin'), async (req, res) => {
     try {
       const legalRequests = await storage.getAllLegalRequests();

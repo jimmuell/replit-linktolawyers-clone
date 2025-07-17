@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ChevronDown, Settings } from 'lucide-react';
 import { useEffect } from 'react';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
+import RequestManagementCard from '@/components/RequestManagementCard';
 
 export default function AdminDashboard() {
   const { user, logout, loading } = useAuth();
@@ -75,9 +76,10 @@ export default function AdminDashboard() {
           <p className="text-gray-600">Manage your legal services platform from here.</p>
         </div>
 
-        {/* SMTP Status Card */}
+        {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <SmtpStatusCard />
+          <RequestManagementCard />
         </div>
       </div>
     </div>
