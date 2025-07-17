@@ -79,42 +79,6 @@ export default function AdminDashboard() {
         <div className="mb-8">
           <SmtpConfigCard />
         </div>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest updates and actions on your platform</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">New attorney registration</p>
-                  <p className="text-xs text-gray-500">John Smith registered as an immigration attorney</p>
-                </div>
-                <p className="text-xs text-gray-500">2 hours ago</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Case completed</p>
-                  <p className="text-xs text-gray-500">Immigration case #12345 marked as completed</p>
-                </div>
-                <p className="text-xs text-gray-500">4 hours ago</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">New client inquiry</p>
-                  <p className="text-xs text-gray-500">Client requested consultation for visa application</p>
-                </div>
-                <p className="text-xs text-gray-500">6 hours ago</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
