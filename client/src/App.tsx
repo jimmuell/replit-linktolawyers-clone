@@ -13,6 +13,8 @@ import Help from "@/pages/help";
 import AttorneyOnboarding from "@/pages/attorney-onboarding";
 import AttorneyFeeSchedule from "@/pages/attorney-fee-schedule";
 import BlogManagement from "@/pages/blog-management";
+import Blog from "@/pages/blog";
+import BlogPostPage from "@/pages/blog-post";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -25,6 +27,8 @@ function Router() {
       <Route path="/attorney-onboarding" component={AttorneyOnboarding} />
       <Route path="/attorney-fee-schedule" component={AttorneyFeeSchedule} />
       <Route path="/blog-management" component={BlogManagement} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/help" component={Help} />
       <Route component={NotFound} />

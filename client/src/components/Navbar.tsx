@@ -51,9 +51,9 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             <Link href="/free-resources" className="text-gray-700 hover:text-primary transition-colors">
               Free resources
             </Link>
-            <button className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/blog" className="text-gray-700 hover:text-primary transition-colors">
               Blog
-            </button>
+            </Link>
             <Link href="/help" className="text-gray-700 hover:text-primary transition-colors">
               Help
             </Link>
@@ -154,9 +154,13 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
               >
                 Free resources
               </Link>
-              <button className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors">
+              <Link 
+                href="/blog" 
+                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Blog
-              </button>
+              </Link>
               <Link 
                 href="/help" 
                 className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
