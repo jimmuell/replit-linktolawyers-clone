@@ -41,6 +41,7 @@ interface EmailTemplateModalProps {
 
 const templateTypes = [
   { value: 'legal_request_confirmation', label: 'Legal Request Confirmation' },
+  { value: 'legal_request_confirmation_spanish', label: 'Legal Request Confirmation (Spanish)' },
   { value: 'attorney_assignment', label: 'Attorney Assignment' },
   { value: 'welcome', label: 'Welcome Email' },
   { value: 'password_reset', label: 'Password Reset' },
