@@ -18,6 +18,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **English Homepage Button Style Update** (July 18, 2025): Flipped button styles in English homepage navbar
+  - Sign In button: Changed to white background with black text (outline style)
+  - Español button: Changed to black background with white text (solid style)
+  - Updated both desktop and mobile menu versions for consistency
+  - Enhanced visual emphasis on Spanish language option
+
+- **Complete Spanish Track Request Functionality** (July 18, 2025): Built comprehensive Spanish request tracking system
+  - Created TrackRequestModalSpanish component with complete Spanish translations
+  - Added Spanish status translations to statusCodes.ts with getStatusInfoSpanish helper
+  - Implemented Spanish date formatting using date-fns/locale
+  - Translated all UI elements including "Rastrea Tu Solicitud" button
+  - Added Spanish translations for case types, urgency levels, and error messages
+  - Integrated Spanish track request modal into Spanish homepage
+
 - **Complete Spanish Legal Request Form Implementation** (July 18, 2025): Created fully functional Spanish legal request form with complete functionality
   - Built SpanishLegalRequestForm component with all form fields translated to Spanish
   - Integrated form with existing Spanish homepage at /es/ URL path

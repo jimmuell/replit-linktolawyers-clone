@@ -97,14 +97,15 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
               </DropdownMenu>
             ) : (
               <Button 
-                className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
+                variant="outline"
+                className="border-gray-300 text-black bg-white hover:bg-gray-50 rounded-full px-6"
                 onClick={() => setIsLoginModalOpen(true)}
               >
                 Sign In
               </Button>
             )}
             <Link href="/es" className="text-gray-700 hover:text-primary transition-colors">
-              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
+              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6">
                 Español
               </Button>
             </Link>
@@ -208,7 +209,8 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   </div>
                 ) : (
                   <Button 
-                    className="w-full bg-black text-white hover:bg-gray-800 rounded-full"
+                    variant="outline"
+                    className="w-full border-gray-300 text-black bg-white hover:bg-gray-50 rounded-full"
                     onClick={() => {
                       setIsLoginModalOpen(true);
                       setIsMenuOpen(false);
@@ -219,8 +221,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 )}
                 <Link href="/es" onClick={() => setIsMenuOpen(false)}>
                   <Button 
-                    variant="outline" 
-                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
+                    className="w-full bg-black text-white hover:bg-gray-800 rounded-full"
                   >
                     Español
                   </Button>
