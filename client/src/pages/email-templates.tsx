@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Mail, Plus, Edit, Trash2, Eye, Power, PowerOff, Calendar, Type, Code, Monitor, Smartphone, Tablet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,6 +66,32 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
       isActive: template?.isActive ?? true,
     },
   });
+
+  // Reset form when template changes
+  useEffect(() => {
+    if (template) {
+      form.reset({
+        name: template.name || '',
+        subject: template.subject || '',
+        htmlContent: template.htmlContent || '',
+        textContent: template.textContent || '',
+        templateType: template.templateType || '',
+        variables: template.variables || '',
+        isActive: template.isActive ?? true,
+      });
+    } else {
+      // Reset to empty values for create mode
+      form.reset({
+        name: '',
+        subject: '',
+        htmlContent: '',
+        textContent: '',
+        templateType: '',
+        variables: '',
+        isActive: true,
+      });
+    }
+  }, [template, form]);
 
   const watchedHtmlContent = form.watch('htmlContent');
 
