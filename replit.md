@@ -18,6 +18,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Legal Request Form UX Improvements** (July 18, 2025): Enhanced form submission and cancellation behavior
+  - Fixed prefill checkbox reset issue - now properly clears after form submission
+  - Added cancel confirmation dialog with warning message about data deletion
+  - Improved confirmation modal behavior - keeps success message visible until user manually closes it
+  - Enhanced user experience with proper form state management and clear feedback
+  - Maintained production email template system integration with automatic confirmation emails
+
+- **Production Email Template System** (July 18, 2025): Implemented automatic use of admin-configured email templates
+  - Fixed legal request form to automatically use production email templates from database
+  - Modified form submission to call confirmation email API with proper template variable processing
+  - Added proper error handling and user feedback for email sending success/failure
+  - System now automatically processes template variables and sends confirmation emails using admin-configured templates
+  - Eliminated hardcoded email templates in favor of dynamic database-driven template system
+
 - **Dedicated Blog Header System** (July 17, 2025): Created separate header component for blog pages with independent navigation
   - Built BlogHeader component with authentication, mobile menu, and navigation functionality
   - Main blog listing page (/blog) includes back button to return to home page

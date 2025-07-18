@@ -262,22 +262,9 @@ export default function Home() {
               description: `Your request ${result.data.requestNumber} has been submitted and a confirmation email has been sent to ${formData.email}. Please check your inbox and spam folder.`,
             });
             
-            // Close the modal and reset form
-            setIsQuoteModalOpen(false);
-            setPrefillChecked(false); // Reset the prefill checkbox
-            setFormData({
-              firstName: '',
-              lastName: '',
-              caseType: '',
-              email: '',
-              phoneNumber: '',
-              caseDescription: '',
-              urgencyLevel: '',
-              budgetRange: '',
-              location: '',
-              captcha: '',
-              agreeToTerms: false
-            });
+            // Keep the modal open but show success state
+            setSubmittedRequestNumber(result.data.requestNumber);
+            // Don't close modal - let user close it manually after reading the confirmation
           } else {
             // Request was created but email failed
             toast({
@@ -285,22 +272,9 @@ export default function Home() {
               description: `Your request ${result.data.requestNumber} has been submitted successfully, but we couldn't send the confirmation email. Please save your request number for tracking.`,
               variant: "destructive",
             });
-            // Still close modal and reset form since request was created
-            setIsQuoteModalOpen(false);
-            setPrefillChecked(false);
-            setFormData({
-              firstName: '',
-              lastName: '',
-              caseType: '',
-              email: '',
-              phoneNumber: '',
-              caseDescription: '',
-              urgencyLevel: '',
-              budgetRange: '',
-              location: '',
-              captcha: '',
-              agreeToTerms: false
-            });
+            // Keep the modal open but show success state
+            setSubmittedRequestNumber(result.data.requestNumber);
+            // Don't close modal - let user close it manually after reading the confirmation
           }
         } catch (emailError) {
           console.error('Error sending confirmation email:', emailError);
@@ -310,22 +284,9 @@ export default function Home() {
             description: `Your request ${result.data.requestNumber} has been submitted successfully, but we couldn't send the confirmation email. Please save your request number for tracking.`,
             variant: "destructive",
           });
-          // Still close modal and reset form since request was created
-          setIsQuoteModalOpen(false);
-          setPrefillChecked(false);
-          setFormData({
-            firstName: '',
-            lastName: '',
-            caseType: '',
-            email: '',
-            phoneNumber: '',
-            caseDescription: '',
-            urgencyLevel: '',
-            budgetRange: '',
-            location: '',
-            captcha: '',
-            agreeToTerms: false
-          });
+          // Keep the modal open but show success state
+          setSubmittedRequestNumber(result.data.requestNumber);
+          // Don't close modal - let user close it manually after reading the confirmation
         }
       } else {
         alert('Error submitting request: ' + result.error);
