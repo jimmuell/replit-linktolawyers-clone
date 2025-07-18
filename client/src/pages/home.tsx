@@ -182,15 +182,59 @@ export default function Home() {
       if (result.success) {
         setSubmittedRequestNumber(result.data.requestNumber);
         
-        // Generate email preview
-        const selectedCaseType = caseTypes.find(ct => ct.value === formData.caseType);
-        const emailTemplate = generateConfirmationEmail({
-          ...formData,
-          requestNumber: result.data.requestNumber
-        }, selectedCaseType);
-        
-        setEmailPreview(emailTemplate);
-        setIsEmailPreviewOpen(true);
+        // Automatically send confirmation email using production template
+        try {
+          const emailResponse = await fetch(`/api/legal-requests/${result.data.requestNumber}/send-confirmation`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              // Don't send emailTemplate - let the backend use the production template
+            })
+          });
+          
+          const emailResult = await emailResponse.json();
+          
+          if (emailResult.success) {
+            // Show success message with email sent confirmation
+            toast({
+              title: "Request submitted successfully!",
+              description: `Your request ${result.data.requestNumber} has been submitted and a confirmation email has been sent to ${formData.email}. Please check your inbox and spam folder.`,
+            });
+            
+            // Close the modal and reset form
+            setIsQuoteModalOpen(false);
+            setFormData({
+              firstName: '',
+              lastName: '',
+              caseType: '',
+              email: '',
+              phoneNumber: '',
+              caseDescription: '',
+              urgencyLevel: '',
+              budgetRange: '',
+              location: '',
+              captcha: '',
+              agreeToTerms: false
+            });
+          } else {
+            // Request was created but email failed
+            toast({
+              title: "Request submitted",
+              description: `Your request ${result.data.requestNumber} has been submitted successfully, but we couldn't send the confirmation email. Please save your request number for tracking.`,
+              variant: "destructive",
+            });
+          }
+        } catch (emailError) {
+          console.error('Error sending confirmation email:', emailError);
+          // Request was created but email failed
+          toast({
+            title: "Request submitted",
+            description: `Your request ${result.data.requestNumber} has been submitted successfully, but we couldn't send the confirmation email. Please save your request number for tracking.`,
+            variant: "destructive",
+          });
+        }
       } else {
         alert('Error submitting request: ' + result.error);
       }
