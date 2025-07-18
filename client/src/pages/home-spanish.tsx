@@ -22,7 +22,7 @@ import TrackRequestModal from "@/components/TrackRequestModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import { Link } from "wouter";
-import girlThinkingSpanishImage from "@assets/thinking_girl_ai_6_1752847470770.png";
+import girlThinkingSpanishImage from "@assets/thinking_girl_ai_6_1752847708259.png";
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
