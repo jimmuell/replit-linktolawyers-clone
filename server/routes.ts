@@ -46,45 +46,15 @@ async function createTransporter() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Spanish site route - simple redirect to demonstrate
-  app.get('/es', (req, res) => {
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>LinkToLawyers - Sitio en Español</title>
-        <style>
-          body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; text-align: center; }
-          .container { background: #f8f9fa; padding: 40px; border-radius: 10px; }
-          h1 { color: #333; margin-bottom: 20px; }
-          p { color: #666; line-height: 1.6; margin-bottom: 30px; }
-          .button { display: inline-block; background: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 10px; }
-          .button:hover { background: #0056b3; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>🚀 Sitio en Español en Desarrollo</h1>
-          <p>La versión en español de LinkToLawyers está lista y funcionando. Actualmente está configurada para ser desplegada en <strong>linkto-abogados.com</strong>.</p>
-          <p>El sitio en español incluye:</p>
-          <ul style="text-align: left; display: inline-block;">
-            <li>Traducción completa de la página principal</li>
-            <li>Formularios de solicitud legal en español</li>
-            <li>Navegación y menús traducidos</li>
-            <li>Botón "English" para redirigir al sitio en inglés</li>
-          </ul>
-          <p>Para acceder al sitio en español completo, necesitas desplegarlo en un dominio separado o configurar un subdirectorio en el servidor.</p>
-          <a href="/" class="button">Ver Sitio en Inglés</a>
-        </div>
-      </body>
-      </html>
-    `);
+  // Spanish site routes - let the frontend handle these
+  app.get('/es', (req, res, next) => {
+    // Let the frontend handle this route
+    next();
   });
   
-  app.get('/spanish', (req, res) => {
-    res.redirect('/es');
+  app.get('/spanish', (req, res, next) => {
+    // Let the frontend handle this route
+    next();
   });
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {

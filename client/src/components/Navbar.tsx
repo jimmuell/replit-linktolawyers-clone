@@ -62,14 +62,15 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             </Link>
             
             {/* Language Toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.location.href = 'https://linkto-abogados.com'}
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              Español
-            </Button>
+            <Link href="/es">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Español
+              </Button>
+            </Link>
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
