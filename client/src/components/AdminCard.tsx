@@ -7,54 +7,41 @@ import { useLocation } from 'wouter';
 interface AdminCardProps {
   title: string;
   description: string;
-  icon: LucideIcon | React.ReactElement;
+  icon: LucideIcon;
   iconColor?: string;
-  route?: string;
+  route: string;
   isLoading?: boolean;
   error?: any;
   children: React.ReactNode;
   actionText?: string;
-  actionButton?: React.ReactElement;
 }
 
 export default function AdminCard({
   title,
   description,
-  icon,
+  icon: Icon,
   iconColor = 'text-blue-600',
   route,
   isLoading = false,
   error = null,
   children,
-  actionText = 'Manage',
-  actionButton
+  actionText = 'Manage'
 }: AdminCardProps) {
   const [, setLocation] = useLocation();
 
   const handleCardClick = () => {
-    if (route) {
-      setLocation(route);
-    }
-  };
-
-  const renderIcon = () => {
-    if (typeof icon === 'function') {
-      const IconComponent = icon;
-      return <IconComponent className={`w-5 h-5 ${iconColor}`} />;
-    } else {
-      return icon;
-    }
+    setLocation(route);
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="cursor-pointer hover:shadow-lg transition-shadow">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {renderIcon()}
+            <Icon className={`w-5 h-5 ${iconColor}`} />
             {title}
           </div>
-          {route && <ChevronRight className="w-5 h-5 text-gray-400" />}
+          <ChevronRight className="w-5 h-5 text-gray-400" />
         </CardTitle>
         <CardDescription>
           {description}
@@ -74,18 +61,14 @@ export default function AdminCard({
           <>
             {children}
             <div className="flex justify-end pt-4 border-t">
-              {actionButton || (
-                route && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCardClick}
-                    className="text-xs"
-                  >
-                    {actionText}
-                  </Button>
-                )
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCardClick}
+                className="text-xs"
+              >
+                {actionText}
+              </Button>
             </div>
           </>
         )}

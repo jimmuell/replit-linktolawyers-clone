@@ -16,6 +16,7 @@ import BlogManagement from "@/pages/blog-management";
 import Blog from "@/pages/blog";
 import BlogPostPage from "@/pages/blog-post";
 import BlogPostEditor from "@/pages/blog-post-editor";
+import EmailTemplatesPage from "@/pages/email-templates";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/blog-management/edit/:id" component={BlogPostEditor} />
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPostPage} />
+      <Route path="/email-templates" component={EmailTemplatesPage} />
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/help" component={Help} />
       <Route component={NotFound} />
