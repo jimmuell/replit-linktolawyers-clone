@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Plus, Edit, Trash2, Eye, Power, PowerOff, Calendar, Type } from 'lucide-react';
+import { Mail, Plus, Edit, Trash2, Eye, Power, PowerOff, Calendar, Type, Code, Monitor, Smartphone, Tablet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { formatDistanceToNow } from 'date-fns';
@@ -50,6 +51,8 @@ const templateTypes = [
 function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
 
   const form = useForm<EmailTemplateForm>({
     resolver: zodResolver(emailTemplateSchema),
@@ -63,6 +66,37 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
       isActive: template?.isActive ?? true,
     },
   });
+
+  const watchedHtmlContent = form.watch('htmlContent');
+
+  const getPreviewStyles = () => {
+    switch (previewDevice) {
+      case 'mobile':
+        return { width: '375px', height: '667px' };
+      case 'tablet':
+        return { width: '768px', height: '1024px' };
+      default:
+        return { width: '100%', height: '600px' };
+    }
+  };
+
+  const renderVariablesHelp = () => {
+    const variablesArray = template?.variables ? JSON.parse(template.variables) : [];
+    if (variablesArray.length === 0) return null;
+
+    return (
+      <div className="mt-2 p-3 bg-blue-50 rounded-md">
+        <h4 className="text-sm font-medium text-blue-900 mb-2">Available Variables:</h4>
+        <div className="flex flex-wrap gap-1">
+          {variablesArray.map((variable: string) => (
+            <Badge key={variable} variant="secondary" className="text-xs">
+              {`{{${variable}}}`}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const createMutation = useMutation({
     mutationFn: async (data: EmailTemplateForm) => {
@@ -185,17 +219,78 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
         </div>
 
         <div>
-          <Label htmlFor="htmlContent">HTML Content</Label>
-          <Textarea
-            id="htmlContent"
-            {...form.register('htmlContent')}
-            placeholder="Enter HTML content"
-            className="min-h-[200px] font-mono"
-            readOnly={isReadOnly}
-          />
-          {form.formState.errors.htmlContent && (
-            <p className="text-sm text-red-600 mt-1">{form.formState.errors.htmlContent.message}</p>
-          )}
+          <Label>HTML Content</Label>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'edit' | 'preview')} className="w-full">
+            <div className="flex items-center justify-between mb-2">
+              <TabsList className="grid w-[300px] grid-cols-2">
+                <TabsTrigger value="edit" className="flex items-center gap-2">
+                  <Code className="w-4 h-4" />
+                  Edit HTML
+                </TabsTrigger>
+                <TabsTrigger value="preview" className="flex items-center gap-2">
+                  <Eye className="w-4 h-4" />
+                  Preview
+                </TabsTrigger>
+              </TabsList>
+              
+              {activeTab === 'preview' && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={previewDevice === 'desktop' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPreviewDevice('desktop')}
+                  >
+                    <Monitor className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={previewDevice === 'tablet' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPreviewDevice('tablet')}
+                  >
+                    <Tablet className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={previewDevice === 'mobile' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPreviewDevice('mobile')}
+                  >
+                    <Smartphone className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <TabsContent value="edit" className="space-y-4">
+              <Textarea
+                {...form.register('htmlContent')}
+                placeholder="Enter HTML content"
+                rows={15}
+                readOnly={isReadOnly}
+                className="font-mono text-sm"
+              />
+              {form.formState.errors.htmlContent && (
+                <p className="text-sm text-red-600 mt-1">{form.formState.errors.htmlContent.message}</p>
+              )}
+              {renderVariablesHelp()}
+            </TabsContent>
+            
+            <TabsContent value="preview" className="space-y-4">
+              <div className="flex justify-center">
+                <div 
+                  className="border border-gray-300 rounded-lg overflow-hidden bg-white"
+                  style={getPreviewStyles()}
+                >
+                  <div 
+                    className="w-full h-full overflow-auto"
+                    dangerouslySetInnerHTML={{ __html: watchedHtmlContent || '<p>No content to preview</p>' }}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         <div>
