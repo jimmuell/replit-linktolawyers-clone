@@ -4,18 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { MessageCircle, Phone, Mail, Clock, HelpCircle, Menu, X, ChevronDown, Settings, ArrowLeft, Search } from "lucide-react";
+import { MessageCircle, Phone, Mail, Clock, HelpCircle, Menu, X, ArrowLeft, Search } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import LoginModal from "@/components/LoginModal";
 import { Link } from "wouter";
 
 export default function Help() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -23,7 +18,6 @@ export default function Help() {
     category: '',
     message: ''
   });
-  const { user, logout } = useAuth();
 
   const handleInputChange = (field: string, value: string) => {
     setContactForm(prev => ({ ...prev, [field]: value }));
@@ -77,55 +71,17 @@ export default function Help() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold text-blue-600">
+              <Link href="/" className="text-2xl font-bold text-black">
                 LinkToLawyers
               </Link>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <Link href="/" className="text-gray-600 hover:text-black transition-colors">
                 <ArrowLeft className="w-4 h-4 inline mr-2" />
                 Back to Home
               </Link>
-              
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="" />
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.firstName} {user.lastName}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {user.role === 'admin' && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin">Admin Dashboard</Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => logout()}>
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button onClick={() => setIsLoginModalOpen(true)}>
-                  Sign In
-                </Button>
-              )}
             </div>
 
             {/* Mobile menu button */}
@@ -144,32 +100,9 @@ export default function Help() {
           {isMenuOpen && (
             <div className="md:hidden py-4 border-t border-gray-200">
               <div className="space-y-2">
-                <Link href="/" className="block px-3 py-2 text-gray-600 hover:text-blue-600">
+                <Link href="/" className="block px-3 py-2 text-gray-600 hover:text-black">
                   Back to Home
                 </Link>
-                {user ? (
-                  <div className="px-3 py-2 space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="" />
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.firstName} {user.lastName}</span>
-                      <Button variant="ghost" size="sm" onClick={() => logout()}>
-                        Sign Out
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button 
-                    onClick={() => setIsLoginModalOpen(true)}
-                    className="mx-3"
-                  >
-                    Sign In
-                  </Button>
-                )}
               </div>
             </div>
           )}
@@ -177,11 +110,11 @@ export default function Help() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <section className="bg-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Help & Support</h1>
-            <p className="text-xl text-blue-100 mb-8">
+            <p className="text-xl text-gray-300 mb-8">
               Find answers to your questions or get in touch with our support team
             </p>
             <div className="max-w-md mx-auto">
@@ -212,7 +145,7 @@ export default function Help() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
-                <MessageCircle className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <MessageCircle className="w-12 h-12 text-black mx-auto mb-4" />
                 <CardTitle>Live Chat</CardTitle>
                 <CardDescription>
                   Chat with our support team in real-time
@@ -223,7 +156,7 @@ export default function Help() {
                   <Clock className="w-4 h-4 inline mr-1" />
                   Available 24/7
                 </p>
-                <Button className="w-full">
+                <Button className="w-full bg-black text-white hover:bg-gray-800">
                   Start Chat
                 </Button>
               </CardContent>
@@ -231,7 +164,7 @@ export default function Help() {
 
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
-                <Phone className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <Phone className="w-12 h-12 text-black mx-auto mb-4" />
                 <CardTitle>Phone Support</CardTitle>
                 <CardDescription>
                   Speak directly with a support representative
@@ -242,7 +175,7 @@ export default function Help() {
                   <Clock className="w-4 h-4 inline mr-1" />
                   Mon-Fri 9AM-6PM EST
                 </p>
-                <Button className="w-full">
+                <Button className="w-full bg-black text-white hover:bg-gray-800">
                   Call Now
                 </Button>
               </CardContent>
@@ -250,7 +183,7 @@ export default function Help() {
 
             <Card className="text-center hover:shadow-lg transition-shadow">
               <CardHeader>
-                <Mail className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                <Mail className="w-12 h-12 text-black mx-auto mb-4" />
                 <CardTitle>Email Support</CardTitle>
                 <CardDescription>
                   Send us a detailed message about your issue
@@ -261,7 +194,7 @@ export default function Help() {
                   <Clock className="w-4 h-4 inline mr-1" />
                   Response within 24 hours
                 </p>
-                <Button className="w-full">
+                <Button className="w-full bg-black text-white hover:bg-gray-800">
                   Send Email
                 </Button>
               </CardContent>
@@ -376,7 +309,7 @@ export default function Help() {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full bg-black text-white hover:bg-gray-800">
                     Send Message
                   </Button>
                 </form>
@@ -386,25 +319,24 @@ export default function Help() {
         </section>
 
         {/* Additional Resources */}
-        <section className="text-center bg-blue-50 rounded-lg p-8">
+        <section className="text-center bg-gray-100 rounded-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Need More Help?</h2>
           <p className="text-lg text-gray-600 mb-6">
             Explore our resources or connect with our community
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/free-resources">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="border-black text-black hover:bg-black hover:text-white">
                 View Free Resources
               </Button>
             </Link>
-            <Button size="lg">
+            <Button size="lg" className="bg-black text-white hover:bg-gray-800">
               Join Community Forum
             </Button>
           </div>
         </section>
       </div>
 
-      <LoginModal open={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
 }
