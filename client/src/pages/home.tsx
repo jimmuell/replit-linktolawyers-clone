@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGr
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Mail } from "lucide-react";
+import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Mail, Copy, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -53,6 +53,7 @@ export default function Home() {
   const [emailPreview, setEmailPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
@@ -139,6 +140,7 @@ export default function Home() {
         // Reset everything when closing
         setSubmittedRequestNumber(null);
         setPrefillChecked(false);
+        setIsCopied(false);
         setFormData({
           firstName: '',
           lastName: '',
@@ -162,6 +164,7 @@ export default function Home() {
     setIsQuoteModalOpen(false);
     setSubmittedRequestNumber(null);
     setPrefillChecked(false);
+    setIsCopied(false);
     setFormData({
       firstName: '',
       lastName: '',
@@ -175,6 +178,29 @@ export default function Home() {
       captcha: '',
       agreeToTerms: false
     });
+  };
+
+  // Handle copy to clipboard
+  const handleCopyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setIsCopied(true);
+      toast({
+        title: "Copied to clipboard!",
+        description: `Request number ${text} has been copied to your clipboard.`,
+      });
+      // Reset the copy state after 2 seconds
+      setTimeout(() => {
+        setIsCopied(false);
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy to clipboard. Please manually copy the request number.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handlePrefillToggle = (checked: boolean) => {
@@ -619,10 +645,21 @@ export default function Home() {
                 <p className="text-green-700 mb-3">
                   Your legal request has been submitted and assigned the following number:
                 </p>
-                <div className="bg-white border border-green-300 rounded-lg p-3 inline-block">
+                <div className="bg-white border border-green-300 rounded-lg p-3 inline-flex items-center gap-2">
                   <span className="text-xl font-mono font-bold text-green-800">
                     {submittedRequestNumber}
                   </span>
+                  <button
+                    onClick={() => handleCopyToClipboard(submittedRequestNumber)}
+                    className="flex items-center justify-center w-8 h-8 rounded-md bg-green-50 hover:bg-green-100 text-green-600 hover:text-green-700 transition-colors"
+                    title="Copy to clipboard"
+                  >
+                    {isCopied ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
                 <p className="text-sm text-green-600 mt-3">
                   Please save this number for your records.
@@ -641,6 +678,7 @@ export default function Home() {
                   setIsEmailPreviewOpen(false);
                   setEmailPreview(null);
                   setPrefillChecked(false); // Reset the prefill checkbox
+                  setIsCopied(false); // Reset copy state
                   // Reset form
                   setFormData({
                     firstName: '',
