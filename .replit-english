@@ -1,0 +1,13 @@
+# English Version Configuration
+[deployment]
+run = ["npm", "run", "dev"]
+deploymentTarget = "cloudrun"
+ignoredPaths = ["client-spanish", "*.md", "node_modules", "dist"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[env]
+SITE_LANGUAGE = "en"
+SITE_DOMAIN = "linkto-lawyers.com"
