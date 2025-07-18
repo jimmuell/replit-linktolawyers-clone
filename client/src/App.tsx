@@ -23,6 +23,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/smtp-config" component={SmtpConfigPage} />
       <Route path="/request-management" component={RequestManagementPage} />
