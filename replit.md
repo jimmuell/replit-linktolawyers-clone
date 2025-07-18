@@ -77,6 +77,15 @@ Preferred communication style: Simple, everyday language.
   - System now automatically processes template variables and sends confirmation emails using admin-configured templates
   - Eliminated hardcoded email templates in favor of dynamic database-driven template system
 
+- **Custom Confirmation Dialog System** (July 18, 2025): Replaced JavaScript alerts with professional custom confirmation dialogs
+  - Created reusable ConfirmDialog component using Radix UI AlertDialog primitives
+  - Replaced window.confirm alerts in blog management page with custom delete confirmation dialog
+  - Replaced window.confirm alerts in email templates page with custom delete confirmation dialog
+  - Replaced JavaScript alerts in home page with proper toast notifications for error handling
+  - Added destructive styling variant for delete operations with red color scheme
+  - Improved user experience with consistent, professional confirmation dialogs across admin dashboard
+  - All confirmation dialogs now show specific item names and "This action cannot be undone" warnings
+
 - **Blog Display Improvements** (July 18, 2025): Enhanced blog page user experience with cleaner content display
   - Removed help link from blog page navigation for cleaner interface
   - Fixed HTML content display issue by replacing raw HTML with user-friendly text previews

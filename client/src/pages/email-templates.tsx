@@ -19,6 +19,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import type { EmailTemplate } from '@shared/schema';
 import AdminNavbar from '@/components/AdminNavbar';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 const emailTemplateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -408,6 +409,8 @@ export default function EmailTemplatesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | undefined>();
   const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null);
 
   const { data: templates, isLoading } = useQuery<EmailTemplate[]>({
     queryKey: ['/api/email-templates'],
@@ -468,8 +471,14 @@ export default function EmailTemplatesPage() {
   };
 
   const handleDelete = (template: EmailTemplate) => {
-    if (window.confirm(`Are you sure you want to delete "${template.name}"?`)) {
-      deleteMutation.mutate(template.id);
+    setTemplateToDelete(template);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (templateToDelete) {
+      deleteMutation.mutate(templateToDelete.id);
+      setTemplateToDelete(null);
     }
   };
 
@@ -649,6 +658,17 @@ export default function EmailTemplatesPage() {
           mode={modalMode}
         />
       </Dialog>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        title="Delete Email Template"
+        description={`Are you sure you want to delete "${templateToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="destructive"
+      />
     </div>
   );
 }

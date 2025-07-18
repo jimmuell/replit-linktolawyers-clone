@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Edit, Trash2, Eye, EyeOff, Calendar, User, FileText, T
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,8 @@ const BlogManagementCard = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [, navigate] = useLocation();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
 
   const { data: blogPosts, isLoading } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog-posts'],
@@ -40,8 +43,14 @@ const BlogManagementCard = () => {
   });
 
   const handleDeletePost = (post: BlogPost) => {
-    if (window.confirm('Are you sure you want to delete this blog post?')) {
-      deleteMutation.mutate(post.id);
+    setPostToDelete(post);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (postToDelete) {
+      deleteMutation.mutate(postToDelete.id);
+      setPostToDelete(null);
     }
   };
 
@@ -153,7 +162,17 @@ const BlogManagementCard = () => {
           </div>
         )}
 
-
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={confirmDelete}
+          title="Delete Blog Post"
+          description={`Are you sure you want to delete "${postToDelete?.title}"? This action cannot be undone.`}
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="destructive"
+        />
       </CardContent>
     </Card>
   );

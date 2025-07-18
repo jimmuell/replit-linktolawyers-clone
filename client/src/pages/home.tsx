@@ -315,11 +315,19 @@ export default function Home() {
           // Don't close modal - let user close it manually after reading the confirmation
         }
       } else {
-        alert('Error submitting request: ' + result.error);
+        toast({
+          title: "Error submitting request",
+          description: result.error,
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Error submitting request. Please try again.');
+      toast({
+        title: "Error submitting request",
+        description: "Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
