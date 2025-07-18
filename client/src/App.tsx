@@ -11,6 +11,7 @@ import RequestManagementPage from "@/pages/request-management";
 import FreeResources from "@/pages/free-resources";
 import FreeResourcesSpanish from "@/pages/free-resources-spanish";
 import Help from "@/pages/help";
+import HelpSpanish from "@/pages/help-spanish";
 import AttorneyOnboarding from "@/pages/attorney-onboarding";
 import AttorneyFeeSchedule from "@/pages/attorney-fee-schedule";
 import BlogManagement from "@/pages/blog-management";
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/es/recursos-gratuitos" component={FreeResourcesSpanish} />
       <Route path="/help" component={Help} />
+      <Route path="/es/ayuda" component={HelpSpanish} />
       <Route component={NotFound} />
     </Switch>
   );
