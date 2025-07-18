@@ -1,18 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpen, Download, FileText, Video, Users, Menu, X, ChevronDown, Settings, Home, ArrowLeft } from "lucide-react";
+import { BookOpen, Download, FileText, Video, Users, Menu, X, ArrowLeft } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import LoginModal from "@/components/LoginModal";
 import { Link } from "wouter";
 
 export default function FreeResources() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const { user, logout } = useAuth();
 
   const resources = [
     {
@@ -107,44 +101,6 @@ export default function FreeResources() {
                 <ArrowLeft className="w-4 h-4 inline mr-2" />
                 Back to Home
               </Link>
-              
-              {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="" />
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.firstName} {user.lastName}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {user.role === 'admin' && (
-                      <DropdownMenuItem asChild>
-                        <Link href="/admin">Admin Dashboard</Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuItem>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => logout()}>
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <Button onClick={() => setIsLoginModalOpen(true)}>
-                  Sign In
-                </Button>
-              )}
             </div>
 
             {/* Mobile menu button */}
@@ -166,29 +122,6 @@ export default function FreeResources() {
                 <Link href="/" className="block px-3 py-2 text-gray-600 hover:text-blue-600">
                   Back to Home
                 </Link>
-                {user ? (
-                  <div className="px-3 py-2 space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src="" />
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{user.firstName} {user.lastName}</span>
-                      <Button variant="ghost" size="sm" onClick={() => logout()}>
-                        Sign Out
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button 
-                    onClick={() => setIsLoginModalOpen(true)}
-                    className="mx-3"
-                  >
-                    Sign In
-                  </Button>
-                )}
               </div>
             </div>
           )}
@@ -312,7 +245,6 @@ export default function FreeResources() {
         </section>
       </div>
 
-      <LoginModal open={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
     </div>
   );
 }
