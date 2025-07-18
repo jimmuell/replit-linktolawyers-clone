@@ -332,6 +332,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send Spanish confirmation email for legal request
+  app.post("/api/legal-requests/:requestNumber/send-confirmation-spanish", async (req, res) => {
+    try {
+      const { requestNumber } = req.params;
+      const { overrideEmail } = req.body;
+      
+      // Get the legal request to find the recipient email
+      const legalRequest = await storage.getLegalRequestByNumber(requestNumber);
+      if (!legalRequest) {
+        return res.status(404).json({ success: false, error: "Legal request not found" });
+      }
+      
+      // Get SMTP settings
+      const smtpSettings = await storage.getSmtpSettings();
+      if (!smtpSettings) {
+        return res.status(500).json({ success: false, error: "SMTP not configured" });
+      }
+      
+      // Use override email if provided, otherwise use the legal request email
+      const recipientEmail = overrideEmail || legalRequest.email;
+      
+      // Get case type data for better template processing
+      const caseTypeData = await storage.getCaseTypeByValue(legalRequest.caseType);
+      
+      // Get template variables for Spanish legal request confirmation
+      const templateVariables = getLegalRequestConfirmationVariables(legalRequest, caseTypeData);
+      
+      // Get processed Spanish template from database
+      const processedTemplate = await getProcessedTemplate('legal_request_confirmation_spanish', templateVariables);
+      
+      if (!processedTemplate) {
+        return res.status(500).json({ success: false, error: "Spanish confirmation template not found" });
+      }
+      
+      const finalEmailTemplate = {
+        subject: processedTemplate.subject,
+        html: processedTemplate.html,
+        text: processedTemplate.text
+      };
+      
+      // Create transporter and send email
+      const transporter = await createTransporter();
+      
+      const mailOptions = {
+        from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
+        to: recipientEmail,
+        subject: finalEmailTemplate.subject,
+        html: finalEmailTemplate.html,
+        text: finalEmailTemplate.text || ''
+      };
+
+      try {
+        const result = await transporter.sendMail(mailOptions);
+        
+        // Store successful email in history
+        await storage.createEmailHistory({
+          toAddress: recipientEmail,
+          subject: finalEmailTemplate.subject,
+          message: finalEmailTemplate.html,
+          status: 'sent',
+          errorMessage: null,
+        });
+
+        res.json({ 
+          success: true, 
+          message: "Spanish confirmation email sent successfully",
+          messageId: result.messageId 
+        });
+      } catch (emailError: any) {
+        // Store failed email in history
+        await storage.createEmailHistory({
+          toAddress: recipientEmail,
+          subject: finalEmailTemplate.subject,
+          message: finalEmailTemplate.html,
+          status: 'failed',
+          errorMessage: emailError.message,
+        });
+
+        res.status(500).json({ 
+          success: false, 
+          error: `Failed to send Spanish email: ${emailError.message}` 
+        });
+      }
+    } catch (error) {
+      console.error("Error sending Spanish confirmation email:", error);
+      res.status(500).json({ success: false, error: "Failed to send Spanish confirmation email" });
+    }
+  });
+
   app.get("/api/legal-requests/:requestNumber", async (req, res) => {
     try {
       const requestNumber = req.params.requestNumber;

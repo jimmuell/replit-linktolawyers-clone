@@ -1,26 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Mail, Copy, Check } from "lucide-react";
+import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import LoginModal from "@/components/LoginModal";
-import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
-import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
-import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import NavbarSpanish from "@/components/NavbarSpanish";
+import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
 import { Link } from "wouter";
 import girlThinkingSpanishImage from "@assets/Contemplating Legal Fees_1752848702440.jpg";
 
@@ -30,32 +15,7 @@ export default function HomeSpanish() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    caseType: '',
-    email: '',
-    phoneNumber: '',
-    caseDescription: '',
-    urgencyLevel: '',
-    budgetRange: '',
-    location: '',
-    captcha: '',
-    agreeToTerms: false
-  });
-
-  const [prefillChecked, setPrefillChecked] = useState(false);
-  const [submittedRequestNumber, setSubmittedRequestNumber] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [captchaError, setCaptchaError] = useState<string | null>(null);
-  const [currentRequestNumber, setCurrentRequestNumber] = useState<string>('');
-  const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
-  const [emailPreview, setEmailPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
   const { user, logout } = useAuth();
-  const { toast } = useToast();
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -63,14 +23,6 @@ export default function HomeSpanish() {
       window.location.href = '/admin-dashboard';
     }
   }, [user]);
-
-  // Fetch case types for dropdown
-  const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
-    queryKey: ['/api/case-types'],
-    retry: false,
-  });
-
-  const caseTypes = caseTypesData?.data || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -109,15 +61,7 @@ export default function HomeSpanish() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Generate request number when form opens
-  const generateRequestNumber = () => {
-    const randomNumber = Math.floor(100000 + Math.random() * 900000);
-    return `lr-${randomNumber}`;
-  };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
 
   return (
     <div className="bg-white">
@@ -375,11 +319,10 @@ export default function HomeSpanish() {
         onClose={() => setIsTrackRequestModalOpen(false)} 
       />
 
-      {/* Email Preview Modal */}
-      <EmailPreviewModal 
-        isOpen={isEmailPreviewOpen}
-        onClose={() => setIsEmailPreviewOpen(false)}
-        emailPreview={emailPreview}
+      {/* Spanish Legal Request Form */}
+      <SpanishLegalRequestForm
+        isOpen={isQuoteModalOpen}
+        onClose={() => setIsQuoteModalOpen(false)}
       />
 
       </div>
