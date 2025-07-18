@@ -70,49 +70,32 @@ export default function Blog() {
             {blogPosts?.map((post) => (
               <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
                 <CardHeader>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-                      Immigration Law
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors">
+                  <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors mb-2">
                     {post.title}
                   </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                  
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-4 h-4" />
                       {post.publishedAt && formatDate(post.publishedAt)}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      LinkToLawyers Team
-                    </div>
                   </div>
-
-                  <div className="border-t pt-4">
-                    {post.content && (
-                      <p className="text-sm text-gray-700 mb-3">
-                        {stripHtmlAndTruncate(post.content)}
-                      </p>
-                    )}
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="w-full group"
-                      asChild
-                    >
-                      <Link href={`/blog/${post.slug}`}>
-                        Read More
-                        <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </Button>
-                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {post.excerpt || stripHtmlAndTruncate(post.content, 150)}
+                  </p>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="w-full group"
+                    asChild
+                  >
+                    <Link href={`/blog/${post.slug}`}>
+                      Read More
+                      <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             ))}
