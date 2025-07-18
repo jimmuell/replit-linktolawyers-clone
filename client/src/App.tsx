@@ -9,6 +9,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import SmtpConfigPage from "@/pages/smtp-config";
 import RequestManagementPage from "@/pages/request-management";
 import FreeResources from "@/pages/free-resources";
+import FreeResourcesSpanish from "@/pages/free-resources-spanish";
 import Help from "@/pages/help";
 import AttorneyOnboarding from "@/pages/attorney-onboarding";
 import AttorneyFeeSchedule from "@/pages/attorney-fee-schedule";
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/email-templates" component={EmailTemplatesPage} />
       <Route path="/free-resources" component={FreeResources} />
+      <Route path="/es/recursos-gratuitos" component={FreeResourcesSpanish} />
       <Route path="/help" component={Help} />
       <Route component={NotFound} />
     </Switch>
