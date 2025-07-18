@@ -1083,6 +1083,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== SPANISH BLOG TRANSLATION ROUTES ==========
+
+  // Get published blog posts with Spanish translations
+  app.get("/api/blog-posts/published/spanish", async (req, res) => {
+    try {
+      const { translateBlogPostCached } = await import('./translation');
+      const blogPosts = await storage.getPublishedBlogPosts();
+      
+      const translatedPosts = await Promise.all(
+        blogPosts.map(async (post) => {
+          try {
+            const translation = await translateBlogPostCached(
+              post.title,
+              post.content,
+              post.excerpt || undefined
+            );
+            
+            return {
+              ...post,
+              title: translation.title,
+              content: translation.content,
+              excerpt: translation.excerpt,
+              slug: post.slug + '-es' // Add Spanish suffix to slug
+            };
+          } catch (error) {
+            console.error(`Translation failed for post ${post.id}:`, error);
+            // Return original post with Spanish UI labels if translation fails
+            return {
+              ...post,
+              title: `[Traducción no disponible] ${post.title}`,
+              content: post.content,
+              excerpt: post.excerpt
+            };
+          }
+        })
+      );
+      
+      res.json(translatedPosts);
+    } catch (error) {
+      console.error('Error fetching Spanish blog posts:', error);
+      res.status(500).json({ error: 'Failed to fetch Spanish blog posts' });
+    }
+  });
+
+  // Get single blog post by slug with Spanish translation
+  app.get("/api/blog-posts/slug/:slug/spanish", async (req, res) => {
+    try {
+      const { translateBlogPostCached } = await import('./translation');
+      let { slug } = req.params;
+      
+      // Remove Spanish suffix if present to get original slug
+      const originalSlug = slug.endsWith('-es') ? slug.slice(0, -3) : slug;
+      
+      const blogPost = await storage.getBlogPostBySlug(originalSlug);
+      if (!blogPost) {
+        return res.status(404).json({ error: 'Blog post not found' });
+      }
+
+      try {
+        const translation = await translateBlogPostCached(
+          blogPost.title,
+          blogPost.content,
+          blogPost.excerpt || undefined
+        );
+        
+        const translatedPost = {
+          ...blogPost,
+          title: translation.title,
+          content: translation.content,
+          excerpt: translation.excerpt,
+          slug: blogPost.slug + '-es'
+        };
+        
+        res.json(translatedPost);
+      } catch (error) {
+        console.error(`Translation failed for post ${blogPost.id}:`, error);
+        // Return original post with error message if translation fails
+        res.json({
+          ...blogPost,
+          title: `[Traducción no disponible] ${blogPost.title}`,
+          content: `<p><em>Lo sentimos, la traducción automática no está disponible en este momento. El contenido se muestra en inglés.</em></p><hr>${blogPost.content}`,
+          excerpt: blogPost.excerpt
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching Spanish blog post by slug:', error);
+      res.status(500).json({ error: 'Failed to fetch Spanish blog post' });
+    }
+  });
+
   // ========== EMAIL TEMPLATE ROUTES ==========
   
   // Get all email templates (admin only)

@@ -18,6 +18,8 @@ import BlogManagement from "@/pages/blog-management";
 import Blog from "@/pages/blog";
 import BlogPostPage from "@/pages/blog-post";
 import BlogPostEditor from "@/pages/blog-post-editor";
+import BlogSpanish from "@/pages/blog-spanish";
+import BlogPostSpanish from "@/pages/blog-post-spanish";
 import EmailTemplatesPage from "@/pages/email-templates";
 import NotFound from "@/pages/not-found";
 import HomeSpanish from "@/pages/home-spanish";
@@ -38,6 +40,8 @@ function Router() {
       <Route path="/blog-management/edit/:id" component={BlogPostEditor} />
       <Route path="/blog" component={Blog} />
       <Route path="/blog/:slug" component={BlogPostPage} />
+      <Route path="/es/blog" component={BlogSpanish} />
+      <Route path="/es/blog/:slug" component={BlogPostSpanish} />
       <Route path="/email-templates" component={EmailTemplatesPage} />
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/es/recursos-gratuitos" component={FreeResourcesSpanish} />
