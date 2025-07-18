@@ -44,13 +44,6 @@ export default function BlogHeader({ title, showBackButton = false }: BlogHeader
 
             {/* Right side - Navigation */}
             <div className="flex items-center space-x-4">
-              {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center space-x-4">
-                <Link href="/help" className="text-gray-700 hover:text-black transition-colors">
-                  Help
-                </Link>
-              </div>
-
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
@@ -67,9 +60,7 @@ export default function BlogHeader({ title, showBackButton = false }: BlogHeader
           {isMobileMenuOpen && (
             <div className="md:hidden border-t border-gray-200 py-4">
               <div className="flex flex-col space-y-2">
-                <Link href="/help" className="block px-3 py-2 text-gray-700 hover:text-black">
-                  Help
-                </Link>
+                {/* Navigation items would go here if needed */}
               </div>
             </div>
           )}
