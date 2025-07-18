@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { Mail, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Mail, CheckCircle, XCircle, AlertCircle, Settings } from 'lucide-react';
 import AdminCard from './AdminCard';
 
 interface SmtpSettings {
@@ -68,28 +68,33 @@ export default function SmtpStatusCard() {
       error={error}
       actionText="Configure"
     >
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
             <statusInfo.icon className={`w-4 h-4 ${statusInfo.color}`} />
-            <span className="text-sm text-gray-600">Status</span>
+            <span className="text-xs text-gray-500">Status</span>
           </div>
-          <Badge variant={statusInfo.badgeVariant}>
-            {statusInfo.title}
-          </Badge>
+          <div className="text-lg font-semibold text-gray-900">{statusInfo.title}</div>
         </div>
-        
-        <div>
-          <div className="text-sm text-gray-600 mb-1">Connection</div>
-          <p className="text-sm font-medium">{statusInfo.description}</p>
-        </div>
-        
-        {settings && (
-          <div>
-            <div className="text-sm text-gray-600 mb-1">From Email</div>
-            <p className="text-sm font-medium">{settings.fromEmail}</p>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Mail className="w-4 h-4 text-gray-500" />
+            <span className="text-xs text-gray-500">Host</span>
           </div>
-        )}
+          <div className="text-lg font-semibold text-gray-900">{settings?.smtpHost || 'N/A'}</div>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Settings className="w-4 h-4 text-gray-500" />
+            <span className="text-xs text-gray-500">Port</span>
+          </div>
+          <div className="text-lg font-semibold text-gray-900">{settings?.smtpPort || 'N/A'}</div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="text-sm text-gray-600 mb-2">Configuration:</div>
+        <p className="text-sm font-medium">{settings?.fromEmail || 'No email configured'}</p>
       </div>
     </AdminCard>
   );

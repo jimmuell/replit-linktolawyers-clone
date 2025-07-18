@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { UserPlus, CheckCircle } from 'lucide-react';
+import { UserPlus, CheckCircle, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import AdminCard from './AdminCard';
 
@@ -34,34 +34,35 @@ export default function AttorneyOnboardingCard() {
       error={error}
       actionText="Manage"
     >
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{totalAttorneys}</div>
-            <div className="text-sm text-gray-600">Total Attorneys</div>
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <UserPlus className="w-4 h-4 text-gray-500" />
+            <span className="text-xs text-gray-500">Total</span>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{activeAttorneys}</div>
-            <div className="text-sm text-gray-600">Active</div>
+          <div className="text-lg font-semibold text-gray-900">{totalAttorneys}</div>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <CheckCircle className="w-4 h-4 text-green-500" />
+            <span className="text-xs text-green-600">Verified</span>
           </div>
+          <div className="text-lg font-semibold text-green-900">{verifiedAttorneys}</div>
         </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-600" />
-            <span className="text-sm text-gray-600">Verified</span>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Clock className="w-4 h-4 text-yellow-500" />
+            <span className="text-xs text-yellow-600">Pending</span>
           </div>
-          <Badge variant="outline">
-            {verifiedAttorneys}/{totalAttorneys}
-          </Badge>
+          <div className="text-lg font-semibold text-yellow-900">{pendingVerification}</div>
         </div>
-        
-        <div>
-          <div className="text-sm text-gray-600 mb-1">Pending Verification</div>
-          <p className="text-sm font-medium">
-            {pendingVerification > 0 ? `${pendingVerification} attorneys pending` : 'All attorneys verified'}
-          </p>
-        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="text-sm text-gray-600 mb-2">Status Overview:</div>
+        <p className="text-sm font-medium">
+          {pendingVerification > 0 ? `${pendingVerification} attorneys pending verification` : 'All attorneys verified and active'}
+        </p>
       </div>
     </AdminCard>
   );

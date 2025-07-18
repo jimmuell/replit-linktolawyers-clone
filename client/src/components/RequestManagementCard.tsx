@@ -47,32 +47,34 @@ export default function RequestManagementCard() {
       error={error}
       actionText="View All"
     >
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{requestsInfo.count}</div>
-            <div className="text-sm text-gray-600">Total Requests</div>
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <FileText className="w-4 h-4 text-gray-500" />
+            <span className="text-xs text-gray-500">Total</span>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{requestsInfo.recentCount}</div>
-            <div className="text-sm text-gray-600">This Week</div>
+          <div className="text-lg font-semibold text-gray-900">{requestsInfo.count}</div>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <TrendingUp className="w-4 h-4 text-green-500" />
+            <span className="text-xs text-green-600">This Week</span>
           </div>
+          <div className="text-lg font-semibold text-green-900">{requestsInfo.recentCount}</div>
         </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-green-600" />
-            <span className="text-sm text-gray-600">Activity</span>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Badge variant="outline" className="text-xs">
+              {requestsInfo.recentCount > 0 ? 'Active' : 'Quiet'}
+            </Badge>
           </div>
-          <Badge variant="outline">
-            {requestsInfo.recentCount > 0 ? 'Active' : 'Quiet'}
-          </Badge>
+          <div className="text-lg font-semibold text-gray-900">Status</div>
         </div>
-        
-        <div>
-          <div className="text-sm text-gray-600 mb-1">Recent Activity</div>
-          <p className="text-sm font-medium">{requestsInfo.description}</p>
-        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="text-sm text-gray-600 mb-2">Recent Activity:</div>
+        <p className="text-sm font-medium">{requestsInfo.description}</p>
       </div>
     </AdminCard>
   );
