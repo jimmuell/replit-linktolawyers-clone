@@ -427,11 +427,25 @@ export default function EmailTemplatesPage() {
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: `Failed to delete email template: ${error.message}`,
-        variant: 'destructive',
-      });
+      console.error('Delete template error:', error);
+      const errorMessage = error.message || 'Unknown error occurred';
+      
+      // Check if it's an authentication error
+      if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+        toast({
+          title: 'Authentication Error',
+          description: 'Your session has expired. Please log in again.',
+          variant: 'destructive',
+        });
+        // Redirect to login or refresh page
+        window.location.href = '/';
+      } else {
+        toast({
+          title: 'Error',
+          description: `Failed to delete email template: ${errorMessage}`,
+          variant: 'destructive',
+        });
+      }
     },
   });
 
