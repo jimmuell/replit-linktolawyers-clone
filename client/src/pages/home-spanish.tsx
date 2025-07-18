@@ -207,45 +207,53 @@ export default function HomeSpanish() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Step 1 */}
-            <div className="text-center">
-              <div className="step-icon">
-                <Edit3 className="h-12 w-12 text-gray-800" />
+            <div className="text-center flex flex-col h-full">
+              <div className="step-icon mb-4">
+                <Edit3 className="h-12 w-12 text-gray-800 mx-auto" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Paso 1: Completa Una Solicitud</h3>
-              <p className="text-gray-600 text-sm leading-relaxed text-justify">
+              <div className="h-16 flex items-center justify-center mb-4">
+                <h3 className="text-xl font-bold text-gray-900 text-center leading-tight">Paso 1: Completa Una Solicitud</h3>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed text-justify flex-grow">
                 En LinkToLawyers, la integridad es fundamental. Garantizamos que tu información nunca será vendida a spammers, asegurando que no recibirás correos electrónicos no deseados o llamadas telefónicas no solicitadas. Ten la seguridad de que tu privacidad está completamente protegida con nuestro servicio completamente confidencial. Tu confianza es importante para nosotros, y estamos comprometidos a mantener los más altos estándares de seguridad y privacidad en todas nuestras interacciones.
               </p>
             </div>
             
             {/* Step 2 */}
-            <div className="text-center">
-              <div className="step-icon">
-                <CheckSquare className="h-12 w-12 text-gray-800" />
+            <div className="text-center flex flex-col h-full">
+              <div className="step-icon mb-4">
+                <CheckSquare className="h-12 w-12 text-gray-800 mx-auto" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Paso 2: Elección Real</h3>
-              <p className="text-gray-600 text-sm leading-relaxed text-justify">
+              <div className="h-16 flex items-center justify-center mb-4">
+                <h3 className="text-xl font-bold text-gray-900 text-center leading-tight">Paso 2: Elección Real</h3>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed text-justify flex-grow">
                 Somos un servicio imparcial que te permite comparar precios de firmas legales en todo el país. LinkToLawyers recopila información de precios de firmas legales en cada código postal y estado. Utilizando tecnología avanzada de IA, analizamos tus necesidades para emparejarte con firmas legales adecuadas en todo Estados Unidos. Nuestra misión es asegurar que obtengas el mejor trato posible. Despídete de pagar de más por servicios legales.
               </p>
             </div>
             
             {/* Step 3 */}
-            <div className="text-center">
-              <div className="step-icon">
-                <DollarSign className="h-12 w-12 text-gray-800" />
+            <div className="text-center flex flex-col h-full">
+              <div className="step-icon mb-4">
+                <DollarSign className="h-12 w-12 text-gray-800 mx-auto" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Paso 3: Comienza A Ahorrar</h3>
-              <p className="text-gray-600 text-sm leading-relaxed text-justify">
+              <div className="h-16 flex items-center justify-center mb-4">
+                <h3 className="text-xl font-bold text-gray-900 text-center leading-tight">Paso 3: Comienza A Ahorrar</h3>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed text-justify flex-grow">
                 Trabajamos con firmas legales de diferentes tamaños para brindarte opciones extensas. Nuestro motor de búsqueda de comparación simplifica encontrar el abogado perfecto. Los servicios legales pueden variar, por lo que recomendamos comparar varias firmas, al menos 3-5. Nuestra plataforma asegura tarifas competitivas para ayudarte a encontrar el mejor valor. Ten en cuenta que las tarifas proporcionadas son solo con fines de comparación.
               </p>
             </div>
             
             {/* Step 4 */}
-            <div className="text-center">
-              <div className="step-icon">
-                <Handshake className="h-12 w-12 text-gray-800" />
+            <div className="text-center flex flex-col h-full">
+              <div className="step-icon mb-4">
+                <Handshake className="h-12 w-12 text-gray-800 mx-auto" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Paso 4: No Satisfecho</h3>
-              <p className="text-gray-600 text-sm leading-relaxed text-justify">
+              <div className="h-16 flex items-center justify-center mb-4">
+                <h3 className="text-xl font-bold text-gray-900 text-center leading-tight">Paso 4: No Satisfecho</h3>
+              </div>
+              <p className="text-gray-600 text-sm leading-relaxed text-justify flex-grow">
                 En LinkToLawyers, entendemos la importancia de precios justos para los servicios legales. No deberías tener que pagar un ojo de la cara por servicios legales. Si no estás satisfecho con los honorarios de tu abogado, siéntete libre de negociar un precio que funcione mejor para ti y se ajuste cómodamente a tu presupuesto. Nos esforzamos por asegurar que recibas servicios legales de calidad a un precio que puedas pagar.
               </p>
             </div>
