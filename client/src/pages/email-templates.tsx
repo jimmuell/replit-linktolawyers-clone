@@ -128,7 +128,7 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
     mutationFn: async (data: EmailTemplateForm) => {
       return apiRequest('/api/email-templates', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: data,
       });
     },
     onSuccess: () => {
@@ -152,7 +152,7 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
     mutationFn: async (data: EmailTemplateForm) => {
       return apiRequest(`/api/email-templates/${template!.id}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        body: data,
       });
     },
     onSuccess: () => {
