@@ -782,7 +782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const { assignment, attorney } of attorneyDetails) {
         try {
           // Get case type data for better display
-          const caseTypes = await storage.getCaseTypes();
+          const caseTypes = await storage.getAllCaseTypes();
           const caseTypeData = caseTypes.find(ct => ct.value === request.caseType);
           
           // Get attorney assignment email template variables
