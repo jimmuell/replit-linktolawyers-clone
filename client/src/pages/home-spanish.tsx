@@ -22,8 +22,7 @@ import TrackRequestModal from "@/components/TrackRequestModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import { Link } from "wouter";
-import girlThinkingImage from "@assets/girl-final_1752714322954.png";
-import girlThinkingSpanishBubbles from "@assets/girl-final-spanish.svg";
+import girlThinkingSpanishImage from "@assets/thinking_girl_ai_6_1752847470770.png";
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
@@ -176,19 +175,12 @@ export default function HomeSpanish() {
               </div>
             </div>
             
-            <div className="flex justify-center items-center relative">
+            <div className="flex justify-center items-center">
               <img 
-                src={girlThinkingImage} 
-                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales" 
+                src={girlThinkingSpanishImage} 
+                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales con burbujas de pensamiento mostrando Firma Legal A (US$1,200), Firma Legal B (US$1,750), y Firma Legal C (US$2,500)" 
                 className="max-w-lg w-full h-auto" 
               />
-              <div className="absolute top-0 left-0 w-full h-full flex items-start justify-center">
-                <img 
-                  src={girlThinkingSpanishBubbles} 
-                  alt="Burbujas de pensamiento mostrando Firma Legal A (US$1,200), Firma Legal B (US$1,750), y Firma Legal C (US$2,500)" 
-                  className="max-w-lg w-full h-auto" 
-                />
-              </div>
             </div>
           </div>
         </div>
