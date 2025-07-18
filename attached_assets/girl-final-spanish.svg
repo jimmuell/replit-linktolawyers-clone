@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background for transparency -->
+  <rect width="400" height="300" fill="transparent"/>
+  
+  <!-- Thought Bubble A (Left) -->
+  <g transform="translate(50, 40)">
+    <!-- Main bubble -->
+    <ellipse cx="0" cy="0" rx="60" ry="40" fill="white" stroke="black" stroke-width="2"/>
+    <!-- Smaller connecting bubbles -->
+    <circle cx="25" cy="35" r="8" fill="white" stroke="black" stroke-width="1.5"/>
+    <circle cx="35" cy="45" r="5" fill="white" stroke="black" stroke-width="1.5"/>
+    <circle cx="40" cy="55" r="3" fill="white" stroke="black" stroke-width="1.5"/>
+    
+    <!-- Text -->
+    <text x="0" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="black">Firma Legal A</text>
+    <text x="0" y="8" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="black">US$1,200</text>
+  </g>
+  
+  <!-- Thought Bubble B (Center) -->
+  <g transform="translate(200, 30)">
+    <!-- Main bubble (slightly larger) -->
+    <ellipse cx="0" cy="0" rx="65" ry="42" fill="white" stroke="black" stroke-width="2"/>
+    <!-- Smaller connecting bubbles -->
+    <circle cx="0" cy="40" r="8" fill="white" stroke="black" stroke-width="1.5"/>
+    <circle cx="0" cy="52" r="5" fill="white" stroke="black" stroke-width="1.5"/>
+    <circle cx="0" cy="62" r="3" fill="white" stroke="black" stroke-width="1.5"/>
+    
+    <!-- Text -->
+    <text x="0" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="black">Firma Legal B</text>
+    <text x="0" y="8" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="black">US$1,750</text>
+  </g>
+  
+  <!-- Thought Bubble C (Right) -->
+  <g transform="translate(350, 40)">
+    <!-- Main bubble -->
+    <ellipse cx="0" cy="0" rx="60" ry="40" fill="white" stroke="black" stroke-width="2"/>
+    <!-- Smaller connecting bubbles -->
+    <circle cx="-25" cy="35" r="8" fill="white" stroke="black" stroke-width="1.5"/>
+    <circle cx="-35" cy="45" r="5" fill="white" stroke="black" stroke-width="1.5"/>
+    <circle cx="-40" cy="55" r="3" fill="white" stroke="black" stroke-width="1.5"/>
+    
+    <!-- Text -->
+    <text x="0" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="black">Firma Legal C</text>
+    <text x="0" y="8" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="black">US$2,500</text>
+  </g>
+</svg>

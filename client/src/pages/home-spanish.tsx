@@ -23,6 +23,7 @@ import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import { Link } from "wouter";
 import girlThinkingImage from "@assets/girl-final_1752714322954.png";
+import girlThinkingSpanishBubbles from "@assets/girl-final-spanish.svg";
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
@@ -175,12 +176,19 @@ export default function HomeSpanish() {
               </div>
             </div>
             
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-center relative">
               <img 
                 src={girlThinkingImage} 
-                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales con burbujas de pensamiento mostrando Firma Legal A ($1,200), Firma Legal B ($1,750), y Firma Legal C ($2,500) para servicios de Derecho de Inmigración, Lesiones Personales, Derecho Penal y Derecho Familiar" 
+                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales" 
                 className="max-w-lg w-full h-auto" 
               />
+              <div className="absolute top-0 left-0 w-full h-full flex items-start justify-center">
+                <img 
+                  src={girlThinkingSpanishBubbles} 
+                  alt="Burbujas de pensamiento mostrando Firma Legal A (US$1,200), Firma Legal B (US$1,750), y Firma Legal C (US$2,500)" 
+                  className="max-w-lg w-full h-auto" 
+                />
+              </div>
             </div>
           </div>
         </div>
