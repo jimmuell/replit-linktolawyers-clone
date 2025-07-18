@@ -18,11 +18,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **English Homepage Button Style Update** (July 18, 2025): Flipped button styles in English homepage navbar
-  - Sign In button: Changed to white background with black text (outline style)
-  - Español button: Changed to black background with white text (solid style)
-  - Updated both desktop and mobile menu versions for consistency
-  - Enhanced visual emphasis on Spanish language option
+- **Navbar Button Style Updates** (July 18, 2025): Updated button styles across both English and Spanish homepages
+  - English homepage: Sign In button changed to white background with black text; Español button changed to black background with white text
+  - Spanish homepage: English button changed to black background with white text for prominent visibility
+  - Updated both desktop and mobile menu versions for consistency across all pages
+  - Enhanced visual emphasis on language switching options
 
 - **Complete Spanish Track Request Functionality** (July 18, 2025): Built comprehensive Spanish request tracking system
   - Created TrackRequestModalSpanish component with complete Spanish translations

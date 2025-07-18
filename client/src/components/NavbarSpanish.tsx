@@ -64,7 +64,7 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
           
           <div className="hidden md:flex items-center space-x-4">
             <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
-              <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
+              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6">
                 English
               </Button>
             </Link>
@@ -142,7 +142,7 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
               
               <div className="pt-3 border-t border-gray-200">
                 <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
+                  <Button className="w-full bg-black text-white hover:bg-gray-800 rounded-full">
                     English
                   </Button>
                 </Link>
