@@ -18,6 +18,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Spanish Translation Implementation** (July 18, 2025): Created Spanish version of public-facing homepage accessible at /es/ URL path
+  - Built complete Spanish translation of hero section: "Encuentra Tu Abogado de Inmigración"
+  - Created Spanish navbar with translated menu items (Cómo Funciona, Acerca de, Contáctanos, etc.)
+  - Removed authentication features from Spanish version - no Sign In button or user dropdown
+  - Added bidirectional language switching between English and Spanish versions
+  - Used same UI components and image assets with Spanish content translation
+  - Spanish site focuses only on public-facing content without admin dashboard access
+
 - **Attorney Assignment Email Template Integration** (July 18, 2025): Successfully implemented production email templates for attorney assignment notifications
   - Fixed method name error (getCaseTypes → getAllCaseTypes) that was preventing email sending
   - Corrected template type lookup from 'attorney_assignment' to 'notification' to match database configuration

@@ -63,46 +63,6 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
-            {user && !hideUserDropdown ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src="" />
-                      <AvatarFallback>
-                        {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{user.firstName} {user.lastName}</span>
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  {user.role === 'admin' && (
-                    <DropdownMenuItem onClick={() => window.location.href = '/admin-dashboard'}>
-                      Panel de Administración
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem>
-                    <Settings className="w-4 h-4 mr-2" />
-                    Configuración
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => logout()}>
-                    Cerrar Sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button 
-                className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
-                onClick={() => setIsLoginModalOpen(true)}
-              >
-                Iniciar Sesión
-              </Button>
-            )}
             <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
               <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
                 English
@@ -181,51 +141,8 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
               </Link>
               
               <div className="pt-3 border-t border-gray-200">
-                {user && !hideUserDropdown ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center px-3 py-2">
-                      <Avatar className="w-8 h-8 mr-3">
-                        <AvatarImage src="" />
-                        <AvatarFallback>
-                          {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-gray-900 font-medium">{user.firstName} {user.lastName}</span>
-                    </div>
-                    {user.role === 'admin' && (
-                      <button
-                        onClick={() => {
-                          window.location.href = '/admin-dashboard';
-                          setIsMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
-                      >
-                        Panel de Administración
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        logout();
-                        setIsMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
-                    >
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                ) : (
-                  <Button 
-                    className="w-full bg-black text-white hover:bg-gray-800 rounded-full"
-                    onClick={() => {
-                      setIsLoginModalOpen(true);
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    Iniciar Sesión
-                  </Button>
-                )}
                 <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full mt-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
+                  <Button variant="outline" className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
                     English
                   </Button>
                 </Link>
