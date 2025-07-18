@@ -90,14 +90,14 @@ export default function FreeResources() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold text-blue-600">
+              <Link href="/" className="text-2xl font-bold text-black">
                 LinkToLawyers
               </Link>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-600 hover:text-blue-600 transition-colors">
+              <Link href="/" className="text-gray-600 hover:text-black transition-colors">
                 <ArrowLeft className="w-4 h-4 inline mr-2" />
                 Back to Home
               </Link>
@@ -119,7 +119,7 @@ export default function FreeResources() {
           {isMenuOpen && (
             <div className="md:hidden py-4 border-t border-gray-200">
               <div className="space-y-2">
-                <Link href="/" className="block px-3 py-2 text-gray-600 hover:text-blue-600">
+                <Link href="/" className="block px-3 py-2 text-gray-600 hover:text-black">
                   Back to Home
                 </Link>
               </div>
@@ -129,23 +129,23 @@ export default function FreeResources() {
       </nav>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <section className="bg-black text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Free Immigration Resources</h1>
-            <p className="text-xl text-blue-100 mb-8">
+            <p className="text-xl text-gray-300 mb-8">
               Access our comprehensive collection of guides, checklists, and educational materials
             </p>
             <div className="flex flex-wrap justify-center gap-4 text-sm">
-              <Badge variant="secondary" className="bg-blue-500 text-white">
+              <Badge variant="secondary" className="bg-gray-700 text-white hover:bg-gray-600">
                 <FileText className="w-4 h-4 mr-1" />
                 Legal Guides
               </Badge>
-              <Badge variant="secondary" className="bg-blue-500 text-white">
+              <Badge variant="secondary" className="bg-gray-700 text-white hover:bg-gray-600">
                 <BookOpen className="w-4 h-4 mr-1" />
                 Checklists
               </Badge>
-              <Badge variant="secondary" className="bg-blue-500 text-white">
+              <Badge variant="secondary" className="bg-gray-700 text-white hover:bg-gray-600">
                 <Video className="w-4 h-4 mr-1" />
                 Webinars
               </Badge>
@@ -183,7 +183,7 @@ export default function FreeResources() {
                       <Download className="w-4 h-4 inline mr-1" />
                       {resource.downloads.toLocaleString()} downloads
                     </div>
-                    <Button size="sm">
+                    <Button size="sm" className="bg-black text-white hover:bg-gray-800">
                       <Download className="w-4 h-4 mr-2" />
                       Download
                     </Button>
@@ -220,7 +220,7 @@ export default function FreeResources() {
                       <Users className="w-4 h-4 inline mr-1" />
                       {webinar.views.toLocaleString()} views
                     </div>
-                    <Button size="sm">
+                    <Button size="sm" className="bg-black text-white hover:bg-gray-800">
                       <Video className="w-4 h-4 mr-2" />
                       Watch Now
                     </Button>
@@ -232,13 +232,13 @@ export default function FreeResources() {
         </section>
 
         {/* CTA Section */}
-        <section className="text-center bg-blue-50 rounded-lg p-8">
+        <section className="text-center bg-gray-100 rounded-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Personalized Legal Help?</h2>
           <p className="text-lg text-gray-600 mb-6">
             While these resources are helpful, every case is unique. Connect with qualified immigration attorneys for personalized advice.
           </p>
           <Link href="/">
-            <Button size="lg">
+            <Button size="lg" className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-3">
               Find an Attorney
             </Button>
           </Link>
