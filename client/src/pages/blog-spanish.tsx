@@ -50,36 +50,49 @@ export default function BlogSpanish() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <Link href="/es">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Inicio
-                </Button>
-              </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Blog Legal</h1>
-              <div className="w-32"></div>
+              <div className="flex items-center">
+                <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
+              </div>
+              <div className="flex items-center">
+                <h2 className="text-lg font-medium text-gray-900">Blog</h2>
+              </div>
+              <div className="flex items-center">
+                <Link href="/es">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver al Inicio
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="bg-black text-white py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              Blog de LinkToLawyers
+            </h1>
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+              Cargando artículos...
+            </p>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardHeader>
-                  <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded"></div>
-                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                    <div className="h-4 bg-gray-200 rounded w-4/6"></div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={i} className="bg-white rounded-lg p-6 shadow-sm animate-pulse">
+                <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                <div className="space-y-2">
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                  <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -91,28 +104,41 @@ export default function BlogSpanish() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <Link href="/es">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Inicio
-                </Button>
-              </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Blog Legal</h1>
-              <div className="w-32"></div>
+              <div className="flex items-center">
+                <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
+              </div>
+              <div className="flex items-center">
+                <h2 className="text-lg font-medium text-gray-900">Blog</h2>
+              </div>
+              <div className="flex items-center">
+                <Link href="/es">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver al Inicio
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Error al cargar el blog</h2>
-            <p className="text-gray-600 mb-6">
-              Lo sentimos, no pudimos cargar los artículos del blog en este momento.
+        <div className="bg-black text-white py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              Error al Cargar
+            </h1>
+            <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+              No pudimos cargar los artículos del blog en este momento
             </p>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
             <Link href="/es">
-              <Button>Volver al inicio</Button>
+              <Button className="bg-black text-white hover:bg-gray-800">Volver al inicio</Button>
             </Link>
           </div>
         </div>
@@ -124,34 +150,41 @@ export default function BlogSpanish() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/es">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Inicio
-              </Button>
-            </Link>
-            <h1 className="text-xl font-semibold text-gray-900">Blog Legal</h1>
-            <div className="w-32"></div>
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
+            </div>
+            <div className="flex items-center">
+              <h2 className="text-lg font-medium text-gray-900">Blog</h2>
+            </div>
+            <div className="flex items-center">
+              <Link href="/es">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver al Inicio
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            Recursos y Consejos Legales
+      {/* Black Hero Section */}
+      <div className="bg-black text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Blog de LinkToLawyers
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Mantente informado con los últimos artículos sobre inmigración, 
-            leyes y consejos legales de nuestros expertos.
+          <p className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
+            Mantente informado con las últimas noticias de inmigración, perspectivas legales y orientación experta
           </p>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Search */}
-        <div className="relative mb-8">
+        <div className="relative mb-12 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             type="text"
@@ -175,47 +208,35 @@ export default function BlogSpanish() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredPosts.map((post) => (
-              <Card key={post.id} className="hover:shadow-lg transition-shadow duration-200">
-                <CardHeader>
-                  <CardTitle className="line-clamp-2">
-                    <Link href={`/es/blog/${post.slug}`} className="hover:text-blue-600">
+              <div key={post.id} className="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
+                    <Link href={`/es/blog/${post.slug}`} className="hover:text-gray-700">
                       {post.title}
                     </Link>
-                  </CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    {post.publishedAt && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {format(new Date(post.publishedAt), "d 'de' MMMM, yyyy", { locale: es })}
-                      </div>
-                    )}
-                    {post.author && (
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        {post.author}
-                      </div>
-                    )}
+                  </h3>
+                  <div className="flex items-center gap-1 text-sm text-gray-500 mb-3">
+                    <Clock className="w-4 h-4" />
+                    {post.publishedAt && format(new Date(post.publishedAt), "d 'de' MMMM, yyyy", { locale: es })}
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
-                    {post.excerpt || stripHtmlAndTruncate(post.content)}
-                  </p>
-                  <Link href={`/es/blog/${post.slug}`}>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Leer más
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+                </div>
+                <p className="text-gray-600 mb-4 line-clamp-4 text-sm leading-relaxed">
+                  {post.excerpt || stripHtmlAndTruncate(post.content)}
+                </p>
+                <Link href={`/es/blog/${post.slug}`}>
+                  <Button variant="outline" size="sm" className="mt-auto">
+                    Leer Más →
+                  </Button>
+                </Link>
+              </div>
             ))}
           </div>
         )}
 
         {/* Call to Action */}
-        <div className="mt-12 text-center bg-white rounded-lg p-8 shadow-sm">
+        <div className="mt-16 text-center bg-white rounded-lg p-8 shadow-sm border">
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
             ¿Necesitas Ayuda Legal?
           </h3>
@@ -223,7 +244,7 @@ export default function BlogSpanish() {
             Conecta con abogados especializados en inmigración que pueden ayudarte con tu caso específico.
           </p>
           <Link href="/es">
-            <Button size="lg">
+            <Button size="lg" className="bg-black text-white hover:bg-gray-800">
               Obtener Consulta Gratuita
             </Button>
           </Link>

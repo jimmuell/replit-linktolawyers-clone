@@ -18,6 +18,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Auto-Translation Blog System Implementation** (July 18, 2025): Built complete auto-translation functionality for blog posts using OpenAI API
+  - Created translation service using OpenAI GPT-4 for high-quality legal content translation
+  - Added Spanish blog API endpoints that automatically translate English posts to Spanish
+  - Built Spanish blog listing page at /es/blog with black hero section and clean white card layout
+  - Created Spanish blog post detail pages at /es/blog/:slug with black header section and white content area
+  - Implemented caching system to avoid repeated API calls for same content
+  - Added fallback handling for translation failures with graceful error messages
+  - Integrated Spanish blog navigation into existing Spanish navbar
+  - System allows writing once in English with automatic Spanish display for bilingual audience
+
 - **Spanish Help Page Implementation** (July 18, 2025): Created comprehensive Spanish help and support page
   - Built HelpSpanish component with complete Spanish translations for all help content
   - Added route /es/ayuda for Spanish help page access

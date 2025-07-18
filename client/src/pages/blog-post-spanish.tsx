@@ -64,25 +64,35 @@ export default function BlogPostSpanish() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <Link href="/es/blog">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Blog
-                </Button>
-              </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Cargando...</h1>
-              <div className="w-32"></div>
+              <div className="flex items-center">
+                <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
+              </div>
+              <div className="flex items-center">
+                <h2 className="text-lg font-medium text-gray-900">Cargando...</h2>
+              </div>
+              <div className="flex items-center">
+                <Link href="/es/blog">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver al Blog
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-            <div className="space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-black text-white rounded-lg p-8 mb-8 animate-pulse">
+            <div className="h-6 bg-gray-600 rounded w-1/4 mb-4"></div>
+            <div className="h-10 bg-gray-600 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-600 rounded w-full mb-2"></div>
+            <div className="h-4 bg-gray-600 rounded w-2/3"></div>
+          </div>
+          <div className="bg-white rounded-lg p-8 shadow-sm">
+            <div className="animate-pulse space-y-4">
               <div className="h-4 bg-gray-200 rounded"></div>
               <div className="h-4 bg-gray-200 rounded w-5/6"></div>
               <div className="h-4 bg-gray-200 rounded w-4/6"></div>
@@ -99,28 +109,38 @@ export default function BlogPostSpanish() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <Link href="/es/blog">
-                <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Blog
-                </Button>
-              </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Error</h1>
-              <div className="w-32"></div>
+              <div className="flex items-center">
+                <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
+              </div>
+              <div className="flex items-center">
+                <h2 className="text-lg font-medium text-gray-900">Error</h2>
+              </div>
+              <div className="flex items-center">
+                <Link href="/es/blog">
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver al Blog
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Artículo no encontrado</h2>
-            <p className="text-gray-600 mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-black text-white rounded-lg p-8 mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
+              Artículo No Encontrado
+            </h1>
+            <p className="text-gray-300 text-lg">
               Lo sentimos, el artículo que buscas no existe o no está disponible.
             </p>
+          </div>
+          <div className="bg-white rounded-lg p-8 shadow-sm text-center">
             <Link href="/es/blog">
-              <Button>Volver al blog</Button>
+              <Button className="bg-black text-white hover:bg-gray-800">Volver al blog</Button>
             </Link>
           </div>
         </div>
@@ -132,76 +152,91 @@ export default function BlogPostSpanish() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/es/blog">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Blog
-              </Button>
-            </Link>
-            <h1 className="text-xl font-semibold text-gray-900">Artículo</h1>
-            <div className="w-32"></div>
+            <div className="flex items-center">
+              <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
+            </div>
+            <div className="flex items-center">
+              <h2 className="text-lg font-medium text-gray-900">{post.title}</h2>
+            </div>
+            <div className="flex items-center">
+              <Link href="/es/blog">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" />
+                  Volver al Blog
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Article Header */}
-        <header className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+      <article className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Black Hero Section with Article Title */}
+        <div className="bg-black text-white rounded-lg p-8 mb-8">
+          <div className="mb-4">
+            <span className="inline-block bg-white text-black text-sm px-3 py-1 rounded-full font-medium">
+              Ley de Inmigración
+            </span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
             {post.title}
           </h1>
-          
-          <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
-            <div className="flex items-center gap-6 text-sm text-gray-500">
-              {post.publishedAt && (
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {format(new Date(post.publishedAt), "d 'de' MMMM, yyyy", { locale: es })}
-                </div>
-              )}
-              {post.author && (
-                <div className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  {post.author}
-                </div>
-              )}
-            </div>
-            
-            <div className="relative">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                className="flex items-center gap-2"
-              >
-                <Share2 className="w-4 h-4" />
-                Compartir
-              </Button>
-              {shareMessage && (
-                <div className="absolute top-full mt-2 right-0 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                  {shareMessage}
-                </div>
-              )}
-            </div>
+          <p className="text-gray-300 text-lg leading-relaxed mb-6">
+            {post.excerpt || "No todos los casos requieren un abogado, pero cuando lo necesitas, esperar demasiado para obtener ayuda puede costarte tiempo, dinero y tranquilidad. Ya sea que te enfrentes a una lesión, recibas un aviso legal o simplemente no estés seguro de tus derechos, saber cuándo consultar a un abogado puede marcar la diferencia. En este artículo, analizamos cinco señales claras de que es hora de obtener apoyo legal y cómo LinkToLawyers facilita obtener respuestas, rápido."}
+          </p>
+          <div className="flex items-center gap-6 text-sm text-gray-400">
+            {post.publishedAt && (
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4" />
+                {format(new Date(post.publishedAt), "d 'de' MMMM, yyyy", { locale: es })}
+              </div>
+            )}
+            {post.author && (
+              <div className="flex items-center gap-1">
+                <User className="w-4 h-4" />
+                {post.author}
+              </div>
+            )}
           </div>
-
-          {post.excerpt && (
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-              <p className="text-blue-800 font-medium">{post.excerpt}</p>
-            </div>
-          )}
-        </header>
+        </div>
 
         {/* Article Content */}
-        <div 
-          className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
+        <div className="bg-white rounded-lg p-8 shadow-sm">
+          <div 
+            className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-blue-600 hover:prose-a:text-blue-800 prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-li:my-1"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+          
+          {/* Share Section */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                ¿Te resultó útil este artículo?
+              </div>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="flex items-center gap-2"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Compartir
+                </Button>
+                {shareMessage && (
+                  <div className="absolute top-full mt-2 right-0 bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    {shareMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Call to Action */}
-        <div className="mt-12 bg-white rounded-lg p-8 shadow-sm border">
+        <div className="mt-8 bg-white rounded-lg p-8 shadow-sm border">
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               ¿Necesitas Asesoría Legal Personalizada?
@@ -211,7 +246,7 @@ export default function BlogPostSpanish() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/es">
-                <Button size="lg">
+                <Button size="lg" className="bg-black text-white hover:bg-gray-800">
                   Obtener Consulta Gratuita
                 </Button>
               </Link>
@@ -222,16 +257,6 @@ export default function BlogPostSpanish() {
               </Link>
             </div>
           </div>
-        </div>
-
-        {/* Back to Blog */}
-        <div className="mt-8 text-center">
-          <Link href="/es/blog">
-            <Button variant="ghost" className="flex items-center gap-2 mx-auto">
-              <ArrowLeft className="w-4 h-4" />
-              Volver al blog
-            </Button>
-          </Link>
         </div>
       </article>
     </div>
