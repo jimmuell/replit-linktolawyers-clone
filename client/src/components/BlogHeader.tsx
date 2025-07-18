@@ -16,25 +16,11 @@ export default function BlogHeader({ title, showBackButton = false }: BlogHeader
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="relative flex items-center h-16">
-            {/* Left side - Back button or Logo */}
+            {/* Left side - Brand Logo */}
             <div className="flex items-center z-10">
-              {showBackButton ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                  className="mr-4"
-                >
-                  <Link href="/">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Home
-                  </Link>
-                </Button>
-              ) : (
-                <Link href="/" className="flex items-center">
-                  <span className="text-xl font-bold text-black">LinkToLawyers</span>
-                </Link>
-              )}
+              <Link href="/" className="flex items-center">
+                <span className="text-xl font-bold text-black">LinkToLawyers</span>
+              </Link>
             </div>
 
             {/* Center - Title (absolutely positioned for perfect centering) */}
@@ -44,6 +30,18 @@ export default function BlogHeader({ title, showBackButton = false }: BlogHeader
 
             {/* Right side - Navigation */}
             <div className="flex items-center space-x-4 ml-auto z-10">
+              {showBackButton && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                >
+                  <Link href="/">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Home
+                  </Link>
+                </Button>
+              )}
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
