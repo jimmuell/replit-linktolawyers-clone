@@ -82,7 +82,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
         firstName: 'María',
         lastName: 'González',
         caseType: 'fam-imm-immediate',
-        email: 'maria.gonzalez@example.com',
+        email: 'linktolawyers.us@gmail.com',
         phoneNumber: '(555) 123-4567',
         caseDescription: 'Necesito ayuda con la petición de visa de inmigrante para mi esposo. Él está actualmente en México y queremos reunirnos lo antes posible. Tenemos todos los documentos necesarios pero necesitamos orientación sobre el proceso.',
         urgencyLevel: 'urgent',
