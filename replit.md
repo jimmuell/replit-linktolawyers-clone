@@ -18,6 +18,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Assignment Email Template Integration** (July 18, 2025): Fixed attorney assignment emails to use production email templates
+  - Updated attorney assignment email function to use emailTemplateService instead of hardcoded HTML
+  - Added proper template variable processing for attorney assignment notifications
+  - System now automatically uses admin-configured email templates for attorney notifications
+  - Added fallback template in case no production template is available
+  - Attorney assignment emails now include all template variables and proper formatting
+
 - **Legal Request Form UX Improvements** (July 18, 2025): Enhanced form submission and cancellation behavior
   - Fixed prefill checkbox reset issue - now properly clears after form submission
   - Added cancel confirmation dialog with warning message about data deletion

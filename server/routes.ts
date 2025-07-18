@@ -5,7 +5,7 @@ import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequest
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
-import { getProcessedTemplate, getLegalRequestConfirmationVariables } from "./emailTemplateService";
+import { getProcessedTemplate, getLegalRequestConfirmationVariables, getAttorneyAssignmentVariables } from "./emailTemplateService";
 import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
 
 // Simple session store for demo
@@ -781,154 +781,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const emailResults = [];
       for (const { assignment, attorney } of attorneyDetails) {
         try {
-          // Create email content for each attorney
-          const subject = `This Email is Intended for ${attorney.firstName} ${attorney.lastName}`;
-          const emailContent = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>New Legal Case Assignment</title>
-            </head>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;">
-              <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1);">
-                
-                <!-- Header -->
-                <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #2563eb;">
-                  <h1 style="color: #2563eb; margin: 0; font-size: 28px; font-weight: 700;">LinkToLawyers</h1>
-                  <p style="color: #6b7280; margin: 5px 0 0 0; font-size: 16px;">Professional Legal Services Platform</p>
-                </div>
-                
-                <!-- Main Content -->
-                <div style="margin-bottom: 30px;">
-                  <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px; font-weight: 600; border-left: 4px solid #2563eb; padding-left: 15px;">New Legal Case Assignment</h2>
-                  
-                  <p style="margin: 0 0 20px 0; font-size: 16px; color: #374151;">Dear <strong>${attorney.firstName} ${attorney.lastName}</strong>,</p>
-                  
-                  <p style="margin: 0 0 25px 0; font-size: 16px; color: #374151; background-color: #f0f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
-                    You have been assigned to a new legal case. Please review the details below and take appropriate action.
-                  </p>
-                </div>
-                
-                <!-- Case Information Card -->
-                <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
-                  <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 18px; font-weight: 600; display: flex; align-items: center;">
-                    <span style="background-color: #2563eb; color: white; padding: 6px 12px; border-radius: 6px; font-size: 14px; margin-right: 10px;">📋</span>
-                    Case Information
-                  </h3>
-                  
-                  <div style="display: grid; gap: 12px;">
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 140px;">Request Number:</span>
-                      <span style="color: #1f2937; font-family: monospace; background-color: #f3f4f6; padding: 2px 8px; border-radius: 4px;">${request.requestNumber}</span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 140px;">Client Name:</span>
-                      <span style="color: #1f2937;">${request.firstName} ${request.lastName}</span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 140px;">Email:</span>
-                      <span style="color: #2563eb;"><a href="mailto:${request.email}" style="color: #2563eb; text-decoration: none;">${request.email}</a></span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 140px;">Phone:</span>
-                      <span style="color: #1f2937;"><a href="tel:${request.phoneNumber}" style="color: #1f2937; text-decoration: none;">${request.phoneNumber}</a></span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 140px;">Case Type:</span>
-                      <span style="color: #1f2937; background-color: #dbeafe; padding: 4px 8px; border-radius: 4px; font-size: 14px;">${request.caseType}</span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 140px;">Status:</span>
-                      <span style="color: #059669; background-color: #d1fae5; padding: 4px 8px; border-radius: 4px; font-size: 14px; font-weight: 500;">${request.status}</span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 140px;">Submitted:</span>
-                      <span style="color: #1f2937;">${new Date(request.createdAt).toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Case Details Card -->
-                <div style="background-color: #fefce8; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #fde047;">
-                  <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 18px; font-weight: 600; display: flex; align-items: center;">
-                    <span style="background-color: #eab308; color: white; padding: 6px 12px; border-radius: 6px; font-size: 14px; margin-right: 10px;">📝</span>
-                    Case Details
-                  </h3>
-                  
-                  <div style="background-color: #ffffff; padding: 15px; border-radius: 6px; border-left: 4px solid #eab308;">
-                    <p style="margin: 0 0 10px 0; font-weight: 600; color: #4b5563;">Description:</p>
-                    <p style="margin: 0; color: #1f2937; line-height: 1.6; font-size: 15px;">${request.caseDescription}</p>
-                  </div>
-                </div>
-                
-                <!-- Additional Information Card -->
-                <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #bbf7d0;">
-                  <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 18px; font-weight: 600; display: flex; align-items: center;">
-                    <span style="background-color: #16a34a; color: white; padding: 6px 12px; border-radius: 6px; font-size: 14px; margin-right: 10px;">ℹ️</span>
-                    Additional Information
-                  </h3>
-                  
-                  <div style="display: grid; gap: 12px;">
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #dcfce7;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 120px;">Budget Range:</span>
-                      <span style="color: #1f2937; background-color: #ffffff; padding: 4px 8px; border-radius: 4px;">${request.budgetRange || 'Not specified'}</span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0; border-bottom: 1px solid #dcfce7;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 120px;">Urgency Level:</span>
-                      <span style="color: #1f2937; background-color: #ffffff; padding: 4px 8px; border-radius: 4px;">${request.urgencyLevel || 'Not specified'}</span>
-                    </div>
-                    <div style="display: flex; padding: 8px 0;">
-                      <span style="font-weight: 600; color: #4b5563; min-width: 120px;">Location:</span>
-                      <span style="color: #1f2937; background-color: #ffffff; padding: 4px 8px; border-radius: 4px;">${request.location || 'Not specified'}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Call to Action -->
-                <div style="text-align: center; margin-bottom: 30px; padding: 20px; background-color: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
-                  <p style="margin: 0 0 15px 0; font-size: 16px; color: #1f2937; font-weight: 500;">
-                    Please log into the attorney portal to review this case and take appropriate action.
-                  </p>
-                  <a href="#" style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 16px; transition: background-color 0.3s;">
-                    Access Attorney Portal
-                  </a>
-                </div>
-                
-                <!-- Footer -->
-                <div style="text-align: center; padding-top: 20px; border-top: 2px solid #e5e7eb;">
-                  <p style="margin: 0 0 5px 0; color: #4b5563; font-size: 16px;">
-                    Best regards,<br>
-                    <strong style="color: #2563eb;">LinkToLawyers Team</strong>
-                  </p>
-                  <p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 14px;">
-                    Professional Legal Services Platform
-                  </p>
-                </div>
-                
-              </div>
-              
-              <!-- Email Footer -->
-              <div style="text-align: center; margin-top: 20px; padding: 15px; color: #6b7280; font-size: 12px;">
-                <p style="margin: 0;">This email was sent by LinkToLawyers Legal Services Platform.</p>
-                <p style="margin: 5px 0 0 0;">© 2025 LinkToLawyers. All rights reserved.</p>
-              </div>
-            </body>
-            </html>
-          `;
+          // Get case type data for better display
+          const caseTypes = await storage.getCaseTypes();
+          const caseTypeData = caseTypes.find(ct => ct.value === request.caseType);
+          
+          // Get attorney assignment email template variables
+          const templateVariables = getAttorneyAssignmentVariables(attorney, request, caseTypeData);
+          
+          // Get processed email template
+          const processedTemplate = await getProcessedTemplate('attorney_assignment', templateVariables);
+          
+          let subject: string;
+          let htmlContent: string;
+          let textContent: string;
+          
+          if (processedTemplate) {
+            // Use production template
+            subject = processedTemplate.subject;
+            htmlContent = processedTemplate.html;
+            textContent = processedTemplate.text;
+          } else {
+            // Fallback to basic template if no production template is available
+            subject = `New Legal Case Assignment - ${request.requestNumber}`;
+            htmlContent = `
+              <h2>New Legal Case Assignment</h2>
+              <p>Dear ${attorney.firstName} ${attorney.lastName},</p>
+              <p>You have been assigned to a new legal case.</p>
+              <p><strong>Request Number:</strong> ${request.requestNumber}</p>
+              <p><strong>Client:</strong> ${request.firstName} ${request.lastName}</p>
+              <p><strong>Case Type:</strong> ${request.caseType}</p>
+              <p><strong>Description:</strong> ${request.caseDescription}</p>
+              <p>Please review the case details and contact the client if needed.</p>
+            `;
+            textContent = htmlContent.replace(/<[^>]*>/g, ''); // Strip HTML for text version
+          }
 
           const mailOptions = {
             from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
             to: 'linktolawyers.us@gmail.com', // Override email address
             subject: subject,
-            text: emailContent.replace(/<[^>]*>/g, ''), // Strip HTML for text version
-            html: emailContent,
+            text: textContent,
+            html: htmlContent,
           };
 
           await transporter.sendMail(mailOptions);
@@ -937,7 +830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.createEmailHistory({
             toAddress: 'linktolawyers.us@gmail.com',
             subject: subject,
-            message: emailContent,
+            message: htmlContent,
             status: 'sent',
             errorMessage: null,
           });
@@ -957,7 +850,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Store failed email in history
           await storage.createEmailHistory({
             toAddress: 'linktolawyers.us@gmail.com',
-            subject: `This Email is Intended for ${attorney.firstName} ${attorney.lastName}`,
+            subject: `New Legal Case Assignment - ${request.requestNumber}`,
             message: '',
             status: 'failed',
             errorMessage: error.message,
