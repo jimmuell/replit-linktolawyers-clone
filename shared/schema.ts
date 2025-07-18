@@ -71,6 +71,19 @@ export const emailHistory = pgTable("email_history", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
+export const emailTemplates = pgTable("email_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  textContent: text("text_content"),
+  templateType: text("template_type").notNull(), // 'legal_request_confirmation', 'attorney_assignment', 'general', etc.
+  variables: text("variables"), // JSON string of available variables
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const attorneys = pgTable("attorneys", {
   id: serial("id").primaryKey(),
   firstName: varchar("first_name", { length: 255 }).notNull(),
@@ -227,6 +240,16 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
   publishedAt: true,
 });
 
+export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).pick({
+  name: true,
+  subject: true,
+  htmlContent: true,
+  textContent: true,
+  templateType: true,
+  variables: true,
+  isActive: true,
+});
+
 export const sendEmailSchema = z.object({
   to: z.string().email("Please enter a valid email address"),
   subject: z.string().min(1, "Subject is required"),
@@ -258,4 +281,6 @@ export type InsertAttorneyFeeSchedule = z.infer<typeof insertAttorneyFeeSchedule
 export type AttorneyFeeSchedule = typeof attorneyFeeSchedule.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type SendEmail = z.infer<typeof sendEmailSchema>;
