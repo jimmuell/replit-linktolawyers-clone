@@ -18,11 +18,13 @@ import BlogPostPage from "@/pages/blog-post";
 import BlogPostEditor from "@/pages/blog-post-editor";
 import EmailTemplatesPage from "@/pages/email-templates";
 import NotFound from "@/pages/not-found";
+import HomeSpanish from "@/pages/home-spanish";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/es" component={HomeSpanish} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/smtp-config" component={SmtpConfigPage} />

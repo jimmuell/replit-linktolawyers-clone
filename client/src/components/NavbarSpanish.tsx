@@ -7,14 +7,14 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 
-interface NavbarProps {
+interface NavbarSpanishProps {
   activeSection: string;
   scrollToSection: (section: string) => void;
   setIsLoginModalOpen: (open: boolean) => void;
   hideUserDropdown?: boolean;
 }
 
-export default function Navbar({ activeSection, scrollToSection, setIsLoginModalOpen, hideUserDropdown = false }: NavbarProps) {
+export default function NavbarSpanish({ activeSection, scrollToSection, setIsLoginModalOpen, hideUserDropdown = false }: NavbarSpanishProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
 
@@ -34,7 +34,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 activeSection === 'how-it-works' && "text-primary"
               )}
             >
-              How it works
+              Cómo Funciona
             </button>
             <button
               onClick={() => scrollToSection('about')}
@@ -43,22 +43,22 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 activeSection === 'about' && "text-primary"
               )}
             >
-              About
+              Acerca de
             </button>
             <button 
               onClick={() => scrollToSection('contact')}
               className="text-gray-700 hover:text-primary transition-colors"
             >
-              Contact Us
+              Contáctanos
             </button>
-            <Link href="/free-resources" className="text-gray-700 hover:text-primary transition-colors">
-              Free resources
+            <Link href="/es/recursos-gratuitos" className="text-gray-700 hover:text-primary transition-colors">
+              Recursos Gratuitos
             </Link>
-            <Link href="/blog" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/es/blog" className="text-gray-700 hover:text-primary transition-colors">
               Blog
             </Link>
-            <Link href="/help" className="text-gray-700 hover:text-primary transition-colors">
-              Help
+            <Link href="/es/ayuda" className="text-gray-700 hover:text-primary transition-colors">
+              Ayuda
             </Link>
           </div>
           
@@ -78,20 +78,20 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {user.role === 'admin' && (
                     <DropdownMenuItem onClick={() => window.location.href = '/admin-dashboard'}>
-                      Admin Dashboard
+                      Panel de Administración
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem>
                     <Settings className="w-4 h-4 mr-2" />
-                    Settings
+                    Configuración
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => logout()}>
-                    Sign Out
+                    Cerrar Sesión
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -100,12 +100,12 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 className="bg-black text-white hover:bg-gray-800 rounded-full px-6"
                 onClick={() => setIsLoginModalOpen(true)}
               >
-                Sign In
+                Iniciar Sesión
               </Button>
             )}
-            <Link href="/es" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
               <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
-                Español
+                English
               </Button>
             </Link>
           </div>
@@ -131,11 +131,11 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   setIsMenuOpen(false);
                 }}
                 className={cn(
-                  "block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors",
+                  "block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors",
                   activeSection === 'how-it-works' && "text-primary bg-gray-50"
                 )}
               >
-                How it works
+                Cómo Funciona
               </button>
               <button
                 onClick={() => {
@@ -143,68 +143,75 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   setIsMenuOpen(false);
                 }}
                 className={cn(
-                  "block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors",
+                  "block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors",
                   activeSection === 'about' && "text-primary bg-gray-50"
                 )}
               >
-                About
+                Acerca de
               </button>
-              <button 
+              <button
                 onClick={() => {
                   scrollToSection('contact');
                   setIsMenuOpen(false);
                 }}
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
               >
-                Contact Us
+                Contáctanos
               </button>
               <Link 
-                href="/free-resources" 
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                href="/es/recursos-gratuitos" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Free resources
+                Recursos Gratuitos
               </Link>
               <Link 
-                href="/blog" 
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                href="/es/blog" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link 
-                href="/help" 
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                href="/es/ayuda" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Help
+                Ayuda
               </Link>
               
-              {/* Divider */}
-              <div className="border-t border-gray-200 my-3"></div>
-              
-              <div className="space-y-3">
+              <div className="pt-3 border-t border-gray-200">
                 {user && !hideUserDropdown ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 px-3 py-2 bg-gray-50 rounded-md">
-                      <Avatar className="w-8 h-8">
+                  <div className="space-y-2">
+                    <div className="flex items-center px-3 py-2">
+                      <Avatar className="w-8 h-8 mr-3">
                         <AvatarImage src="" />
                         <AvatarFallback>
                           {user.firstName?.charAt(0) || 'U'}{user.lastName?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</span>
+                      <span className="text-gray-900 font-medium">{user.firstName} {user.lastName}</span>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                    {user.role === 'admin' && (
+                      <button
+                        onClick={() => {
+                          window.location.href = '/admin-dashboard';
+                          setIsMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
+                      >
+                        Panel de Administración
+                      </button>
+                    )}
+                    <button
                       onClick={() => {
                         logout();
                         setIsMenuOpen(false);
                       }}
+                      className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-md transition-colors"
                     >
-                      Sign Out
-                    </Button>
+                      Cerrar Sesión
+                    </button>
                   </div>
                 ) : (
                   <Button 
@@ -214,15 +221,12 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                       setIsMenuOpen(false);
                     }}
                   >
-                    Sign In
+                    Iniciar Sesión
                   </Button>
                 )}
-                <Link href="/es" onClick={() => setIsMenuOpen(false)}>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
-                  >
-                    Español
+                <Link href="/" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="outline" className="w-full mt-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full">
+                    English
                   </Button>
                 </Link>
               </div>
