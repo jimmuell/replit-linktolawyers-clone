@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
@@ -51,6 +52,7 @@ export default function Home() {
   const [isEmailPreviewOpen, setIsEmailPreviewOpen] = useState(false);
   const [emailPreview, setEmailPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
@@ -116,6 +118,63 @@ export default function Home() {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Check if form has any data
+  const hasFormData = () => {
+    return formData.firstName || formData.lastName || formData.email || formData.phoneNumber || 
+           formData.caseType || formData.caseDescription || formData.urgencyLevel || 
+           formData.budgetRange || formData.location || formData.captcha;
+  };
+
+  // Handle modal close (cancel)
+  const handleModalClose = (open: boolean) => {
+    if (!open && hasFormData() && !submittedRequestNumber) {
+      // Show warning dialog if form has data and hasn't been submitted
+      setIsCancelDialogOpen(true);
+    } else {
+      // Safe to close
+      setIsQuoteModalOpen(open);
+      if (!open) {
+        // Reset everything when closing
+        setSubmittedRequestNumber(null);
+        setPrefillChecked(false);
+        setFormData({
+          firstName: '',
+          lastName: '',
+          caseType: '',
+          email: '',
+          phoneNumber: '',
+          caseDescription: '',
+          urgencyLevel: '',
+          budgetRange: '',
+          location: '',
+          captcha: '',
+          agreeToTerms: false
+        });
+      }
+    }
+  };
+
+  // Handle cancel confirmation
+  const handleCancelConfirm = () => {
+    setIsCancelDialogOpen(false);
+    setIsQuoteModalOpen(false);
+    setSubmittedRequestNumber(null);
+    setPrefillChecked(false);
+    setFormData({
+      firstName: '',
+      lastName: '',
+      caseType: '',
+      email: '',
+      phoneNumber: '',
+      caseDescription: '',
+      urgencyLevel: '',
+      budgetRange: '',
+      location: '',
+      captcha: '',
+      agreeToTerms: false
+    });
   };
 
   const handlePrefillToggle = (checked: boolean) => {
@@ -205,6 +264,7 @@ export default function Home() {
             
             // Close the modal and reset form
             setIsQuoteModalOpen(false);
+            setPrefillChecked(false); // Reset the prefill checkbox
             setFormData({
               firstName: '',
               lastName: '',
@@ -225,6 +285,22 @@ export default function Home() {
               description: `Your request ${result.data.requestNumber} has been submitted successfully, but we couldn't send the confirmation email. Please save your request number for tracking.`,
               variant: "destructive",
             });
+            // Still close modal and reset form since request was created
+            setIsQuoteModalOpen(false);
+            setPrefillChecked(false);
+            setFormData({
+              firstName: '',
+              lastName: '',
+              caseType: '',
+              email: '',
+              phoneNumber: '',
+              caseDescription: '',
+              urgencyLevel: '',
+              budgetRange: '',
+              location: '',
+              captcha: '',
+              agreeToTerms: false
+            });
           }
         } catch (emailError) {
           console.error('Error sending confirmation email:', emailError);
@@ -233,6 +309,22 @@ export default function Home() {
             title: "Request submitted",
             description: `Your request ${result.data.requestNumber} has been submitted successfully, but we couldn't send the confirmation email. Please save your request number for tracking.`,
             variant: "destructive",
+          });
+          // Still close modal and reset form since request was created
+          setIsQuoteModalOpen(false);
+          setPrefillChecked(false);
+          setFormData({
+            firstName: '',
+            lastName: '',
+            caseType: '',
+            email: '',
+            phoneNumber: '',
+            caseDescription: '',
+            urgencyLevel: '',
+            budgetRange: '',
+            location: '',
+            captcha: '',
+            agreeToTerms: false
           });
         }
       } else {
@@ -514,10 +606,10 @@ export default function Home() {
 
       {/* Free Quote Modal */}
       <Dialog open={isQuoteModalOpen} onOpenChange={(open) => {
-        setIsQuoteModalOpen(open);
         if (open && !currentRequestNumber) {
           setCurrentRequestNumber(generateRequestNumber());
         }
+        handleModalClose(open);
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -587,6 +679,7 @@ export default function Home() {
                   setIsQuoteModalOpen(false);
                   setIsEmailPreviewOpen(false);
                   setEmailPreview(null);
+                  setPrefillChecked(false); // Reset the prefill checkbox
                   // Reset form
                   setFormData({
                     firstName: '',
@@ -810,6 +903,26 @@ export default function Home() {
         isOpen={isTrackRequestModalOpen}
         onClose={() => setIsTrackRequestModalOpen(false)}
       />
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Request Form</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel? All the information you've entered will be deleted and cannot be recovered.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsCancelDialogOpen(false)}>
+              Continue Editing
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancelConfirm} className="bg-red-600 hover:bg-red-700">
+              Yes, Delete All Data
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Scroll to Top Button */}
       {showScrollToTop && (
