@@ -46,16 +46,6 @@ async function createTransporter() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Spanish site routes - let the frontend handle these
-  app.get('/es', (req, res, next) => {
-    // Let the frontend handle this route
-    next();
-  });
-  
-  app.get('/spanish', (req, res, next) => {
-    // Let the frontend handle this route
-    next();
-  });
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
     const sessionId = req.headers.authorization?.replace('Bearer ', '');

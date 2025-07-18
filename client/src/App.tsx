@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Home from "@/pages/home";
-import SpanishHome from "@/pages/home-spanish";
 import AdminDashboard from "@/pages/admin-dashboard";
 import SmtpConfigPage from "@/pages/smtp-config";
 import RequestManagementPage from "@/pages/request-management";
@@ -24,8 +23,6 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/es" component={SpanishHome} />
-      <Route path="/spanish" component={SpanishHome} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/smtp-config" component={SmtpConfigPage} />

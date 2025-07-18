@@ -60,17 +60,6 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             <Link href="/help" className="text-gray-700 hover:text-primary transition-colors">
               Help
             </Link>
-            
-            {/* Language Toggle */}
-            <Link href="/es">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Español
-              </Button>
-            </Link>
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
@@ -114,6 +103,9 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 Sign In
               </Button>
             )}
+            <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full px-6">
+              Español
+            </Button>
           </div>
 
           <div className="md:hidden">
@@ -226,7 +218,6 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 <Button 
                   variant="outline" 
                   className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 rounded-full"
-                  onClick={() => window.location.href = 'https://linkto-abogados.com'}
                 >
                   Español
                 </Button>
