@@ -68,7 +68,7 @@ export default function SmtpStatusCard() {
       error={error}
       actionText="Configure"
     >
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-3 gap-6 mb-4">
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
             <statusInfo.icon className={`w-4 h-4 ${statusInfo.color}`} />
@@ -81,7 +81,9 @@ export default function SmtpStatusCard() {
             <Mail className="w-4 h-4 text-gray-500" />
             <span className="text-xs text-gray-500">Host</span>
           </div>
-          <div className="text-lg font-semibold text-gray-900">{settings?.smtpHost || 'N/A'}</div>
+          <div className="text-sm font-semibold text-gray-900 break-words px-1">
+            {settings?.smtpHost || 'N/A'}
+          </div>
         </div>
         <div className="text-center">
           <div className="flex items-center justify-center gap-1 mb-1">
