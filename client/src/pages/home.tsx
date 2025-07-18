@@ -566,7 +566,7 @@ export default function Home() {
               <ul className="space-y-2 text-gray-600 text-sm">
                 <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
-                <li><a href="mailto:info@linktolawyers.com" className="hover:text-primary transition-colors">info@linktolawyers.com</a></li>
+                <li><a href="mailto:support@linktolawyers.com" className="hover:text-primary transition-colors">support@linktolawyers.com</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">FAQ</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Live Chat</a></li>
               </ul>

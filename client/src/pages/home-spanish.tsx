@@ -271,7 +271,7 @@ export default function HomeSpanish() {
               <ul className="space-y-2 text-gray-600 text-sm">
                 <li><a href="#" className="hover:text-primary transition-colors">Centro de Ayuda</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Contáctanos</a></li>
-                <li><a href="mailto:info@linktolawyers.com" className="hover:text-primary transition-colors">info@linktolawyers.com</a></li>
+                <li><a href="mailto:support@linktolawyers.com" className="hover:text-primary transition-colors">support@linktolawyers.com</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Preguntas Frecuentes</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Chat en Vivo</a></li>
               </ul>
