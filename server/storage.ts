@@ -11,6 +11,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
   getCaseType(id: number): Promise<CaseType | undefined>;
+  getCaseTypeByValue(value: string): Promise<CaseType | undefined>;
   getAllCaseTypes(): Promise<CaseType[]>;
   createCaseType(caseType: InsertCaseType): Promise<CaseType>;
   updateCaseType(id: number, caseType: Partial<InsertCaseType>): Promise<CaseType>;
@@ -104,6 +105,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(caseTypes)
       .where(eq(caseTypes.id, id));
+    return caseType || undefined;
+  }
+
+  async getCaseTypeByValue(value: string): Promise<CaseType | undefined> {
+    const [caseType] = await db
+      .select()
+      .from(caseTypes)
+      .where(eq(caseTypes.value, value));
     return caseType || undefined;
   }
 

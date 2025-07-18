@@ -5,6 +5,8 @@ import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequest
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
+import { getProcessedTemplate, getLegalRequestConfirmationVariables } from "./emailTemplateService";
+import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
 
 // Simple session store for demo
 const sessions = new Map<string, { userId: number; role: string }>();
@@ -236,10 +238,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { requestNumber } = req.params;
       const { emailTemplate, overrideEmail } = req.body;
       
-      if (!emailTemplate || !emailTemplate.html || !emailTemplate.subject) {
-        return res.status(400).json({ success: false, error: "Email template is required" });
-      }
-      
       // Get the legal request to find the recipient email
       const legalRequest = await storage.getLegalRequestByNumber(requestNumber);
       if (!legalRequest) {
@@ -255,15 +253,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use override email if provided, otherwise use the legal request email
       const recipientEmail = overrideEmail || legalRequest.email;
       
+      let finalEmailTemplate = emailTemplate;
+      
+      // Try to get production template from database first
+      if (!emailTemplate || !emailTemplate.html || !emailTemplate.subject) {
+        // Get case type data for better template processing
+        const caseTypeData = await storage.getCaseTypeByValue(legalRequest.caseType);
+        
+        // Get template variables for legal request confirmation
+        const templateVariables = getLegalRequestConfirmationVariables(legalRequest, caseTypeData);
+        
+        // Get processed template from database
+        const processedTemplate = await getProcessedTemplate('legal_request_confirmation', templateVariables);
+        
+        if (processedTemplate) {
+          finalEmailTemplate = {
+            subject: processedTemplate.subject,
+            html: processedTemplate.html,
+            text: processedTemplate.text
+          };
+        } else {
+          // Fallback to hardcoded template
+          const fallbackTemplate = generateConfirmationEmail(legalRequest, caseTypeData);
+          finalEmailTemplate = {
+            subject: fallbackTemplate.subject,
+            html: fallbackTemplate.html,
+            text: fallbackTemplate.text
+          };
+        }
+      }
+      
       // Create transporter and send email
       const transporter = await createTransporter();
       
       const mailOptions = {
         from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
         to: recipientEmail,
-        subject: emailTemplate.subject,
-        html: emailTemplate.html,
-        text: emailTemplate.text || ''
+        subject: finalEmailTemplate.subject,
+        html: finalEmailTemplate.html,
+        text: finalEmailTemplate.text || ''
       };
 
       try {
@@ -272,8 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store successful email in history
         await storage.createEmailHistory({
           toAddress: recipientEmail,
-          subject: emailTemplate.subject,
-          message: emailTemplate.html,
+          subject: finalEmailTemplate.subject,
+          message: finalEmailTemplate.html,
           status: 'sent',
           errorMessage: null,
         });
@@ -287,8 +315,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Store failed email in history
         await storage.createEmailHistory({
           toAddress: recipientEmail,
-          subject: emailTemplate.subject,
-          message: emailTemplate.html,
+          subject: finalEmailTemplate.subject,
+          message: finalEmailTemplate.html,
           status: 'failed',
           errorMessage: emailError.message,
         });

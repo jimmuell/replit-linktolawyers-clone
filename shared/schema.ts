@@ -80,6 +80,7 @@ export const emailTemplates = pgTable("email_templates", {
   templateType: text("template_type").notNull(), // 'legal_request_confirmation', 'attorney_assignment', 'general', etc.
   variables: text("variables"), // JSON string of available variables
   isActive: boolean("is_active").notNull().default(true),
+  useInProduction: boolean("use_in_production").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -248,6 +249,7 @@ export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).pick
   templateType: true,
   variables: true,
   isActive: true,
+  useInProduction: true,
 });
 
 export const sendEmailSchema = z.object({

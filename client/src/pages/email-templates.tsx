@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Plus, Edit, Trash2, Eye, Power, PowerOff, Calendar, Type, Code, Monitor, Smartphone, Tablet } from 'lucide-react';
+import { Mail, Plus, Edit, Trash2, Eye, Power, PowerOff, Calendar, Type, Code, Monitor, Smartphone, Tablet, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +28,7 @@ const emailTemplateSchema = z.object({
   templateType: z.string().min(1, 'Template type is required'),
   variables: z.string().optional(),
   isActive: z.boolean().default(true),
+  useInProduction: z.boolean().default(false),
 });
 
 type EmailTemplateForm = z.infer<typeof emailTemplateSchema>;
@@ -64,6 +65,7 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
       templateType: template?.templateType || '',
       variables: template?.variables || '',
       isActive: template?.isActive ?? true,
+      useInProduction: template?.useInProduction ?? false,
     },
   });
 
@@ -78,6 +80,7 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
         templateType: template.templateType || '',
         variables: template.variables || '',
         isActive: template.isActive ?? true,
+        useInProduction: template.useInProduction ?? false,
       });
     } else {
       // Reset to empty values for create mode
@@ -89,6 +92,7 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
         templateType: '',
         variables: '',
         isActive: true,
+        useInProduction: false,
       });
     }
   }, [template, form]);
@@ -341,14 +345,28 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
           />
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="isActive"
-            checked={form.watch('isActive')}
-            onCheckedChange={(checked) => form.setValue('isActive', checked)}
-            disabled={isReadOnly}
-          />
-          <Label htmlFor="isActive">Active</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="isActive"
+              checked={form.watch('isActive')}
+              onCheckedChange={(checked) => form.setValue('isActive', checked)}
+              disabled={isReadOnly}
+            />
+            <Label htmlFor="isActive">Active</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="useInProduction"
+              checked={form.watch('useInProduction')}
+              onCheckedChange={(checked) => form.setValue('useInProduction', checked)}
+              disabled={isReadOnly}
+            />
+            <Label htmlFor="useInProduction" className="text-sm font-medium">
+              Use in Production
+            </Label>
+          </div>
         </div>
 
         {!isReadOnly && (
@@ -433,6 +451,7 @@ export default function EmailTemplatesPage() {
 
   const activeTemplates = templates?.filter(t => t.isActive).length || 0;
   const inactiveTemplates = templates?.filter(t => !t.isActive).length || 0;
+  const productionTemplates = templates?.filter(t => t.useInProduction).length || 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -453,7 +472,7 @@ export default function EmailTemplatesPage() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">Total Templates</CardTitle>
@@ -474,6 +493,18 @@ export default function EmailTemplatesPage() {
               <div className="flex items-center">
                 <Power className="h-6 w-6 text-green-600 mr-2" />
                 <div className="text-2xl font-bold text-green-900">{activeTemplates}</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium text-red-600">Production Templates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center">
+                <Star className="h-6 w-6 text-red-600 mr-2" />
+                <div className="text-2xl font-bold text-red-900">{productionTemplates}</div>
               </div>
             </CardContent>
           </Card>
@@ -528,6 +559,11 @@ export default function EmailTemplatesPage() {
                           <Badge variant={template.isActive ? "default" : "secondary"}>
                             {template.isActive ? "Active" : "Inactive"}
                           </Badge>
+                          {template.useInProduction && (
+                            <Badge variant="destructive" className="text-xs">
+                              Production
+                            </Badge>
+                          )}
                           <Badge variant="outline" className="text-xs">
                             {templateTypes.find(t => t.value === template.templateType)?.label || template.templateType}
                           </Badge>
