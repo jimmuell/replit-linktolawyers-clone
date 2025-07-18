@@ -81,8 +81,8 @@ export default function SmtpStatusCard() {
             <Mail className="w-4 h-4 text-gray-500" />
             <span className="text-xs text-gray-500">Host</span>
           </div>
-          <div className="text-sm font-semibold text-gray-900 break-words px-1">
-            {settings?.smtpHost || 'N/A'}
+          <div className="text-lg font-semibold text-gray-900">
+            {settings?.smtpHost ? 'SMTP2GO' : 'N/A'}
           </div>
         </div>
         <div className="text-center">
