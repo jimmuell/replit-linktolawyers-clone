@@ -3,66 +3,69 @@
   <!-- Background for transparency -->
   <rect width="818" height="850" fill="transparent"/>
   
-  <!-- Thought Bubble A (Left) -->
-  <g transform="translate(170, 130)">
-    <!-- Cloud-like thought bubble using multiple overlapping circles -->
-    <circle cx="-30" cy="-20" r="25" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="0" cy="-35" r="30" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="30" cy="-25" r="28" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="35" cy="5" r="25" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="15" cy="25" r="22" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-20" cy="20" r="24" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-35" cy="0" r="20" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-10" cy="-5" r="28" fill="white" stroke="black" stroke-width="3"/>
+  <!-- Thought Bubble A (Left) - Positioned to cover original English bubble -->
+  <g transform="translate(164, 175)">
+    <!-- Cloud-like thought bubble using multiple overlapping circles - Made larger -->
+    <circle cx="-40" cy="-30" r="35" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="0" cy="-45" r="40" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="40" cy="-35" r="38" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="45" cy="5" r="35" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="25" cy="35" r="32" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-25" cy="30" r="34" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-45" cy="0" r="30" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-15" cy="-5" r="38" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="15" cy="-15" r="35" fill="white" stroke="black" stroke-width="3"/>
     
     <!-- Smaller connecting bubbles -->
-    <circle cx="50" cy="65" r="15" fill="white" stroke="black" stroke-width="2"/>
-    <circle cx="65" cy="85" r="10" fill="white" stroke="black" stroke-width="2"/>
-    <circle cx="75" cy="105" r="6" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="65" cy="80" r="18" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="85" cy="105" r="12" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="95" cy="125" r="8" fill="white" stroke="black" stroke-width="2"/>
     
     <!-- Text -->
     <text x="0" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="black">Firma Legal A</text>
     <text x="0" y="15" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="black">US$1,200</text>
   </g>
   
-  <!-- Thought Bubble B (Center) -->
-  <g transform="translate(409, 90)">
-    <!-- Cloud-like thought bubble using multiple overlapping circles -->
-    <circle cx="-35" cy="-25" r="30" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="0" cy="-40" r="35" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="35" cy="-30" r="32" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="40" cy="5" r="30" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="20" cy="30" r="25" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-25" cy="25" r="28" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-40" cy="0" r="25" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-5" cy="-5" r="32" fill="white" stroke="black" stroke-width="3"/>
+  <!-- Thought Bubble B (Center) - Positioned to cover original English bubble -->
+  <g transform="translate(409, 135)">
+    <!-- Cloud-like thought bubble using multiple overlapping circles - Made larger -->
+    <circle cx="-45" cy="-35" r="40" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="0" cy="-50" r="45" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="45" cy="-40" r="42" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="50" cy="5" r="40" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="30" cy="40" r="35" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-35" cy="35" r="38" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-50" cy="0" r="35" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-10" cy="-5" r="42" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="20" cy="-20" r="38" fill="white" stroke="black" stroke-width="3"/>
     
     <!-- Smaller connecting bubbles -->
-    <circle cx="0" cy="75" r="15" fill="white" stroke="black" stroke-width="2"/>
-    <circle cx="0" cy="100" r="10" fill="white" stroke="black" stroke-width="2"/>
-    <circle cx="0" cy="120" r="6" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="0" cy="85" r="18" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="0" cy="110" r="12" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="0" cy="130" r="8" fill="white" stroke="black" stroke-width="2"/>
     
     <!-- Text -->
     <text x="0" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="black">Firma Legal B</text>
     <text x="0" y="15" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="black">US$1,750</text>
   </g>
   
-  <!-- Thought Bubble C (Right) -->
-  <g transform="translate(648, 130)">
-    <!-- Cloud-like thought bubble using multiple overlapping circles -->
-    <circle cx="30" cy="-20" r="25" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="0" cy="-35" r="30" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-30" cy="-25" r="28" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-35" cy="5" r="25" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="-15" cy="25" r="22" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="20" cy="20" r="24" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="35" cy="0" r="20" fill="white" stroke="black" stroke-width="3"/>
-    <circle cx="10" cy="-5" r="28" fill="white" stroke="black" stroke-width="3"/>
+  <!-- Thought Bubble C (Right) - Positioned to cover original English bubble -->
+  <g transform="translate(654, 175)">
+    <!-- Cloud-like thought bubble using multiple overlapping circles - Made larger -->
+    <circle cx="40" cy="-30" r="35" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="0" cy="-45" r="40" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-40" cy="-35" r="38" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-45" cy="5" r="35" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-25" cy="35" r="32" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="25" cy="30" r="34" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="45" cy="0" r="30" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="15" cy="-5" r="38" fill="white" stroke="black" stroke-width="3"/>
+    <circle cx="-15" cy="-15" r="35" fill="white" stroke="black" stroke-width="3"/>
     
     <!-- Smaller connecting bubbles -->
-    <circle cx="-50" cy="65" r="15" fill="white" stroke="black" stroke-width="2"/>
-    <circle cx="-65" cy="85" r="10" fill="white" stroke="black" stroke-width="2"/>
-    <circle cx="-75" cy="105" r="6" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="-65" cy="80" r="18" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="-85" cy="105" r="12" fill="white" stroke="black" stroke-width="2"/>
+    <circle cx="-95" cy="125" r="8" fill="white" stroke="black" stroke-width="2"/>
     
     <!-- Text -->
     <text x="0" y="-8" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="black">Firma Legal C</text>
