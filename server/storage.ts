@@ -1,6 +1,6 @@
 import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate } from "@shared/schema";
 import { db } from "./db";
-import { eq, asc, desc, and } from "drizzle-orm";
+import { eq, asc, desc, and, or, isNull } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -62,6 +62,13 @@ export interface IStorage {
   getPublishedBlogPosts(): Promise<BlogPost[]>;
   updateBlogPost(id: number, updates: Partial<InsertBlogPost>): Promise<BlogPost>;
   deleteBlogPost(id: number): Promise<void>;
+  getBlogPostsNeedingTranslation(): Promise<BlogPost[]>;
+  updateBlogPostTranslation(id: number, translation: {
+    spanishTitle: string;
+    spanishContent: string;
+    spanishExcerpt?: string;
+    translationStatus: string;
+  }): Promise<BlogPost>;
   // Email Templates
   createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate>;
   getEmailTemplate(id: number): Promise<EmailTemplate | undefined>;
@@ -500,6 +507,41 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBlogPost(id: number): Promise<void> {
     await db.delete(blogPosts).where(eq(blogPosts.id, id));
+  }
+
+  async getBlogPostsNeedingTranslation(): Promise<BlogPost[]> {
+    const result = await db
+      .select()
+      .from(blogPosts)
+      .where(
+        and(
+          eq(blogPosts.isPublished, true),
+          or(
+            eq(blogPosts.translationStatus, "pending"),
+            isNull(blogPosts.translationStatus),
+            isNull(blogPosts.spanishTitle)
+          )
+        )
+      )
+      .orderBy(desc(blogPosts.publishedAt));
+    return result;
+  }
+
+  async updateBlogPostTranslation(id: number, translation: {
+    spanishTitle: string;
+    spanishContent: string;
+    spanishExcerpt?: string;
+    translationStatus: string;
+  }): Promise<BlogPost> {
+    const [result] = await db
+      .update(blogPosts)
+      .set({ 
+        ...translation,
+        updatedAt: new Date() 
+      })
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return result;
   }
 
   // Email Templates

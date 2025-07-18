@@ -1036,10 +1036,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid blog post data', details: result.error.issues });
       }
 
-      const blogPost = await storage.createBlogPost({
+      // Set translation status to pending if post is being published
+      const postData = {
         ...result.data,
         authorId: req.user.userId,
-      });
+        translationStatus: result.data.isPublished ? 'pending' : null
+      };
+
+      const blogPost = await storage.createBlogPost(postData);
+      
+      // Trigger background translation if published
+      if (blogPost.isPublished) {
+        const { triggerPostTranslation } = await import('./backgroundTranslation');
+        triggerPostTranslation(blogPost.id).catch(console.error);
+      }
+
       res.status(201).json(blogPost);
     } catch (error) {
       console.error('Error creating blog post:', error);
@@ -1052,6 +1063,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       
+      // Get the current blog post to check if it's being published for the first time
+      const currentPost = await storage.getBlogPost(Number(id));
+      if (!currentPost) {
+        return res.status(404).json({ error: 'Blog post not found' });
+      }
+      
       // Convert publishedAt string to Date object if it exists
       const requestData = {
         ...req.body,
@@ -1063,7 +1080,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid blog post data', details: result.error.issues });
       }
 
-      const blogPost = await storage.updateBlogPost(Number(id), result.data);
+      // Check if post is being published for the first time or content changed
+      const isBeingPublished = !currentPost.isPublished && result.data.isPublished;
+      const contentChanged = result.data.title !== undefined || result.data.content !== undefined || result.data.excerpt !== undefined;
+      
+      // Set translation status if needed
+      let updateData = result.data;
+      if (isBeingPublished || (contentChanged && currentPost.isPublished)) {
+        updateData = {
+          ...result.data,
+          translationStatus: 'pending'
+        };
+      }
+
+      const blogPost = await storage.updateBlogPost(Number(id), updateData);
+      
+      // Trigger background translation if published and needs translation
+      if (blogPost.isPublished && (isBeingPublished || contentChanged)) {
+        const { triggerPostTranslation } = await import('./backgroundTranslation');
+        triggerPostTranslation(blogPost.id).catch(console.error);
+      }
+
       res.json(blogPost);
     } catch (error) {
       console.error('Error updating blog post:', error);
@@ -1085,52 +1122,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== SPANISH BLOG TRANSLATION ROUTES ==========
 
-  // Get published blog posts with Spanish translations
+  // Get published blog posts with Spanish translations (database-stored)
   app.get("/api/blog-posts/published/spanish", async (req, res) => {
     try {
-      const { translateBlogPostCached } = await import('./translation');
       const blogPosts = await storage.getPublishedBlogPosts();
       
-      const translatedPosts = await Promise.all(
-        blogPosts.map(async (post) => {
-          try {
-            const translation = await translateBlogPostCached(
-              post.title,
-              post.content,
-              post.excerpt || undefined
-            );
-            
-            return {
-              ...post,
-              title: translation.title,
-              content: translation.content,
-              excerpt: translation.excerpt,
-              slug: post.slug + '-es' // Add Spanish suffix to slug
-            };
-          } catch (error) {
-            console.error(`Translation failed for post ${post.id}:`, error);
-            // Return original post with Spanish UI labels if translation fails
-            return {
-              ...post,
-              title: `[Traducción no disponible] ${post.title}`,
-              content: post.content,
-              excerpt: post.excerpt
-            };
-          }
-        })
-      );
+      const spanishPosts = blogPosts.map(post => {
+        // Use stored Spanish translation if available, otherwise show fallback
+        if (post.spanishTitle && post.spanishContent && post.translationStatus === 'completed') {
+          return {
+            ...post,
+            title: post.spanishTitle,
+            content: post.spanishContent,
+            excerpt: post.spanishExcerpt || post.excerpt,
+            slug: post.slug + '-es' // Add Spanish suffix to slug
+          };
+        } else {
+          // Show fallback if translation not ready
+          return {
+            ...post,
+            title: `[Traducción en proceso] ${post.title}`,
+            content: `<p><em>Esta publicación está siendo traducida automáticamente. Por favor, inténtelo de nuevo en unos minutos.</em></p><hr>${post.content}`,
+            excerpt: post.excerpt,
+            slug: post.slug + '-es'
+          };
+        }
+      });
       
-      res.json(translatedPosts);
+      res.json(spanishPosts);
     } catch (error) {
       console.error('Error fetching Spanish blog posts:', error);
       res.status(500).json({ error: 'Failed to fetch Spanish blog posts' });
     }
   });
 
-  // Get single blog post by slug with Spanish translation
+  // Get single blog post by slug with Spanish translation (database-stored)
   app.get("/api/blog-posts/slug/:slug/spanish", async (req, res) => {
     try {
-      const { translateBlogPostCached } = await import('./translation');
       let { slug } = req.params;
       
       // Remove Spanish suffix if present to get original slug
@@ -1141,30 +1169,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Blog post not found' });
       }
 
-      try {
-        const translation = await translateBlogPostCached(
-          blogPost.title,
-          blogPost.content,
-          blogPost.excerpt || undefined
-        );
-        
+      if (!blogPost.isPublished) {
+        return res.status(404).json({ error: 'Blog post not published' });
+      }
+
+      // Use stored Spanish translation if available
+      if (blogPost.spanishTitle && blogPost.spanishContent && blogPost.translationStatus === 'completed') {
         const translatedPost = {
           ...blogPost,
-          title: translation.title,
-          content: translation.content,
-          excerpt: translation.excerpt,
+          title: blogPost.spanishTitle,
+          content: blogPost.spanishContent,
+          excerpt: blogPost.spanishExcerpt || blogPost.excerpt,
           slug: blogPost.slug + '-es'
         };
         
         res.json(translatedPost);
-      } catch (error) {
-        console.error(`Translation failed for post ${blogPost.id}:`, error);
-        // Return original post with error message if translation fails
+      } else {
+        // Show fallback if translation not ready
         res.json({
           ...blogPost,
-          title: `[Traducción no disponible] ${blogPost.title}`,
-          content: `<p><em>Lo sentimos, la traducción automática no está disponible en este momento. El contenido se muestra en inglés.</em></p><hr>${blogPost.content}`,
-          excerpt: blogPost.excerpt
+          title: `[Traducción en proceso] ${blogPost.title}`,
+          content: `<p><em>Esta publicación está siendo traducida automáticamente. Por favor, inténtelo de nuevo en unos minutos.</em></p><hr>${blogPost.content}`,
+          excerpt: blogPost.excerpt,
+          slug: blogPost.slug + '-es'
         });
       }
     } catch (error) {

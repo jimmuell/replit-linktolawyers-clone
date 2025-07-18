@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedCaseTypes } from "./seed-case-types";
+import { startBackgroundTranslationService } from "./backgroundTranslation";
 
 const app = express();
 app.use(express.json());
@@ -63,6 +64,9 @@ app.use((req, res, next) => {
   } catch (error) {
     console.error("Failed to seed case types:", error);
   }
+
+  // Start background translation service
+  startBackgroundTranslationService();
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
