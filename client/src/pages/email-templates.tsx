@@ -111,7 +111,22 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
   };
 
   const renderVariablesHelp = () => {
-    const variablesArray = template?.variables ? JSON.parse(template.variables) : [];
+    if (!template?.variables) return null;
+    
+    let variablesArray: string[] = [];
+    
+    try {
+      const parsed = JSON.parse(template.variables);
+      if (Array.isArray(parsed)) {
+        variablesArray = parsed;
+      } else if (typeof parsed === 'object' && parsed !== null) {
+        variablesArray = Object.keys(parsed);
+      }
+    } catch (error) {
+      console.error('Error parsing template variables:', error);
+      return null;
+    }
+    
     if (variablesArray.length === 0) return null;
 
     return (
