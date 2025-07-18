@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const templateVariables = getAttorneyAssignmentVariables(attorney, request, caseTypeData);
           
           // Get processed email template
-          const processedTemplate = await getProcessedTemplate('attorney_assignment', templateVariables);
+          const processedTemplate = await getProcessedTemplate('notification', templateVariables);
           
           let subject: string;
           let htmlContent: string;
