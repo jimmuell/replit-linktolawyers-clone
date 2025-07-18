@@ -69,11 +69,52 @@ export const STATUS_COLORS = {
   [REQUEST_STATUS.EXPIRED]: 'red',
 } as const;
 
+// Spanish Status Labels
+export const STATUS_LABELS_SPANISH = {
+  [REQUEST_STATUS.UNDER_REVIEW]: 'En Revisión',
+  [REQUEST_STATUS.ATTORNEY_MATCHING]: 'Conectando con Abogados',
+  [REQUEST_STATUS.QUOTES_REQUESTED]: 'Cotizaciones Solicitadas',
+  [REQUEST_STATUS.QUOTES_RECEIVED]: 'Cotizaciones Disponibles',
+  [REQUEST_STATUS.AWAITING_CLIENT_RESPONSE]: 'Esperando Respuesta del Cliente',
+  [REQUEST_STATUS.CLIENT_REVIEWING]: 'Cliente Revisando Opciones',
+  [REQUEST_STATUS.ATTORNEY_SELECTED]: 'Abogado Seleccionado',
+  [REQUEST_STATUS.CASE_ASSIGNED]: 'Caso Asignado',
+  [REQUEST_STATUS.COMPLETED]: 'Completado',
+  [REQUEST_STATUS.ON_HOLD]: 'En Espera',
+  [REQUEST_STATUS.CANCELLED]: 'Cancelado',
+  [REQUEST_STATUS.EXPIRED]: 'Expirado',
+} as const;
+
+// Spanish Status Descriptions
+export const STATUS_DESCRIPTIONS_SPANISH = {
+  [REQUEST_STATUS.UNDER_REVIEW]: 'Tu solicitud está siendo revisada por nuestro equipo',
+  [REQUEST_STATUS.ATTORNEY_MATCHING]: 'Estamos encontrando abogados calificados para tu caso',
+  [REQUEST_STATUS.QUOTES_REQUESTED]: 'Se han solicitado cotizaciones de abogados',
+  [REQUEST_STATUS.QUOTES_RECEIVED]: 'Las cotizaciones de abogados están disponibles para tu revisión',
+  [REQUEST_STATUS.AWAITING_CLIENT_RESPONSE]: 'Esperando tu respuesta o decisión',
+  [REQUEST_STATUS.CLIENT_REVIEWING]: 'Estás revisando las opciones disponibles',
+  [REQUEST_STATUS.ATTORNEY_SELECTED]: 'Has seleccionado un abogado',
+  [REQUEST_STATUS.CASE_ASSIGNED]: 'Tu caso ha sido asignado a un abogado',
+  [REQUEST_STATUS.COMPLETED]: 'Tu solicitud ha sido completada exitosamente',
+  [REQUEST_STATUS.ON_HOLD]: 'Tu solicitud está temporalmente en espera',
+  [REQUEST_STATUS.CANCELLED]: 'Tu solicitud ha sido cancelada',
+  [REQUEST_STATUS.EXPIRED]: 'Tu solicitud ha expirado',
+} as const;
+
 // Helper function to get status info
 export function getStatusInfo(status: string) {
   return {
     label: STATUS_LABELS[status as keyof typeof STATUS_LABELS] || status,
     description: STATUS_DESCRIPTIONS[status as keyof typeof STATUS_DESCRIPTIONS] || 'Status unknown',
+    color: STATUS_COLORS[status as keyof typeof STATUS_COLORS] || 'gray',
+  };
+}
+
+// Helper function to get Spanish status info
+export function getStatusInfoSpanish(status: string) {
+  return {
+    label: STATUS_LABELS_SPANISH[status as keyof typeof STATUS_LABELS_SPANISH] || status,
+    description: STATUS_DESCRIPTIONS_SPANISH[status as keyof typeof STATUS_DESCRIPTIONS_SPANISH] || 'Estado desconocido',
     color: STATUS_COLORS[status as keyof typeof STATUS_COLORS] || 'gray',
   };
 }

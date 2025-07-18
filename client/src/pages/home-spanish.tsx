@@ -3,7 +3,7 @@ import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp } from "lucide-rea
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
-import TrackRequestModal from "@/components/TrackRequestModal";
+import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
 import { Link } from "wouter";
@@ -314,7 +314,7 @@ export default function HomeSpanish() {
       />
 
       {/* Track Request Modal */}
-      <TrackRequestModal 
+      <TrackRequestModalSpanish 
         isOpen={isTrackRequestModalOpen} 
         onClose={() => setIsTrackRequestModalOpen(false)} 
       />
