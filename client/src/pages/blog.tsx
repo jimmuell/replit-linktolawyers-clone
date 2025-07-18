@@ -21,9 +21,11 @@ export default function Blog() {
     });
   };
 
-  const truncateContent = (content: string, maxLength: number = 200) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
+  const stripHtmlAndTruncate = (html: string, maxLength: number = 200) => {
+    // Strip HTML tags and decode HTML entities
+    const text = html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
   };
 
   return (
@@ -94,9 +96,11 @@ export default function Blog() {
                   </div>
 
                   <div className="border-t pt-4">
-                    <p className="text-sm text-gray-700 mb-3">
-                      {truncateContent(post.content)}
-                    </p>
+                    {post.content && (
+                      <p className="text-sm text-gray-700 mb-3">
+                        {stripHtmlAndTruncate(post.content)}
+                      </p>
+                    )}
                     <Button 
                       variant="outline" 
                       size="sm"
