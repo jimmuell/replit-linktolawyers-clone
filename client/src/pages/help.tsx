@@ -217,7 +217,7 @@ export default function Help() {
                 <AccordionItem key={index} value={`item-${index}`} className="border border-gray-200 rounded-lg px-6">
                   <AccordionTrigger className="text-left hover:no-underline">
                     <div className="flex items-center">
-                      <HelpCircle className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" />
+                      <HelpCircle className="w-5 h-5 text-black mr-3 flex-shrink-0" />
                       {faq.question}
                     </div>
                   </AccordionTrigger>
