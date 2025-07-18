@@ -184,7 +184,7 @@ export default function Home() {
         firstName: 'John',
         lastName: 'Doe',
         caseType: 'family-based-immigrant-visa-immediate-relative',
-        email: 'john.doe@example.com',
+        email: 'linktolawyers.us@gmail.com',
         phoneNumber: '(555) 123-4567',
         caseDescription: 'I need assistance with filing a family-based immigrant visa petition for my spouse. We have been married for 2 years and have all the required documentation ready. Looking for guidance on the process and timeline.',
         urgencyLevel: 'moderate',
