@@ -17,7 +17,7 @@ import {
   insertCaseSchema,
   insertAttorneyNoteSchema
 } from "@shared/schema";
-import { eq, and, isNull, desc, asc } from "drizzle-orm";
+import { eq, and, isNull, desc, asc, sql } from "drizzle-orm";
 import { requireAuth } from "../middleware/auth";
 
 const router = Router();
@@ -476,33 +476,63 @@ router.get("/public/request/:requestId/quotes", async (req, res) => {
   try {
     const requestId = parseInt(req.params.requestId);
     
-    // Get all quotes for this request through referral assignments
-    const quotesWithAttorneys = await db
-      .select({
-        quote: quotes,
-        attorney: {
-          id: attorneys.id,
-          firstName: attorneys.firstName,
-          lastName: attorneys.lastName,
-          firmName: attorneys.firmName,
-          licenseState: attorneys.licenseState,
-          practiceAreas: attorneys.practiceAreas,
-          experienceYears: attorneys.experienceYears,
-          isVerified: attorneys.isVerified,
-          bio: attorneys.bio,
-        },
-        assignment: {
-          id: referralAssignments.id,
-          status: referralAssignments.status,
-        }
-      })
-      .from(quotes)
-      .innerJoin(referralAssignments, eq(quotes.assignmentId, referralAssignments.id))
-      .innerJoin(attorneys, eq(referralAssignments.attorneyId, attorneys.id))
-      .where(eq(referralAssignments.requestId, requestId))
-      .orderBy(desc(quotes.sentAt));
+    // Use a simpler approach - get quotes separately then join data
+    const quoteResults = await db.execute(sql`
+      SELECT 
+        q.id as quote_id,
+        q.service_fee,
+        q.description,
+        q.terms,
+        q.valid_until,
+        q.status as quote_status,
+        q.sent_at,
+        a.id as attorney_id,
+        a.first_name,
+        a.last_name,
+        a.firm_name,
+        a.license_state,
+        a.practice_areas,
+        a.years_of_experience,
+        a.is_verified,
+        a.bio,
+        ra.id as assignment_id,
+        ra.status as assignment_status
+      FROM quotes q
+      JOIN referral_assignments ra ON q.assignment_id = ra.id
+      JOIN attorneys a ON ra.attorney_id = a.id
+      WHERE ra.request_id = ${requestId}
+      ORDER BY q.sent_at DESC
+    `);
+
+    // Transform the data to match the expected structure
+    const transformedQuotes = quoteResults.rows.map((row: any) => ({
+      quote: {
+        id: row.quote_id,
+        serviceFee: row.service_fee,
+        description: row.description,
+        terms: row.terms,
+        validUntil: row.valid_until,
+        status: row.quote_status,
+        sentAt: row.sent_at,
+      },
+      attorney: {
+        id: row.attorney_id,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        firmName: row.firm_name,
+        licenseState: row.license_state,
+        practiceAreas: row.practice_areas,
+        experienceYears: row.years_of_experience,
+        isVerified: row.is_verified,
+        bio: row.bio,
+      },
+      assignment: {
+        id: row.assignment_id,
+        status: row.assignment_status,
+      }
+    }));
     
-    res.json({ success: true, data: quotesWithAttorneys });
+    res.json({ success: true, data: transformedQuotes });
   } catch (error) {
     console.error('Error fetching quotes for request:', error);
     res.status(500).json({ error: 'Failed to fetch quotes' });
