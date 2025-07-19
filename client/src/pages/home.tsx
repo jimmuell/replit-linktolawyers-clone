@@ -393,12 +393,12 @@ export default function Home() {
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                   Find Your Immigration Attorney
                 </h1>
-                <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-6 leading-relaxed">
+                <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-8 leading-relaxed">
                   Compare And Negotiate Legal Fees<br />
                   From Law Firms Nationwide
                 </h2>
                 
-                <div className="flex-grow flex flex-col justify-center space-y-6">
+                <div className="space-y-6 mb-8">
                   <p className="text-xl text-gray-600 max-w-lg">
                     Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
                   </p>
