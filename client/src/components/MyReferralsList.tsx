@@ -522,170 +522,179 @@ export default function MyReferralsList() {
                       </TableCell>
                       <TableCell>{formatDate(referral.assignedAt)}</TableCell>
                       <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedReferral(referral)}
-                              >
-                                <Eye className="h-3 w-3 mr-1" />
-                                View
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
-                              <DialogHeader>
-                                <DialogTitle>Referral Details - {selectedReferral?.request.requestNumber}</DialogTitle>
-                              </DialogHeader>
-                              {selectedReferral && (
-                                <div className="space-y-4">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Client Name</label>
-                                      <p className="text-sm">{selectedReferral.request.firstName} {selectedReferral.request.lastName}</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Email</label>
-                                      <p className="text-sm">{selectedReferral.request.email}</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Phone</label>
-                                      <p className="text-sm">{selectedReferral.request.phoneNumber || 'Not provided'}</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Location</label>
-                                      <p className="text-sm">{selectedReferral.request.location || 'Not specified'}</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Case Type</label>
-                                      <p className="text-sm">{selectedReferral.request.caseType}</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Assignment Status</label>
-                                      <Badge variant={getStatusBadgeVariant(selectedReferral.assignmentStatus)}>
-                                        {selectedReferral.assignmentStatus.replace('_', ' ')}
-                                      </Badge>
-                                    </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setSelectedReferral(referral)}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              View Details
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Referral Details - {selectedReferral?.request.requestNumber}</DialogTitle>
+                            </DialogHeader>
+                            {selectedReferral && (
+                              <div className="space-y-6">
+                                {/* Client Information */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Client Name</label>
+                                    <p className="text-sm">{selectedReferral.request.firstName} {selectedReferral.request.lastName}</p>
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium text-gray-500">Case Description</label>
-                                    <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md">{selectedReferral.request.caseDescription}</p>
+                                    <label className="text-sm font-medium text-gray-500">Email</label>
+                                    <p className="text-sm">{selectedReferral.request.email}</p>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Submitted</label>
-                                      <p className="text-sm">{formatDate(selectedReferral.request.createdAt)}</p>
-                                    </div>
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Assigned to You</label>
-                                      <p className="text-sm">{formatDate(selectedReferral.assignedAt)}</p>
-                                    </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Phone</label>
+                                    <p className="text-sm">{selectedReferral.request.phoneNumber || 'Not provided'}</p>
                                   </div>
-                                  {selectedReferral.notes && (
-                                    <div>
-                                      <label className="text-sm font-medium text-gray-500">Assignment Notes</label>
-                                      <p className="text-sm mt-1 p-3 bg-blue-50 rounded-md">{selectedReferral.notes}</p>
-                                    </div>
-                                  )}
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Location</label>
+                                    <p className="text-sm">{selectedReferral.request.location || 'Not specified'}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Case Type</label>
+                                    <p className="text-sm">{selectedReferral.request.caseType}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Assignment Status</label>
+                                    <Badge variant={getStatusBadgeVariant(selectedReferral.assignmentStatus)}>
+                                      {selectedReferral.assignmentStatus.replace('_', ' ')}
+                                    </Badge>
+                                  </div>
                                 </div>
-                              )}
-                            </DialogContent>
-                          </Dialog>
-                          
-                          {referral.assignmentStatus === 'assigned' && (
-                            <Button 
-                              size="sm"
-                              variant="default"
-                              onClick={() => updateStatusMutation.mutate({ 
-                                assignmentId: referral.assignmentId, 
-                                status: 'under_review' 
-                              })}
-                              disabled={updateStatusMutation.isPending}
-                            >
-                              Start Review
-                            </Button>
-                          )}
-                          
-                          {(referral.assignmentStatus === 'under_review' || referral.assignmentStatus === 'assigned') && (
-                            <Button 
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setSelectedReferral(referral);
-                                setIsInfoModalOpen(true);
-                              }}
-                            >
-                              <MessageSquare className="h-3 w-3 mr-1" />
-                              Request Info
-                            </Button>
-                          )}
-                          
-                          {(referral.assignmentStatus === 'ready_to_quote' || referral.assignmentStatus === 'under_review') && (
-                            <Button 
-                              size="sm"
-                              variant="default"
-                              className="bg-green-600 hover:bg-green-700"
-                              onClick={() => {
-                                setSelectedReferral(referral);
-                                setIsQuoteModalOpen(true);
-                              }}
-                            >
-                              <DollarSign className="h-3 w-3 mr-1" />
-                              Quote
-                            </Button>
-                          )}
-                          
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setSelectedReferral(referral);
-                              setIsNotesModalOpen(true);
-                            }}
-                          >
-                            <FileText className="h-3 w-3 mr-1" />
-                            Note
-                          </Button>
-                          
-                          {/* Quote Management Actions */}
-                          {referral.assignmentStatus === 'quoted' && (
-                            <>
-                              <Button 
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleEditQuoteClick(referral)}
-                                disabled={editQuoteMutation.isPending}
-                              >
-                                <Edit2 className="h-3 w-3 mr-1" />
-                                Edit Quote
-                              </Button>
-                              
-                              <Button 
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleDeleteQuoteClick(referral)}
-                                disabled={deleteQuoteMutation.isPending}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-3 w-3 mr-1" />
-                                Delete Quote
-                              </Button>
-                            </>
-                          )}
-                          
-                          {/* Unassign Action */}
-                          <Button 
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUnassignClick(referral)}
-                            disabled={unassignMutation.isPending}
-                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                          >
-                            <UserMinus className="h-3 w-3 mr-1" />
-                            Unassign
-                          </Button>
-                        </div>
+
+                                {/* Case Description */}
+                                <div>
+                                  <label className="text-sm font-medium text-gray-500">Case Description</label>
+                                  <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md">{selectedReferral.request.caseDescription}</p>
+                                </div>
+
+                                {/* Dates */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Submitted</label>
+                                    <p className="text-sm">{formatDate(selectedReferral.request.createdAt)}</p>
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Assigned to You</label>
+                                    <p className="text-sm">{formatDate(selectedReferral.assignedAt)}</p>
+                                  </div>
+                                </div>
+
+                                {/* Assignment Notes */}
+                                {selectedReferral.notes && (
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-500">Assignment Notes</label>
+                                    <p className="text-sm mt-1 p-3 bg-blue-50 rounded-md">{selectedReferral.notes}</p>
+                                  </div>
+                                )}
+
+                                {/* Actions Section */}
+                                <div className="border-t pt-4">
+                                  <h4 className="text-sm font-medium text-gray-900 mb-3">Actions</h4>
+                                  <div className="flex flex-wrap gap-2">
+                                    {/* Status Update Actions */}
+                                    {selectedReferral.assignmentStatus === 'assigned' && (
+                                      <Button 
+                                        size="sm"
+                                        variant="default"
+                                        onClick={() => {
+                                          updateStatusMutation.mutate({ 
+                                            assignmentId: selectedReferral.assignmentId, 
+                                            status: 'under_review' 
+                                          });
+                                        }}
+                                        disabled={updateStatusMutation.isPending}
+                                      >
+                                        <Clock className="h-3 w-3 mr-1" />
+                                        Start Review
+                                      </Button>
+                                    )}
+                                    
+                                    {/* Information Request */}
+                                    {(selectedReferral.assignmentStatus === 'under_review' || selectedReferral.assignmentStatus === 'assigned') && (
+                                      <Button 
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setIsInfoModalOpen(true)}
+                                      >
+                                        <MessageSquare className="h-3 w-3 mr-1" />
+                                        Request Info
+                                      </Button>
+                                    )}
+                                    
+                                    {/* Submit Quote */}
+                                    {(selectedReferral.assignmentStatus === 'ready_to_quote' || selectedReferral.assignmentStatus === 'under_review') && (
+                                      <Button 
+                                        size="sm"
+                                        variant="default"
+                                        className="bg-green-600 hover:bg-green-700"
+                                        onClick={() => setIsQuoteModalOpen(true)}
+                                      >
+                                        <DollarSign className="h-3 w-3 mr-1" />
+                                        Submit Quote
+                                      </Button>
+                                    )}
+                                    
+                                    {/* Quote Management Actions */}
+                                    {selectedReferral.assignmentStatus === 'quoted' && (
+                                      <>
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleEditQuoteClick(selectedReferral)}
+                                          disabled={editQuoteMutation.isPending}
+                                        >
+                                          <Edit2 className="h-3 w-3 mr-1" />
+                                          Edit Quote
+                                        </Button>
+                                        
+                                        <Button 
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handleDeleteQuoteClick(selectedReferral)}
+                                          disabled={deleteQuoteMutation.isPending}
+                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="h-3 w-3 mr-1" />
+                                          Delete Quote
+                                        </Button>
+                                      </>
+                                    )}
+                                    
+                                    {/* Add Note */}
+                                    <Button 
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => setIsNotesModalOpen(true)}
+                                    >
+                                      <FileText className="h-3 w-3 mr-1" />
+                                      Add Note
+                                    </Button>
+                                    
+                                    {/* Unassign Action */}
+                                    <Button 
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleUnassignClick(selectedReferral)}
+                                      disabled={unassignMutation.isPending}
+                                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 border-orange-300"
+                                    >
+                                      <UserMinus className="h-3 w-3 mr-1" />
+                                      Unassign Myself
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </DialogContent>
+                        </Dialog>
                       </TableCell>
                     </TableRow>
                   ))}

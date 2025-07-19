@@ -501,13 +501,13 @@ router.get("/assignment/:assignmentId/quotes", requireAuth, async (req, res) => 
     }
 
     // Get quotes for this assignment
-    const quotes = await db
+    const assignmentQuotes = await db
       .select()
       .from(quotes)
       .where(eq(quotes.assignmentId, assignmentId))
       .orderBy(desc(quotes.sentAt));
 
-    res.json({ success: true, data: quotes });
+    res.json({ success: true, data: assignmentQuotes });
   } catch (error) {
     console.error('Error fetching assignment quotes:', error);
     res.status(500).json({ error: 'Failed to fetch quotes' });
