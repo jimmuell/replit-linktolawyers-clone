@@ -7,9 +7,8 @@ import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
 import { getProcessedTemplate, getLegalRequestConfirmationVariables, getAttorneyAssignmentVariables } from "./emailTemplateService";
 import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
-
-// Simple session store for demo
-const sessions = new Map<string, { userId: number; role: string }>();
+import { setSession, getSession, removeSession, requireAuth } from "./middleware/auth";
+import attorneyReferralsRouter from "./routes/attorney-referrals";
 
 // Generate legal request number
 function generateRequestNumber(): string {
@@ -46,13 +45,20 @@ async function createTransporter() {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Authentication middleware
-  const requireAuth = (req: any, res: any, next: any) => {
+  // Mount attorney referrals routes
+  app.use('/api/attorney-referrals', attorneyReferralsRouter);
+
+  // Authentication middleware (local version for backwards compatibility)
+  const localRequireAuth = (req: any, res: any, next: any) => {
     const sessionId = req.headers.authorization?.replace('Bearer ', '');
-    if (!sessionId || !sessions.has(sessionId)) {
+    if (!sessionId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    req.user = sessions.get(sessionId);
+    const session = getSession(sessionId);
+    if (!session) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    req.user = session;
     next();
   };
 
@@ -113,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create session
       const sessionId = Math.random().toString(36).substring(2, 15);
-      sessions.set(sessionId, { userId: user.id, role: user.role });
+      setSession(sessionId, { userId: user.id, role: user.role });
 
       // Remove password from response
       const { password: _, ...userWithoutPassword } = user;
@@ -128,13 +134,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/logout', (req, res) => {
     const sessionId = req.headers.authorization?.replace('Bearer ', '');
     if (sessionId) {
-      sessions.delete(sessionId);
+      removeSession(sessionId);
     }
     res.json({ success: true });
   });
 
   // Get current user
-  app.get('/api/auth/me', requireAuth, async (req: any, res) => {
+  app.get('/api/auth/me', localRequireAuth, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.userId);
       if (!user) {

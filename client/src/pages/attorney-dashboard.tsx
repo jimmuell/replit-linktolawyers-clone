@@ -1,9 +1,17 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Briefcase, Clock, DollarSign, Users, Bell, MessageSquare } from 'lucide-react';
 import AttorneyAppBar from '@/components/AttorneyAppBar';
+import ReferralList from '@/components/ReferralList';
+import MyReferralsList from '@/components/MyReferralsList';
 
 export default function AttorneyDashboard() {
   const { user, loading } = useAuth();
+  const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     // Redirect if not an attorney and not loading
@@ -42,23 +50,174 @@ export default function AttorneyDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Attorney Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage your cases and clients from here.</p>
+          <p className="text-gray-600 mt-2">Manage your legal referrals and cases</p>
         </div>
 
-        {/* Main Content Area - Blank for now */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="text-center text-gray-500">
-            <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="available">Available Referrals</TabsTrigger>
+            <TabsTrigger value="my-referrals">My Referrals</TabsTrigger>
+            <TabsTrigger value="cases">Active Cases</TabsTrigger>
+            <TabsTrigger value="profile">Profile</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+              {/* Stats Cards */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Referrals</CardTitle>
+                  <Briefcase className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">12</div>
+                  <p className="text-xs text-muted-foreground">+2 from last week</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pending Quotes</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">3</div>
+                  <p className="text-xs text-muted-foreground">Awaiting submission</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Cases</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">8</div>
+                  <p className="text-xs text-muted-foreground">In progress</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Response Time</CardTitle>
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">2.4h</div>
+                  <p className="text-xs text-muted-foreground">Average response</p>
+                </CardContent>
+              </Card>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Dashboard Under Construction</h3>
-            <p className="text-gray-600">
-              Attorney dashboard content will be developed soon.
-            </p>
-          </div>
-        </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">New referral assigned</p>
+                        <p className="text-xs text-gray-500">Immigration case - Family visa</p>
+                      </div>
+                      <Badge variant="outline">2h ago</Badge>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Quote accepted</p>
+                        <p className="text-xs text-gray-500">Case #LR-123456</p>
+                      </div>
+                      <Badge variant="outline">1 day ago</Badge>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Information requested</p>
+                        <p className="text-xs text-gray-500">Client response pending</p>
+                      </div>
+                      <Badge variant="outline">2 days ago</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <Button className="w-full justify-start" onClick={() => setActiveTab('available')}>
+                      <Briefcase className="mr-2 h-4 w-4" />
+                      Browse Available Referrals
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('my-referrals')}>
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Review My Referrals
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('cases')}>
+                      <Users className="mr-2 h-4 w-4" />
+                      Manage Active Cases
+                    </Button>
+                    <Button className="w-full justify-start" variant="outline">
+                      <Bell className="mr-2 h-4 w-4" />
+                      View Notifications
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="available">
+            <ReferralList 
+              title="Available Referrals"
+              endpoint="/api/attorney-referrals/available"
+              showAssignButton={true}
+            />
+          </TabsContent>
+
+          <TabsContent value="my-referrals">
+            <MyReferralsList />
+          </TabsContent>
+
+          <TabsContent value="cases">
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Cases</CardTitle>
+                <p className="text-sm text-gray-600">Monitor your ongoing legal cases</p>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Case management feature is under construction.</p>
+                  <p className="text-sm">This section will show your active legal cases and allow you to track progress and manage case details.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Attorney Profile</CardTitle>
+                <p className="text-sm text-gray-600">Update your professional information</p>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>Profile management feature is under construction.</p>
+                  <p className="text-sm">This section will allow you to update your attorney profile, practice areas, and contact information.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

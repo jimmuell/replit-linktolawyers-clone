@@ -71,6 +71,66 @@ export const emailHistory = pgTable("email_history", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
+// Referral assignment tracking
+export const referralAssignments = pgTable("referral_assignments", {
+  id: serial("id").primaryKey(),
+  requestId: integer("request_id").notNull().references(() => legalRequests.id),
+  attorneyId: integer("attorney_id").notNull().references(() => attorneys.id),
+  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("assigned"), // assigned, under_review, info_requested, ready_to_quote, quoted, accepted, rejected, case_created
+  notes: text("notes"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Information requests from attorneys to clients
+export const informationRequests = pgTable("information_requests", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").notNull().references(() => referralAssignments.id),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  sentAt: timestamp("sent_at").defaultNow().notNull(),
+  clientResponse: text("client_response"),
+  respondedAt: timestamp("responded_at"),
+});
+
+// Attorney quotes for referrals
+export const quotes = pgTable("quotes", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").notNull().references(() => referralAssignments.id),
+  serviceFee: integer("service_fee").notNull(), // in cents
+  description: text("description").notNull(),
+  terms: text("terms"),
+  validUntil: timestamp("valid_until"),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, accepted, rejected, expired
+  sentAt: timestamp("sent_at").defaultNow().notNull(),
+  respondedAt: timestamp("responded_at"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Cases created from accepted quotes
+export const cases = pgTable("cases", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").notNull().references(() => referralAssignments.id),
+  quoteId: integer("quote_id").notNull().references(() => quotes.id),
+  caseNumber: varchar("case_number", { length: 20 }).notNull().unique(),
+  status: varchar("status", { length: 50 }).notNull().default("active"), // active, completed, on_hold, cancelled
+  startDate: timestamp("start_date").defaultNow().notNull(),
+  completedDate: timestamp("completed_date"),
+  notes: text("notes"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Attorney notes for referrals and cases
+export const attorneyNotes = pgTable("attorney_notes", {
+  id: serial("id").primaryKey(),
+  attorneyId: integer("attorney_id").notNull().references(() => attorneys.id),
+  assignmentId: integer("assignment_id").references(() => referralAssignments.id),
+  caseId: integer("case_id").references(() => cases.id),
+  note: text("note").notNull(),
+  isPrivate: boolean("is_private").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const emailTemplates = pgTable("email_templates", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
@@ -293,6 +353,46 @@ export const loginSchema = z.object({
   password: z.string().min(6),
 });
 
+// Schema validations for new referral management tables
+export const insertReferralAssignmentSchema = createInsertSchema(referralAssignments).pick({
+  requestId: true,
+  attorneyId: true,
+  status: true,
+  notes: true,
+});
+
+export const insertInformationRequestSchema = createInsertSchema(informationRequests).pick({
+  assignmentId: true,
+  subject: true,
+  message: true,
+  clientResponse: true,
+});
+
+export const insertQuoteSchema = createInsertSchema(quotes).pick({
+  assignmentId: true,
+  serviceFee: true,
+  description: true,
+  terms: true,
+  validUntil: true,
+  status: true,
+});
+
+export const insertCaseSchema = createInsertSchema(cases).pick({
+  assignmentId: true,
+  quoteId: true,
+  caseNumber: true,
+  status: true,
+  notes: true,
+});
+
+export const insertAttorneyNoteSchema = createInsertSchema(attorneyNotes).pick({
+  attorneyId: true,
+  assignmentId: true,
+  caseId: true,
+  note: true,
+  isPrivate: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertRequestAttorneyAssignment = z.infer<typeof insertRequestAttorneyAssignmentSchema>;
 export type SelectRequestAttorneyAssignment = typeof requestAttorneyAssignments.$inferSelect;
@@ -313,6 +413,16 @@ export type InsertAttorneyFeeSchedule = z.infer<typeof insertAttorneyFeeSchedule
 export type AttorneyFeeSchedule = typeof attorneyFeeSchedule.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertReferralAssignment = z.infer<typeof insertReferralAssignmentSchema>;
+export type ReferralAssignment = typeof referralAssignments.$inferSelect;
+export type InsertInformationRequest = z.infer<typeof insertInformationRequestSchema>;
+export type InformationRequest = typeof informationRequests.$inferSelect;
+export type InsertQuote = z.infer<typeof insertQuoteSchema>;
+export type Quote = typeof quotes.$inferSelect;
+export type InsertCase = z.infer<typeof insertCaseSchema>;
+export type Case = typeof cases.$inferSelect;
+export type InsertAttorneyNote = z.infer<typeof insertAttorneyNoteSchema>;
+export type AttorneyNote = typeof attorneyNotes.$inferSelect;
 export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type SendEmail = z.infer<typeof sendEmailSchema>;
