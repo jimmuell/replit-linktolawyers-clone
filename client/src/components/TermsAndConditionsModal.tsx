@@ -11,7 +11,7 @@ interface TermsAndConditionsModalProps {
 }
 
 export default function TermsAndConditionsModal({ isOpen, onClose, isSpanish = false }: TermsAndConditionsModalProps) {
-  const templateType = isSpanish ? 'terms_conditions_spanish' : 'terms_conditions';
+  const templateType = isSpanish ? 'terms_and_conditions_spanish' : 'terms_and_conditions';
   
   const { data: templates, isLoading } = useQuery<EmailTemplate[]>({
     queryKey: [`/api/legal-documents/${templateType}`],

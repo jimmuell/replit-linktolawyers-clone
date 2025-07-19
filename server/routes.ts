@@ -1247,8 +1247,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Only allow access to specific legal document types
       const allowedTypes = [
-        'terms_conditions',
-        'terms_conditions_spanish', 
+        'terms_and_conditions',
+        'terms_and_conditions_spanish', 
         'privacy_policy',
         'privacy_policy_spanish'
       ];
