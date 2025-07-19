@@ -47,15 +47,21 @@ interface EmailTemplateModalProps {
 }
 
 const templateTypes = [
-  { value: 'legal_request_confirmation', label: 'Legal Request Confirmation' },
-  { value: 'legal_request_confirmation_spanish', label: 'Legal Request Confirmation (Spanish)' },
-  { value: 'attorney_assignment', label: 'Attorney Assignment' },
-  { value: 'attorney_assignment_spanish', label: 'Attorney Assignment (Spanish)' },
+  { value: 'legal_request_confirmation', label: 'Legal Request Confirmation (Email)' },
+  { value: 'legal_request_confirmation_spanish', label: 'Legal Request Confirmation (Email - Spanish)' },
+  { value: 'attorney_assignment', label: 'Attorney Assignment (Email)' },
+  { value: 'attorney_assignment_spanish', label: 'Attorney Assignment (Email - Spanish)' },
   { value: 'welcome', label: 'Welcome Email' },
-  { value: 'password_reset', label: 'Password Reset' },
-  { value: 'notification', label: 'Notification' },
-  { value: 'marketing', label: 'Marketing' },
-  { value: 'general', label: 'General' },
+  { value: 'password_reset', label: 'Password Reset Email' },
+  { value: 'notification', label: 'Notification Email' },
+  { value: 'marketing', label: 'Marketing Email' },
+  { value: 'general', label: 'General Email' },
+  { value: 'terms_and_conditions', label: 'Terms and Conditions (Document)' },
+  { value: 'terms_and_conditions_spanish', label: 'Terms and Conditions (Document - Spanish)' },
+  { value: 'privacy_policy', label: 'Privacy Policy (Document)' },
+  { value: 'privacy_policy_spanish', label: 'Privacy Policy (Document - Spanish)' },
+  { value: 'legal_notice', label: 'Legal Notice (Document)' },
+  { value: 'user_agreement', label: 'User Agreement (Document)' },
 ];
 
 function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps) {
