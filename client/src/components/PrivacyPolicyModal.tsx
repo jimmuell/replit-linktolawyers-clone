@@ -14,7 +14,7 @@ export default function PrivacyPolicyModal({ isOpen, onClose, isSpanish = false 
   const templateType = isSpanish ? 'privacy_policy_spanish' : 'privacy_policy';
   
   const { data: templates, isLoading } = useQuery<EmailTemplate[]>({
-    queryKey: [`/api/email-templates/type/${templateType}`],
+    queryKey: [`/api/legal-documents/${templateType}`],
     enabled: isOpen, // Only fetch when modal is open
   });
 

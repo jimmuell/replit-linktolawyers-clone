@@ -1240,6 +1240,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get legal document templates (public access for specific document types)
+  app.get("/api/legal-documents/:type", async (req, res) => {
+    try {
+      const { type } = req.params;
+      
+      // Only allow access to specific legal document types
+      const allowedTypes = [
+        'terms_conditions',
+        'terms_conditions_spanish', 
+        'privacy_policy',
+        'privacy_policy_spanish'
+      ];
+      
+      if (!allowedTypes.includes(type)) {
+        return res.status(404).json({ error: 'Legal document not found' });
+      }
+      
+      const templates = await storage.getEmailTemplatesByType(type);
+      // Only return active templates and limit to content fields for security
+      const publicTemplates = templates
+        .filter(template => template.isActive)
+        .map(template => ({
+          id: template.id,
+          name: template.name,
+          subject: template.subject,
+          htmlContent: template.htmlContent,
+          textContent: template.textContent,
+          templateType: template.templateType
+        }));
+      
+      res.json(publicTemplates);
+    } catch (error) {
+      console.error('Error fetching legal document:', error);
+      res.status(500).json({ error: 'Failed to fetch legal document' });
+    }
+  });
+
   // Create email template (admin only)
   app.post("/api/email-templates", requireAuth, requireAdmin, async (req, res) => {
     try {

@@ -14,7 +14,7 @@ export default function TermsAndConditionsModal({ isOpen, onClose, isSpanish = f
   const templateType = isSpanish ? 'terms_conditions_spanish' : 'terms_conditions';
   
   const { data: templates, isLoading } = useQuery<EmailTemplate[]>({
-    queryKey: [`/api/email-templates/type/${templateType}`],
+    queryKey: [`/api/legal-documents/${templateType}`],
     enabled: isOpen, // Only fetch when modal is open
   });
 
