@@ -34,7 +34,7 @@ export default function AttorneyAppBar() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-700">
-              Bienvenido, {user?.firstName || 'Attorney'}
+              Welcome, {user?.firstName || 'Attorney'}
             </span>
             
             <DropdownMenu>
@@ -55,11 +55,11 @@ export default function AttorneyAppBar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
-                  <span>Perfil</span>
+                  <span>Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer">
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Configuración</span>
+                  <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
@@ -67,7 +67,7 @@ export default function AttorneyAppBar() {
                   onClick={logout}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Cerrar Sesión</span>
+                  <span>Sign Out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

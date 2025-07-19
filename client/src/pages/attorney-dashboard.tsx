@@ -28,8 +28,8 @@ export default function AttorneyDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h1>
-          <p className="text-gray-600">No tienes permisos para acceder a este panel.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600">You don't have permission to access this panel.</p>
         </div>
       </div>
     );
@@ -41,8 +41,8 @@ export default function AttorneyDashboard() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Panel de Abogado</h1>
-          <p className="text-gray-600 mt-2">Gestiona tus casos y clientes desde aquí.</p>
+          <h1 className="text-3xl font-bold text-gray-900">Attorney Dashboard</h1>
+          <p className="text-gray-600 mt-2">Manage your cases and clients from here.</p>
         </div>
 
         {/* Main Content Area - Blank for now */}
@@ -53,9 +53,9 @@ export default function AttorneyDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Panel en Construcción</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Dashboard Under Construction</h3>
             <p className="text-gray-600">
-              El contenido del panel de abogado será desarrollado próximamente.
+              Attorney dashboard content will be developed soon.
             </p>
           </div>
         </div>
