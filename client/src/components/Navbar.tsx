@@ -30,8 +30,8 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             <button
               onClick={() => scrollToSection('how-it-works')}
               className={cn(
-                "text-gray-700 hover:text-primary transition-colors",
-                activeSection === 'how-it-works' && "text-primary"
+                "px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors",
+                activeSection === 'how-it-works' && "bg-gray-100 text-gray-900"
               )}
             >
               How it works
@@ -39,25 +39,25 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             <button
               onClick={() => scrollToSection('about')}
               className={cn(
-                "text-gray-700 hover:text-primary transition-colors",
-                activeSection === 'about' && "text-primary"
+                "px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors",
+                activeSection === 'about' && "bg-gray-100 text-gray-900"
               )}
             >
               About
             </button>
             <button 
               onClick={() => scrollToSection('contact')}
-              className="text-gray-700 hover:text-primary transition-colors"
+              className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
             >
               Contact Us
             </button>
-            <Link href="/free-resources" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/free-resources" className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
               Free resources
             </Link>
-            <Link href="/blog" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/blog" className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
               Blog
             </Link>
-            <Link href="/help" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/help" className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
               Help
             </Link>
           </div>
@@ -132,8 +132,8 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   setIsMenuOpen(false);
                 }}
                 className={cn(
-                  "block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors",
-                  activeSection === 'how-it-works' && "text-primary bg-gray-50"
+                  "block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:bg-gray-100 transition-colors",
+                  activeSection === 'how-it-works' && "bg-gray-100 text-gray-900"
                 )}
               >
                 How it works
@@ -144,8 +144,8 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   setIsMenuOpen(false);
                 }}
                 className={cn(
-                  "block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors",
-                  activeSection === 'about' && "text-primary bg-gray-50"
+                  "block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:bg-gray-100 transition-colors",
+                  activeSection === 'about' && "bg-gray-100 text-gray-900"
                 )}
               >
                 About
@@ -155,27 +155,27 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                   scrollToSection('contact');
                   setIsMenuOpen(false);
                 }}
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 Contact Us
               </button>
               <Link 
                 href="/free-resources" 
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Free resources
               </Link>
               <Link 
                 href="/blog" 
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link 
                 href="/help" 
-                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors"
+                className="block w-full text-left py-2 px-3 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Help
