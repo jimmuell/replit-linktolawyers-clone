@@ -19,6 +19,8 @@ import LoginModal from "@/components/LoginModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
+import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
+import PrivacyPolicyModal from "@/components/PrivacyPolicyModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
@@ -29,6 +31,8 @@ export default function Home() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -819,8 +823,20 @@ export default function Home() {
                     By clicking Submit you agree to share your information with a law firm and consent to be contacted by them. You will 
                     be matched with a firm closest to your zip code. Certain inquiries may require a manual review in which we will contact 
                     you prior to matching with a law firm. Your information will not be treated as confidential nor will it create an attorney-
-                    client relationship. You agree to our <a href="#" className="text-blue-600 hover:underline">terms and conditions</a> and 
-                    our <a href="#" className="text-blue-600 hover:underline">privacy policy</a>.
+                    client relationship. You agree to our <button 
+                      type="button" 
+                      onClick={() => setIsTermsModalOpen(true)} 
+                      className="text-blue-600 hover:underline underline-offset-1"
+                    >
+                      terms and conditions
+                    </button> and 
+                    our <button 
+                      type="button" 
+                      onClick={() => setIsPrivacyModalOpen(true)} 
+                      className="text-blue-600 hover:underline underline-offset-1"
+                    >
+                      privacy policy
+                    </button>.
                   </p>
                 </div>
               </div>
@@ -858,6 +874,18 @@ export default function Home() {
       <TrackRequestModal
         isOpen={isTrackRequestModalOpen}
         onClose={() => setIsTrackRequestModalOpen(false)}
+      />
+
+      {/* Terms and Conditions Modal */}
+      <TermsAndConditionsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+      />
+
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
       />
 
       {/* Cancel Confirmation Dialog */}

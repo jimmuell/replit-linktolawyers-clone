@@ -13,6 +13,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
+import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
+import PrivacyPolicyModal from "@/components/PrivacyPolicyModal";
 
 interface SpanishLegalRequestFormProps {
   isOpen: boolean;
@@ -39,6 +41,8 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
   const [currentRequestNumber, setCurrentRequestNumber] = useState<string>('');
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const { toast } = useToast();
 
   // Fetch case types for dropdown
@@ -417,8 +421,20 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                       Al hacer clic en Enviar, aceptas compartir tu información con un bufete de abogados y consientes ser contactado por ellos. 
                       Serás emparejado con una firma más cercana a tu código postal. Ciertas consultas pueden requerir una revisión manual 
                       en la cual te contactaremos antes de emparejarte con un bufete. Tu información no será tratada como confidencial ni 
-                      creará una relación abogado-cliente. Aceptas nuestros <a href="#" className="text-blue-600 hover:underline">términos y condiciones</a> y 
-                      nuestra <a href="#" className="text-blue-600 hover:underline">política de privacidad</a>.
+                      creará una relación abogado-cliente. Aceptas nuestros <button 
+                        type="button" 
+                        onClick={() => setIsTermsModalOpen(true)} 
+                        className="text-blue-600 hover:underline underline-offset-1"
+                      >
+                        términos y condiciones
+                      </button> y 
+                      nuestra <button 
+                        type="button" 
+                        onClick={() => setIsPrivacyModalOpen(true)} 
+                        className="text-blue-600 hover:underline underline-offset-1"
+                      >
+                        política de privacidad
+                      </button>.
                     </p>
                   </div>
                 </div>
@@ -455,6 +471,20 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Terms and Conditions Modal */}
+      <TermsAndConditionsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        isSpanish={true}
+      />
+
+      {/* Privacy Policy Modal */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        isSpanish={true}
+      />
     </>
   );
 }
