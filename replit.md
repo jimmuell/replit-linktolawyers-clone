@@ -28,6 +28,7 @@ Preferred communication style: Simple, everyday language.
   - Updated Spanish confirmation email template to match English version changes and removed obsolete fields
   - Fixed email template cache issue by setting staleTime: 0 and adding refresh button for real-time data updates
   - Added Spanish template type options (legal_request_confirmation_spanish) to admin dropdown for proper template management
+  - Updated "Track Your Request" popup text from "You'll receive personalized quotes within 24-48 hours" to "You'll receive personalized quotes" in both English and Spanish versions
 
 - **Spanish Case Type Translation System** (July 19, 2025): Implemented comprehensive Spanish translations for case type dropdown in legal request forms
   - Updated HierarchicalCaseTypeSelect component to support Spanish translations with isSpanish parameter

@@ -275,7 +275,7 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
                   <h4 className="font-medium text-blue-900 mb-2">¿Qué Sigue?</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Nuestro sistema te está conectando con abogados calificados</li>
-                    <li>• Recibirás cotizaciones personalizadas en 24-48 horas</li>
+                    <li>• Recibirás cotizaciones personalizadas</li>
                     <li>• Revisa tu correo electrónico (incluyendo la carpeta de spam) para actualizaciones</li>
                     <li>• Puedes rastrear tu solicitud en cualquier momento usando este número</li>
                   </ul>

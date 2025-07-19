@@ -246,7 +246,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                   <h4 className="font-medium text-blue-900 mb-2">What's Next?</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
                     <li>• Our system is matching you with qualified attorneys</li>
-                    <li>• You'll receive personalized quotes within 24-48 hours</li>
+                    <li>• You'll receive personalized quotes</li>
                     <li>• Check your email (including spam folder) for updates</li>
                     <li>• You can track your request anytime using this number</li>
                   </ul>
