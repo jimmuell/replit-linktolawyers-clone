@@ -6,7 +6,7 @@ export default function AttorneyDashboard() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    // Redirect if not an attorney
+    // Redirect if not an attorney and not loading
     if (!loading && user && user.role !== 'attorney') {
       if (user.role === 'admin') {
         window.location.href = '/admin-dashboard';

@@ -59,10 +59,15 @@ export default function Home() {
   const { user, logout } = useAuth();
   const { toast } = useToast();
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to appropriate dashboard
   useEffect(() => {
     if (user) {
-      window.location.href = '/admin-dashboard';
+      if (user.role === 'admin') {
+        window.location.href = '/admin-dashboard';
+      } else if (user.role === 'attorney') {
+        window.location.href = '/attorney-dashboard';
+      }
+      // Don't redirect clients - they can stay on home page
     }
   }, [user]);
 
@@ -70,6 +75,8 @@ export default function Home() {
   const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
     queryKey: ['/api/case-types'],
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const caseTypes = caseTypesData?.data || [];
