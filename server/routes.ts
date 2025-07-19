@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
@@ -1260,7 +1260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/email-templates/:id", requireAuth, requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      const result = insertEmailTemplateSchema.partial().safeParse(req.body);
+      const result = updateEmailTemplateSchema.safeParse(req.body);
       if (!result.success) {
         return res.status(400).json({ error: 'Invalid email template data', details: result.error.issues });
       }

@@ -249,7 +249,7 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
   publishedAt: true,
 });
 
-export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).pick({
+const baseEmailTemplateSchema = createInsertSchema(emailTemplates).pick({
   name: true,
   subject: true,
   htmlContent: true,
@@ -258,8 +258,24 @@ export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).pick
   variables: true,
   isActive: true,
   useInProduction: true,
-}).refine(
+});
+
+export const insertEmailTemplateSchema = baseEmailTemplateSchema.refine(
   (data) => data.htmlContent || data.textContent,
+  {
+    message: 'Either HTML content or text content is required',
+    path: ['htmlContent'],
+  }
+);
+
+export const updateEmailTemplateSchema = baseEmailTemplateSchema.partial().refine(
+  (data) => {
+    // Only require content validation if either content field is provided
+    if (data.htmlContent !== undefined || data.textContent !== undefined) {
+      return data.htmlContent || data.textContent;
+    }
+    return true; // If no content fields are being updated, skip validation
+  },
   {
     message: 'Either HTML content or text content is required',
     path: ['htmlContent'],
