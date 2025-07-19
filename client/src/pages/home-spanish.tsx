@@ -87,10 +87,6 @@ export default function HomeSpanish() {
                   De Firmas Jurídicas En Todo El País
                 </h2>
                 
-                <p className="text-lg text-gray-600 mb-6 max-w-lg">
-                  En LinkToLawyers, cerramos la brecha entre individuos que buscan servicios legales expertos y los profesionales que pueden brindarlos, utilizando nuestro Algoritmo de Emparejamiento Inteligente con IA.
-                </p>
-                
                 <p className="text-gray-600 mb-8 max-w-lg">
                   Nuestra plataforma simplifica el proceso de encontrar y conectar con abogados experimentados, asegurando que recibas el mejor apoyo legal adaptado a tu situación única, a un precio asequible.
                 </p>

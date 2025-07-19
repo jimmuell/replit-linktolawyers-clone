@@ -18,6 +18,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Homepage Content Update** (July 18, 2025): Removed AI Powered Smart Matching Algorithm paragraph from both English and Spanish homepages
+  - Eliminated paragraph about "bridging the gap" and AI smart matching algorithm from hero sections
+  - Content now flows directly from main headings to core value proposition about platform simplification
+  - Updated both /home and /es/ homepages for consistency across languages
+
+- **Database-Stored Translation System Implementation** (July 18, 2025): Completed migration from real-time to database-stored translations for optimal performance
+  - Updated database schema with Spanish translation columns (spanishTitle, spanishContent, spanishExcerpt, translationStatus)
+  - Created background translation service using OpenAI GPT-4 for high-quality legal content translation
+  - Updated Spanish blog API routes to use stored translations instead of real-time translation (eliminated 5-6 second load times)
+  - Added automatic translation triggers when posts are published or updated
+  - Background service processes translation queue every 5 minutes and on server startup
+  - Spanish blog pages now load under 1 second with pre-translated database content
+  - System shows "Traducción en proceso" fallback message until translations complete
+
 - **Auto-Translation Blog System Implementation** (July 18, 2025): Built complete auto-translation functionality for blog posts using OpenAI API
   - Created translation service using OpenAI GPT-4 for high-quality legal content translation
   - Added Spanish blog API endpoints that automatically translate English posts to Spanish

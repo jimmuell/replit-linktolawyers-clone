@@ -398,10 +398,6 @@ export default function Home() {
                   From Law Firms Nationwide
                 </h2>
                 
-                <p className="text-lg text-gray-600 mb-6 max-w-lg">
-                  At LinkToLawyers, we bridge the gap between individuals seeking expert legal services and the professionals who can provide them by using our AI Powered Smart Matching Algorithm.
-                </p>
-                
                 <p className="text-gray-600 mb-8 max-w-lg">
                   Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
                 </p>
