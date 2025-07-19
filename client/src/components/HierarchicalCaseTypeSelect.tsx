@@ -6,7 +6,9 @@ interface CaseType {
   id: number;
   value: string;
   label: string;
+  labelEs: string | null;
   description: string;
+  descriptionEs: string | null;
   category: string;
   displayOrder: number;
   isActive: boolean;
@@ -18,6 +20,7 @@ interface HierarchicalCaseTypeSelectProps {
   onValueChange: (value: string) => void;
   loading?: boolean;
   placeholder?: string;
+  isSpanish?: boolean;
 }
 
 export default function HierarchicalCaseTypeSelect({
@@ -25,11 +28,29 @@ export default function HierarchicalCaseTypeSelect({
   value,
   onValueChange,
   loading,
-  placeholder = "Choose case type..."
+  placeholder = "Choose case type...",
+  isSpanish = false
 }: HierarchicalCaseTypeSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Spanish category translations
+  const getCategoryLabel = (category: string) => {
+    if (!isSpanish) return category;
+    
+    const translations: { [key: string]: string } = {
+      'Family-Based Immigration': 'Inmigración Basada en Familia',
+      'Fiancé Visa': 'Visa de Prometido(a)',
+      'Citizenship & Naturalization': 'Ciudadanía y Naturalización',
+      'Asylum': 'Asilo',
+      'Deportation Defense': 'Defensa de Deportación',
+      'Violence Against Women Act': 'Ley de Violencia Contra las Mujeres',
+      'Other': 'Otro'
+    };
+    
+    return translations[category] || category;
+  };
 
   // Group case types by category
   const groupedCaseTypes = caseTypes.reduce((acc: any, caseType: CaseType) => {
@@ -55,7 +76,9 @@ export default function HierarchicalCaseTypeSelect({
 
   // Get the label for the selected value
   const selectedCaseType = caseTypes.find(ct => ct.value === value);
-  const selectedLabel = selectedCaseType ? selectedCaseType.label : placeholder;
+  const selectedLabel = selectedCaseType ? 
+    (isSpanish && selectedCaseType.labelEs ? selectedCaseType.labelEs : selectedCaseType.label) : 
+    placeholder;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -111,7 +134,7 @@ export default function HierarchicalCaseTypeSelect({
                   )}
                   onMouseEnter={() => handleCategoryHover(category)}
                 >
-                  <span className="font-medium">{category}</span>
+                  <span className="font-medium">{getCategoryLabel(category)}</span>
                   <ChevronRight className="h-4 w-4" />
                 </div>
               ))}
@@ -133,11 +156,13 @@ export default function HierarchicalCaseTypeSelect({
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{caseType.label}</span>
+                        <span className="font-medium">
+                          {isSpanish && caseType.labelEs ? caseType.labelEs : caseType.label}
+                        </span>
                         {value === caseType.value && <Check className="h-4 w-4" />}
                       </div>
                       <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        {caseType.description}
+                        {isSpanish && caseType.descriptionEs ? caseType.descriptionEs : caseType.description}
                       </p>
                     </div>
                   </div>

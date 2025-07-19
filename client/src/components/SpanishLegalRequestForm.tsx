@@ -81,7 +81,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
       setFormData({
         firstName: 'María',
         lastName: 'González',
-        caseType: 'fam-imm-immediate',
+        caseType: 'family-based-immigrant-visa-immediate-relative',
         email: 'linktolawyers.us@gmail.com',
         phoneNumber: '(555) 123-4567',
         caseDescription: 'Necesito ayuda con la petición de visa de inmigrante para mi esposo. Él está actualmente en México y queremos reunirnos lo antes posible. Tenemos todos los documentos necesarios pero necesitamos orientación sobre el proceso.',
@@ -329,6 +329,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                   onValueChange={(value) => handleInputChange('caseType', value)}
                   loading={caseTypesLoading}
                   placeholder="Elige el tipo de caso..."
+                  isSpanish={true}
                 />
               </div>
 

@@ -18,6 +18,26 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Spanish Case Type Translation System** (July 19, 2025): Implemented comprehensive Spanish translations for case type dropdown in legal request forms
+  - Updated HierarchicalCaseTypeSelect component to support Spanish translations with isSpanish parameter
+  - Added Spanish translations for all case type labels and descriptions in database
+  - Created category translation system for hierarchical dropdown categories
+  - Spanish form now displays case types in Spanish: "Visa de Inmigrante Basada en Familia - Pariente Inmediato" etc.
+  - Updated form prefill with correct database case type values
+  - Categories translated: "Inmigración Basada en Familia", "Ciudadanía y Naturalización", "Asilo", etc.
+
+- **Navigation Hover Style Enhancement** (July 19, 2025): Updated navigation hover styles with improved rounded corners
+  - Changed navigation links from rounded-md to rounded-lg for more prominent rounded corners
+  - Applied consistent styling across both English and Spanish navbars
+  - Updated desktop and mobile navigation menus
+  - Enhanced visual feedback with light gray background and better rounded button appearance
+
+- **Spanish Hero Image Update** (July 19, 2025): Applied final Spanish-specific hero image with professional formatting
+  - Updated Spanish homepage to use girl-final_spanish_1752931654981.png image
+  - Image displays "Abogada A/B/C" with US dollar pricing for Spanish audience
+  - Maintained identical 500px width sizing for layout consistency between language versions
+  - Enhanced visual representation for Spanish-speaking users
+
 - **Homepage Content Update** (July 18, 2025): Removed AI Powered Smart Matching Algorithm paragraph from both English and Spanish homepages
   - Eliminated paragraph about "bridging the gap" and AI smart matching algorithm from hero sections
   - Content now flows directly from main headings to core value proposition about platform simplification
