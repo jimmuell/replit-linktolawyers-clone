@@ -23,8 +23,8 @@ export default function PrivacyPolicyModal({ isOpen, onClose, isSpanish = false 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
           <DialogTitle className="text-xl font-semibold">
             {isSpanish ? "Política de Privacidad" : "Privacy Policy"}
           </DialogTitle>
@@ -36,34 +36,36 @@ export default function PrivacyPolicyModal({ isOpen, onClose, isSpanish = false 
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 max-h-[60vh] pr-4">
-          <div className="space-y-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {isLoading ? (
-              <div className="text-center text-gray-500 italic p-8">
-                <p>Loading privacy policy...</p>
-              </div>
-            ) : content ? (
-              content
-            ) : (
-              <div className="text-center text-gray-500 italic p-8">
-                <p className="mb-4">
-                  {isSpanish 
-                    ? "La política de privacidad no está disponible en este momento."
-                    : "Privacy policy is not available at this time."
-                  }
-                </p>
-                <p className="text-xs">
-                  {isSpanish
-                    ? "Por favor, contacte al administrador para obtener más información."
-                    : "Please contact the administrator for more information."
-                  }
-                </p>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
+        <div className="flex-1 overflow-hidden px-6">
+          <ScrollArea className="h-full pr-4">
+            <div className="space-y-4 text-sm text-gray-700 leading-relaxed whitespace-pre-wrap pb-4">
+              {isLoading ? (
+                <div className="text-center text-gray-500 italic p-8">
+                  <p>Loading privacy policy...</p>
+                </div>
+              ) : content ? (
+                content
+              ) : (
+                <div className="text-center text-gray-500 italic p-8">
+                  <p className="mb-4">
+                    {isSpanish 
+                      ? "La política de privacidad no está disponible en este momento."
+                      : "Privacy policy is not available at this time."
+                    }
+                  </p>
+                  <p className="text-xs">
+                    {isSpanish
+                      ? "Por favor, contacte al administrador para obtener más información."
+                      : "Please contact the administrator for more information."
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
         
-        <div className="flex justify-end pt-4 border-t flex-shrink-0">
+        <div className="flex justify-end pt-4 pb-6 px-6 border-t flex-shrink-0">
           <Button 
             variant="outline" 
             onClick={onClose}
