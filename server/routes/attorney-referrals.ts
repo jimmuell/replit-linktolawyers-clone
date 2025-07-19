@@ -282,7 +282,20 @@ router.post("/assignment/:assignmentId/request-info", requireAuth, async (req, r
 router.post("/assignment/:assignmentId/quote", requireAuth, async (req, res) => {
   try {
     const assignmentId = parseInt(req.params.assignmentId);
-    const attorneyId = req.user!.id;
+    const userId = req.user!.id;
+    
+    // Get the attorney ID from the attorneys table using the user ID
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+      
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+    
+    const attorneyId = attorney[0].id;
     
     const validatedData = insertQuoteSchema.parse({
       assignmentId,

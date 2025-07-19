@@ -374,8 +374,12 @@ export const insertQuoteSchema = createInsertSchema(quotes).pick({
   serviceFee: true,
   description: true,
   terms: true,
-  validUntil: true,
   status: true,
+}).extend({
+  validUntil: z.string().optional().transform((val) => {
+    if (!val || val === '') return null;
+    return new Date(val);
+  }).nullable(),
 });
 
 export const insertCaseSchema = createInsertSchema(cases).pick({

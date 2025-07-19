@@ -18,6 +18,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Fee Schedule Auto-Population System** (July 19, 2025): Implemented automatic fee schedule lookup and pre-population for attorney quotes
+  - Created API endpoint `/api/attorney-referrals/fee-schedule/:caseType` to fetch attorney's configured fees for specific case types
+  - Updated quote submission form to automatically check attorney's fee schedule when quote modal opens
+  - Added visual indicators in quote form showing when fee schedule data is applied with blue notification banner
+  - Implemented form pre-population with attorney's flat fee, fee type, and description from fee schedule
+  - Fixed validation errors in quote submission by properly handling optional validUntil date field with string-to-date transformation
+  - Updated attorney lookup logic in quote routes to use userId-to-attorneyId mapping for proper authorization
+  - Added automatic form cleanup when canceling or completing quotes to prevent data persistence issues
+  - System now seamlessly integrates fee schedules: when James Mueller quotes family-based cases, form pre-populates with his $3,500 flat fee
+
 - **Attorney Referral Management System Implementation** (July 19, 2025): Built complete attorney referral management workflow
   - Extended database schema with referral_assignments, information_requests, quotes, cases, and attorney_notes tables
   - Created comprehensive backend API routes for attorney referral management with authentication middleware
