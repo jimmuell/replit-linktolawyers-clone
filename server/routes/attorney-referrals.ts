@@ -687,7 +687,7 @@ router.put("/assignment/:assignmentId/quote/:quoteId", requireAuth, async (req, 
       .update(quotes)
       .set({
         ...updateData,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),
       })
       .where(eq(quotes.id, quoteId))
       .returning();
@@ -750,7 +750,7 @@ router.delete("/assignment/:assignmentId/quote/:quoteId", requireAuth, async (re
       .update(referralAssignments)
       .set({ 
         status: 'assigned',
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date()
       })
       .where(eq(referralAssignments.id, assignmentId));
 
