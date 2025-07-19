@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign } from 'lucide-react';
+import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign, ChevronDown, ChevronUp, Star, Award } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { getStatusInfo } from '@shared/statusCodes';
@@ -32,9 +32,37 @@ interface LegalRequest {
   updatedAt: string;
 }
 
+interface Quote {
+  quote: {
+    id: number;
+    serviceFee: number;
+    description: string;
+    terms: string;
+    validUntil: string;
+    status: string;
+    sentAt: string;
+  };
+  attorney: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    firmName: string;
+    licenseState: string;
+    practiceAreas: string[];
+    experienceYears: number;
+    isVerified: boolean;
+    bio: string;
+  };
+  assignment: {
+    id: number;
+    status: string;
+  };
+}
+
 export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModalProps) {
   const [requestNumber, setRequestNumber] = useState('');
   const [shouldFetch, setShouldFetch] = useState(false);
+  const [expandedQuote, setExpandedQuote] = useState<number | null>(null);
 
   const { data: request, isLoading, error, refetch } = useQuery<LegalRequest>({
     queryKey: ['/api/legal-requests', requestNumber],
@@ -50,6 +78,23 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     retry: false,
   });
 
+  // Fetch quotes for the request
+  const { data: quotesData } = useQuery<Quote[]>({
+    queryKey: ['/api/attorney-referrals/public/request', request?.id, 'quotes'],
+    queryFn: async () => {
+      const response = await fetch(`/api/attorney-referrals/public/request/${request!.id}/quotes`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch quotes');
+      }
+      const data = await response.json();
+      return data.data;
+    },
+    enabled: !!request?.id,
+    retry: false,
+  });
+
+  const quotes = quotesData || [];
+
   const handleTrackRequest = () => {
     if (requestNumber.trim()) {
       setShouldFetch(true);
@@ -60,7 +105,16 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
   const handleClose = () => {
     setRequestNumber('');
     setShouldFetch(false);
+    setExpandedQuote(null);
     onClose();
+  };
+
+  const formatCurrency = (cents: number) => {
+    return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  const toggleQuoteExpansion = (quoteId: number) => {
+    setExpandedQuote(expandedQuote === quoteId ? null : quoteId);
   };
 
   const getUrgencyBadge = (urgency: string) => {
@@ -251,6 +305,159 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                     <li>• You can track your request anytime using this number</li>
                   </ul>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Attorney Quotes Section */}
+          {request && quotes.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                  <span>Attorney Quotes ({quotes.length})</span>
+                </CardTitle>
+                <CardDescription>
+                  Attorneys have provided quotes for your case. Review and compare their proposals.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {quotes.map((quoteData) => {
+                  const isExpanded = expandedQuote === quoteData.quote.id;
+                  
+                  return (
+                    <div key={quoteData.quote.id} className="border rounded-lg p-4 bg-white">
+                      {/* Condensed Quote Display */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <User className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">
+                                {quoteData.attorney.firstName} {quoteData.attorney.lastName}
+                              </span>
+                              {quoteData.attorney.isVerified && (
+                                <Award className="w-4 h-4 text-blue-500" title="Verified Attorney" />
+                              )}
+                            </div>
+                            {quoteData.attorney.firmName && (
+                              <span className="text-sm text-gray-600">
+                                at {quoteData.attorney.firmName}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center space-x-4 mt-2">
+                            <div className="flex items-center space-x-1">
+                              <DollarSign className="w-4 h-4 text-green-600" />
+                              <span className="font-semibold text-green-700">
+                                {formatCurrency(quoteData.quote.serviceFee)}
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {quoteData.attorney.experienceYears}+ years experience
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {quoteData.attorney.licenseState}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toggleQuoteExpansion(quoteData.quote.id)}
+                          className="ml-4"
+                        >
+                          {isExpanded ? (
+                            <>
+                              <ChevronUp className="w-4 h-4 mr-1" />
+                              Less
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="w-4 h-4 mr-1" />
+                              Details
+                            </>
+                          )}
+                        </Button>
+                      </div>
+
+                      {/* Expanded Quote Details */}
+                      {isExpanded && (
+                        <div className="mt-4 pt-4 border-t space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-sm font-medium text-gray-600">Service Description</Label>
+                              <p className="text-sm mt-1">{quoteData.quote.description}</p>
+                            </div>
+                            
+                            {quoteData.quote.terms && (
+                              <div>
+                                <Label className="text-sm font-medium text-gray-600">Terms & Conditions</Label>
+                                <p className="text-sm mt-1">{quoteData.quote.terms}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {quoteData.quote.validUntil && (
+                            <div>
+                              <Label className="text-sm font-medium text-gray-600">Quote Valid Until</Label>
+                              <p className="text-sm mt-1">
+                                {format(new Date(quoteData.quote.validUntil), 'MMMM d, yyyy')}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Attorney Profile */}
+                          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <h4 className="font-medium text-gray-900">Attorney Profile</h4>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <Label className="text-xs font-medium text-gray-600">Experience</Label>
+                                <p className="text-sm">{quoteData.attorney.experienceYears} years</p>
+                              </div>
+                              <div>
+                                <Label className="text-xs font-medium text-gray-600">Licensed in</Label>
+                                <p className="text-sm">{quoteData.attorney.licenseState}</p>
+                              </div>
+                            </div>
+
+                            {quoteData.attorney.practiceAreas && quoteData.attorney.practiceAreas.length > 0 && (
+                              <div>
+                                <Label className="text-xs font-medium text-gray-600">Practice Areas</Label>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {quoteData.attorney.practiceAreas.map((area, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {area}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {quoteData.attorney.bio && (
+                              <div>
+                                <Label className="text-xs font-medium text-gray-600">About</Label>
+                                <p className="text-sm mt-1 text-gray-700">{quoteData.attorney.bio}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex justify-end">
+                            <Button 
+                              size="sm" 
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Contact Attorney
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
           )}

@@ -18,6 +18,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Public Quote Display Integration** (July 19, 2025): Connected attorney dashboard quotes to public track request functionality
+  - Created public API endpoint `/api/attorney-referrals/public/request/:requestId/quotes` to fetch quotes for tracking without authentication
+  - Updated TrackRequestModal to display attorney quotes with condensed card format showing fee, experience, and credentials
+  - Implemented expandable quote details with full attorney profile, service description, terms, and contact information
+  - Added bilingual support for quote display in both English and Spanish track request modals
+  - Created collapsible interface allowing users to compare multiple attorney quotes efficiently
+  - Integrated verification badges and firm information display for attorney credibility
+  - Quotes appear automatically when attorneys submit them through the referral management system
+  - Users can now see all available quotes when tracking their request using the request number
+
 - **Attorney Fee Schedule Auto-Population System** (July 19, 2025): Implemented automatic fee schedule lookup and pre-population for attorney quotes
   - Created API endpoint `/api/attorney-referrals/fee-schedule/:caseType` to fetch attorney's configured fees for specific case types
   - Updated quote submission form to automatically check attorney's fee schedule when quote modal opens

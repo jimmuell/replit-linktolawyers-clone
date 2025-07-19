@@ -471,4 +471,42 @@ router.get("/assignment/:assignmentId/notes", requireAuth, async (req, res) => {
   }
 });
 
+// Get quotes for a specific request (public endpoint for tracking)
+router.get("/public/request/:requestId/quotes", async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.requestId);
+    
+    // Get all quotes for this request through referral assignments
+    const quotesWithAttorneys = await db
+      .select({
+        quote: quotes,
+        attorney: {
+          id: attorneys.id,
+          firstName: attorneys.firstName,
+          lastName: attorneys.lastName,
+          firmName: attorneys.firmName,
+          licenseState: attorneys.licenseState,
+          practiceAreas: attorneys.practiceAreas,
+          experienceYears: attorneys.experienceYears,
+          isVerified: attorneys.isVerified,
+          bio: attorneys.bio,
+        },
+        assignment: {
+          id: referralAssignments.id,
+          status: referralAssignments.status,
+        }
+      })
+      .from(quotes)
+      .innerJoin(referralAssignments, eq(quotes.assignmentId, referralAssignments.id))
+      .innerJoin(attorneys, eq(referralAssignments.attorneyId, attorneys.id))
+      .where(eq(referralAssignments.requestId, requestId))
+      .orderBy(desc(quotes.sentAt));
+    
+    res.json({ success: true, data: quotesWithAttorneys });
+  } catch (error) {
+    console.error('Error fetching quotes for request:', error);
+    res.status(500).json({ error: 'Failed to fetch quotes' });
+  }
+});
+
 export default router;
