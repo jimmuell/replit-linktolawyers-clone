@@ -25,6 +25,7 @@ Preferred communication style: Simple, everyday language.
   - Added 100 character minimum requirement for case description with real-time character counter
   - Updated prefill data and form state management to reflect simplified field structure
   - Enhanced user experience with streamlined form flow and clear validation feedback
+  - Updated Spanish confirmation email template to match English version changes and removed obsolete fields
 
 - **Spanish Case Type Translation System** (July 19, 2025): Implemented comprehensive Spanish translations for case type dropdown in legal request forms
   - Updated HierarchicalCaseTypeSelect component to support Spanish translations with isSpanish parameter
