@@ -11,8 +11,8 @@ interface PrivacyPolicyModalProps {
 export default function PrivacyPolicyModal({ isOpen, onClose, isSpanish = false }: PrivacyPolicyModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-semibold">
             {isSpanish ? "Política de Privacidad" : "Privacy Policy"}
           </DialogTitle>
@@ -24,7 +24,7 @@ export default function PrivacyPolicyModal({ isOpen, onClose, isSpanish = false 
           </DialogDescription>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 max-h-[60vh] pr-4">
           <div className="space-y-6 text-sm text-gray-700 leading-relaxed">
             {isSpanish ? (
               <div className="space-y-4">
@@ -42,7 +42,7 @@ export default function PrivacyPolicyModal({ isOpen, onClose, isSpanish = false 
           </div>
         </ScrollArea>
         
-        <div className="flex justify-end pt-4 border-t">
+        <div className="flex justify-end pt-4 border-t flex-shrink-0">
           <Button 
             variant="outline" 
             onClick={onClose}

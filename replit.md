@@ -33,6 +33,9 @@ Preferred communication style: Simple, everyday language.
   - Added TermsAndConditionsModal and PrivacyPolicyModal components with bilingual support (isSpanish parameter)
   - Converted static links to clickable buttons that open respective modal dialogs
   - Modal system ready for content insertion with proper scrollable areas and responsive design
+  - Updated Terms and Conditions modal with complete legal content from provided document (2024-08-25)
+  - Enhanced modal scrolling functionality with fixed header/footer and scrollable content area
+  - Improved modal layout with flex structure for optimal content display and user experience
 
 - **Spanish Case Type Translation System** (July 19, 2025): Implemented comprehensive Spanish translations for case type dropdown in legal request forms
   - Updated HierarchicalCaseTypeSelect component to support Spanish translations with isSpanish parameter
