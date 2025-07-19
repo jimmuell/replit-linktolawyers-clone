@@ -18,12 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **Email Template System Enhancement** (July 19, 2025): Improved template management for large legal documents and better user experience
-  - Updated validation to allow text-only content without requiring HTML for legal document templates
+- **Database-Driven Legal Document System** (July 19, 2025): Completed integration of email template system with modal legal documents
+  - Updated Terms and Conditions and Privacy Policy modals to fetch content from database templates
+  - Implemented dynamic template loading based on language (terms_conditions, privacy_policy, terms_conditions_spanish, privacy_policy_spanish)
+  - Added proper loading states and error handling for modal content fetching
+  - Enhanced validation to allow text-only content without requiring HTML for legal document templates
   - Added clear template type descriptors distinguishing email templates from document templates  
   - Fixed form reset bug ensuring all fields clear completely when creating new templates
-  - Added dedicated document template types: Terms and Conditions, Privacy Policy, Legal Notice, User Agreement
-  - Enhanced admin workflow for managing both email templates and legal document content
+  - Fixed server-side schema validation error preventing template updates with separate update schema
+  - Created comprehensive admin workflow for managing both email templates and legal document content
 
 - **Form Field Updates** (July 19, 2025): Streamlined legal request forms by removing unnecessary fields and improving validation
   - Removed urgency level field (radio buttons) from both English and Spanish forms
