@@ -4,7 +4,9 @@ import { db } from "../db";
 import { 
   legalRequests, 
   referralAssignments, 
-  attorneys, 
+  attorneys,
+  attorneyFeeSchedule,
+  caseTypes,
   informationRequests,
   quotes,
   cases,
@@ -365,6 +367,60 @@ router.post("/assignment/:assignmentId/note", requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Invalid note data', details: error.errors });
     }
     res.status(500).json({ error: 'Failed to add note' });
+  }
+});
+
+// Get attorney fee schedule for a specific case type
+router.get("/fee-schedule/:caseType", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user!.id;
+    const caseType = req.params.caseType;
+    
+    // Get the attorney ID from the attorneys table using the user ID
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+      
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+    
+    const attorneyId = attorney[0].id;
+    
+    // Get case type ID from the case type value
+    const caseTypeRecord = await db
+      .select({ id: caseTypes.id })
+      .from(caseTypes)
+      .where(eq(caseTypes.value, caseType))
+      .limit(1);
+      
+    if (caseTypeRecord.length === 0) {
+      return res.status(404).json({ error: 'Case type not found' });
+    }
+    
+    const caseTypeId = caseTypeRecord[0].id;
+    
+    // Get attorney fee schedule for this case type
+    const feeSchedule = await db
+      .select()
+      .from(attorneyFeeSchedule)
+      .where(and(
+        eq(attorneyFeeSchedule.attorneyId, attorneyId),
+        eq(attorneyFeeSchedule.caseTypeId, caseTypeId),
+        eq(attorneyFeeSchedule.isActive, true)
+      ))
+      .limit(1);
+      
+    if (feeSchedule.length === 0) {
+      return res.json({ success: true, data: null }); // No fee schedule found
+    }
+    
+    res.json({ success: true, data: feeSchedule[0] });
+  } catch (error) {
+    console.error('Error fetching attorney fee schedule:', error);
+    res.status(500).json({ error: 'Failed to fetch fee schedule' });
   }
 });
 

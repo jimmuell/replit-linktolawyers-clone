@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ export default function MyReferralsList() {
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [infoRequest, setInfoRequest] = useState({ subject: '', message: '' });
   const [quote, setQuote] = useState({ serviceFee: '', description: '', terms: '', validUntil: '' });
+  const [feeScheduleData, setFeeScheduleData] = useState<any>(null);
   const [note, setNote] = useState('');
   
   const { toast } = useToast();
@@ -137,6 +138,7 @@ export default function MyReferralsList() {
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
       setIsQuoteModalOpen(false);
       setQuote({ serviceFee: '', description: '', terms: '', validUntil: '' });
+      setFeeScheduleData(null);
     },
     onError: (error: Error) => {
       toast({
@@ -198,6 +200,63 @@ export default function MyReferralsList() {
   const formatCurrency = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
   };
+
+  // Function to fetch fee schedule for a case type
+  const fetchFeeSchedule = async (caseType: string) => {
+    try {
+      const response = await fetch(`/api/attorney-referrals/fee-schedule/${caseType}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        return result.data;
+      }
+    } catch (error) {
+      console.error('Error fetching fee schedule:', error);
+    }
+    return null;
+  };
+
+  // Effect to load fee schedule when quote modal opens
+  useEffect(() => {
+    if (isQuoteModalOpen && selectedReferral) {
+      const fetchAttorneyFeeSchedule = async () => {
+        try {
+          const feeSchedule = await fetchFeeSchedule(selectedReferral.request.caseType);
+          
+          if (feeSchedule) {
+            setFeeScheduleData(feeSchedule);
+            // Pre-populate the quote form with fee schedule data
+            setQuote(prev => ({
+              ...prev,
+              serviceFee: (feeSchedule.fee / 100).toString(), // Convert from cents to dollars
+              description: feeSchedule.notes || `${feeSchedule.feeType === 'flat' ? 'Flat fee' : feeSchedule.feeType} for ${selectedReferral.request.caseType}`,
+            }));
+            
+            toast({
+              title: "Fee Schedule Loaded",
+              description: `Loaded your ${feeSchedule.feeType} fee schedule: $${(feeSchedule.fee / 100).toFixed(2)}`,
+            });
+          } else {
+            // Clear any existing data if no fee schedule found
+            setFeeScheduleData(null);
+            setQuote(prev => ({
+              ...prev,
+              serviceFee: '',
+              description: '',
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching attorney fee schedule:', error);
+        }
+      };
+      
+      fetchAttorneyFeeSchedule();
+    }
+  }, [isQuoteModalOpen, selectedReferral]);
 
   const handleSubmitInfoRequest = () => {
     if (!selectedReferral || !infoRequest.subject || !infoRequest.message) return;
@@ -483,6 +542,20 @@ export default function MyReferralsList() {
             <DialogTitle>Submit Quote</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {feeScheduleData && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-blue-900">
+                    Fee Schedule Applied: {feeScheduleData.feeType} fee - ${(feeScheduleData.fee / 100).toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-xs text-blue-700 mt-1">
+                  Pre-populated from your configured fee schedule for this case type. You can modify as needed.
+                </p>
+              </div>
+            )}
+            
             <div>
               <Label htmlFor="serviceFee">Service Fee ($)</Label>
               <Input
@@ -492,7 +565,13 @@ export default function MyReferralsList() {
                 value={quote.serviceFee}
                 onChange={(e) => setQuote(prev => ({ ...prev, serviceFee: e.target.value }))}
                 placeholder="0.00"
+                className={feeScheduleData ? "border-blue-300 bg-blue-50" : ""}
               />
+              {feeScheduleData && (
+                <p className="text-xs text-gray-500 mt-1">
+                  From your fee schedule: {feeScheduleData.feeType} fee
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="description">Service Description</Label>
@@ -524,7 +603,11 @@ export default function MyReferralsList() {
               />
             </div>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsQuoteModalOpen(false)}>
+              <Button variant="outline" onClick={() => {
+                setIsQuoteModalOpen(false);
+                setQuote({ serviceFee: '', description: '', terms: '', validUntil: '' });
+                setFeeScheduleData(null);
+              }}>
                 Cancel
               </Button>
               <Button 
