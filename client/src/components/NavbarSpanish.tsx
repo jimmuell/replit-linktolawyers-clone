@@ -30,7 +30,7 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
             <button
               onClick={() => scrollToSection('how-it-works')}
               className={cn(
-                "px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors",
+                "px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors",
                 activeSection === 'how-it-works' && "bg-gray-100 text-gray-900"
               )}
             >
@@ -39,7 +39,7 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
             <button
               onClick={() => scrollToSection('about')}
               className={cn(
-                "px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors",
+                "px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors",
                 activeSection === 'about' && "bg-gray-100 text-gray-900"
               )}
             >
@@ -47,17 +47,17 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
             </button>
             <button 
               onClick={() => scrollToSection('contact')}
-              className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+              className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
             >
               Contáctanos
             </button>
-            <Link href="/es/recursos-gratuitos" className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+            <Link href="/es/recursos-gratuitos" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
               Recursos Gratuitos
             </Link>
-            <Link href="/es/blog" className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+            <Link href="/es/blog" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
               Blog
             </Link>
-            <Link href="/es/ayuda" className="px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+            <Link href="/es/ayuda" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
               Ayuda
             </Link>
           </div>
@@ -91,7 +91,7 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
                   setIsMenuOpen(false);
                 }}
                 className={cn(
-                  "block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors",
+                  "block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors",
                   activeSection === 'how-it-works' && "bg-gray-100 text-gray-900"
                 )}
               >
@@ -103,7 +103,7 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
                   setIsMenuOpen(false);
                 }}
                 className={cn(
-                  "block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors",
+                  "block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors",
                   activeSection === 'about' && "bg-gray-100 text-gray-900"
                 )}
               >
@@ -114,27 +114,27 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
                   scrollToSection('contact');
                   setIsMenuOpen(false);
                 }}
-                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Contáctanos
               </button>
               <Link 
                 href="/es/recursos-gratuitos" 
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Recursos Gratuitos
               </Link>
               <Link 
                 href="/es/blog" 
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link 
                 href="/es/ayuda" 
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Ayuda
