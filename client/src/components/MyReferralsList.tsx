@@ -109,7 +109,9 @@ export default function MyReferralsList() {
           ? `Unassigned from request and deleted ${data.quotesDeleted} quote(s)`
           : "Successfully unassigned from request",
       });
+      // Invalidate both my-referrals and available referrals to ensure UI consistency
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/available'] });
       setUnassignWarning(null);
     },
     onError: (error: any) => {
