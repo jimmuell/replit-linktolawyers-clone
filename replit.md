@@ -18,6 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Self-Management System Implementation** (July 19, 2025): Built comprehensive attorney self-management functionality with quote editing capabilities
+  - Added backend API endpoints for attorney self-unassignment with automatic quote deletion when unassigning with existing quotes
+  - Created Edit Quote and Delete Quote buttons that appear for attorneys with submitted quotes (status 'quoted')
+  - Added warning dialog for unassignment showing quote deletion warning when applicable with clear messaging
+  - Built quote management system with proper validation, error handling, and real-time UI updates
+  - Added new API route `/api/attorney-referrals/assignment/:assignmentId/quotes` for fetching attorney's quotes by assignment
+  - System allows attorneys to: unassign themselves from referrals, edit submitted quotes, delete quotes independently
+  - Fixed JSON parsing errors in quote fetching by handling empty responses properly with text-first parsing
+
 - **Public Quote Display Integration** (July 19, 2025): Connected attorney dashboard quotes to public track request functionality
   - Created public API endpoint `/api/attorney-referrals/public/request/:requestId/quotes` to fetch quotes for tracking without authentication
   - Updated TrackRequestModal to display attorney quotes with condensed card format showing fee, experience, and credentials

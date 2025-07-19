@@ -79,8 +79,13 @@ export default function MyReferralsList() {
       });
       
       if (response.ok) {
-        const data = await response.json();
-        return data.data.length > 0 ? data.data[0] : null;
+        const text = await response.text();
+        if (!text) {
+          // Empty response
+          return null;
+        }
+        const data = JSON.parse(text);
+        return data.data && data.data.length > 0 ? data.data[0] : null;
       }
     } catch (error) {
       console.error('Error fetching quote:', error);
