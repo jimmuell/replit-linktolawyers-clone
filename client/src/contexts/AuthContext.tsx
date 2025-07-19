@@ -64,12 +64,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('sessionId', data.sessionId);
       setUser(data.user);
       
-      // Redirect to admin dashboard after successful login
+      // Redirect based on user role after successful login
       if (data.user.role === 'admin') {
         window.location.href = '/admin-dashboard';
+      } else if (data.user.role === 'attorney') {
+        window.location.href = '/attorney-dashboard';
       } else {
-        // For other roles, redirect to appropriate dashboard if exists
-        window.location.href = '/admin-dashboard';
+        // For clients and other roles, redirect to home page
+        window.location.href = '/';
       }
     } catch (error) {
       throw error;

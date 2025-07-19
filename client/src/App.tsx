@@ -23,6 +23,7 @@ import BlogPostSpanish from "@/pages/blog-post-spanish";
 import EmailTemplatesPage from "@/pages/email-templates";
 import NotFound from "@/pages/not-found";
 import HomeSpanish from "@/pages/home-spanish";
+import AttorneyDashboard from "@/pages/attorney-dashboard";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/es" component={HomeSpanish} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/attorney-dashboard" component={AttorneyDashboard} />
       <Route path="/smtp-config" component={SmtpConfigPage} />
       <Route path="/request-management" component={RequestManagementPage} />
       <Route path="/attorney-onboarding" component={AttorneyOnboarding} />
