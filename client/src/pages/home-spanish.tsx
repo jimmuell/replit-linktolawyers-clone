@@ -118,8 +118,8 @@ export default function HomeSpanish() {
             <div className="flex justify-center items-start">
               <img 
                 src={girlThinkingSpanishImage} 
-                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales con burbujas de pensamiento mostrando Abogada A (US$1,200), Abogada B (US$1,750), y Abogada C (US$2,500)" 
-                className="object-contain" 
+                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales con burbujas de pensamiento mostrando Law Firm A ($1,200), Law Firm B ($1,750), y Law Firm C ($2,500)" 
+                className="w-[500px] h-auto object-contain" 
               />
             </div>
           </div>
