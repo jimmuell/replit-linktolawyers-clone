@@ -743,7 +743,11 @@ router.delete("/assignment/:assignmentId/quote/:quoteId", requireAuth, async (re
     }
 
     // Delete the quote
-    await db.delete(quotes).where(eq(quotes.id, quoteId));
+    const deletedResult = await db.delete(quotes).where(eq(quotes.id, quoteId)).returning();
+    
+    if (deletedResult.length === 0) {
+      return res.status(404).json({ error: 'Quote not found or already deleted' });
+    }
 
     // Update assignment status back to assigned since quote is removed
     await db
