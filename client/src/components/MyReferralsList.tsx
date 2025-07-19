@@ -246,15 +246,9 @@ export default function MyReferralsList() {
         title: "Success",
         description: "Quote submitted successfully",
       });
-      // Update the selectedReferral state to reflect the new status
-      setSelectedReferral(prev => prev ? {
-        ...prev,
-        assignmentStatus: 'quoted'
-      } : prev);
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
-      // Close the quote modal
+      // Close all modals and return to main list
       setIsQuoteModalOpen(false);
-      // Close the referral details modal to return to main list
       setSelectedReferral(null);
       setQuote({ serviceFee: '', description: '', terms: '', validUntil: '' });
       setFeeScheduleData(null);
@@ -501,7 +495,11 @@ export default function MyReferralsList() {
                       </TableCell>
                       <TableCell>{formatDate(referral.assignedAt)}</TableCell>
                       <TableCell>
-                        <Dialog>
+                        <Dialog open={selectedReferral?.assignmentId === referral.assignmentId} onOpenChange={(open) => {
+                          if (!open) {
+                            setSelectedReferral(null);
+                          }
+                        }}>
                           <DialogTrigger asChild>
                             <Button 
                               variant="outline" 
