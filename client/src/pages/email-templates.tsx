@@ -680,6 +680,7 @@ export default function EmailTemplatesPage() {
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <EmailTemplateModal
+          key={`${modalMode}-${selectedTemplate?.id || 'new'}`}
           template={selectedTemplate}
           onClose={handleCloseModal}
           mode={modalMode}
