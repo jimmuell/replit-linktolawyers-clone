@@ -159,6 +159,11 @@ export default function MyReferralsList() {
         title: "Quote Deleted",
         description: "Your quote has been deleted successfully",
       });
+      // Update the selectedReferral state to reflect the new status
+      setSelectedReferral(prev => prev ? {
+        ...prev,
+        assignmentStatus: 'assigned'
+      } : prev);
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
     },
     onError: (error: any) => {
@@ -239,6 +244,11 @@ export default function MyReferralsList() {
         title: "Success",
         description: "Quote submitted successfully",
       });
+      // Update the selectedReferral state to reflect the new status
+      setSelectedReferral(prev => prev ? {
+        ...prev,
+        assignmentStatus: 'quoted'
+      } : prev);
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
       setIsQuoteModalOpen(false);
       setQuote({ serviceFee: '', description: '', terms: '', validUntil: '' });
@@ -608,6 +618,14 @@ export default function MyReferralsList() {
                                           updateStatusMutation.mutate({ 
                                             assignmentId: selectedReferral.assignmentId, 
                                             status: 'under_review' 
+                                          }, {
+                                            onSuccess: () => {
+                                              // Update the selectedReferral state to reflect the new status
+                                              setSelectedReferral(prev => prev ? {
+                                                ...prev,
+                                                assignmentStatus: 'under_review'
+                                              } : prev);
+                                            }
                                           });
                                         }}
                                         disabled={updateStatusMutation.isPending}
