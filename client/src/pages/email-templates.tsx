@@ -84,21 +84,10 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
     },
   });
 
-  // Reset form when template changes
+  // Reset form when template or mode changes
   useEffect(() => {
-    if (template) {
-      form.reset({
-        name: template.name || '',
-        subject: template.subject || '',
-        htmlContent: template.htmlContent || '',
-        textContent: template.textContent || '',
-        templateType: template.templateType || '',
-        variables: template.variables || '',
-        isActive: template.isActive ?? true,
-        useInProduction: template.useInProduction ?? false,
-      });
-    } else {
-      // Reset to empty values for create mode
+    if (mode === 'create') {
+      // Always reset to empty values for create mode
       form.reset({
         name: '',
         subject: '',
@@ -109,8 +98,20 @@ function EmailTemplateModal({ template, onClose, mode }: EmailTemplateModalProps
         isActive: true,
         useInProduction: false,
       });
+    } else if (template) {
+      // Reset with template values for edit/view mode
+      form.reset({
+        name: template.name || '',
+        subject: template.subject || '',
+        htmlContent: template.htmlContent || '',
+        textContent: template.textContent || '',
+        templateType: template.templateType || '',
+        variables: template.variables || '',
+        isActive: template.isActive ?? true,
+        useInProduction: template.useInProduction ?? false,
+      });
     }
-  }, [template, form]);
+  }, [template, mode, form]);
 
   const watchedHtmlContent = form.watch('htmlContent');
 

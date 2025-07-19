@@ -18,6 +18,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Email Template System Enhancement** (July 19, 2025): Improved template management for large legal documents and better user experience
+  - Updated validation to allow text-only content without requiring HTML for legal document templates
+  - Added clear template type descriptors distinguishing email templates from document templates  
+  - Fixed form reset bug ensuring all fields clear completely when creating new templates
+  - Added dedicated document template types: Terms and Conditions, Privacy Policy, Legal Notice, User Agreement
+  - Enhanced admin workflow for managing both email templates and legal document content
+
 - **Form Field Updates** (July 19, 2025): Streamlined legal request forms by removing unnecessary fields and improving validation
   - Removed urgency level field (radio buttons) from both English and Spanish forms
   - Removed budget range field (dropdown) from both English and Spanish forms
