@@ -7,7 +7,7 @@ import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
 import { Link } from "wouter";
-import girlThinkingSpanishImage from "@assets/girl-final_spanish_1752930289127.png";
+import girlThinkingSpanishImage from "@assets/girl-final_spanish_1752931654981.png";
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
