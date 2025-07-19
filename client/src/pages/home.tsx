@@ -212,7 +212,7 @@ export default function Home() {
         caseType: 'family-based-immigrant-visa-immediate-relative',
         email: 'linktolawyers.us@gmail.com',
         phoneNumber: '(555) 123-4567',
-        caseDescription: 'I need assistance with filing a family-based immigrant visa petition for my spouse. We have been married for 2 years and have all the required documentation ready. Looking for guidance on the process and timeline.',
+        caseDescription: 'I need assistance with filing a family-based immigrant visa petition for my spouse. We have been married for 2 years and have all the required documentation ready, including marriage certificate, birth certificates, and financial documents. Looking for experienced guidance on the complete process and realistic timeline expectations. We want to ensure everything is filed correctly the first time.',
         urgencyLevel: 'moderate',
         budgetRange: '2500-5000',
         location: 'Los Angeles, CA',
@@ -752,28 +752,31 @@ export default function Home() {
                 />
               </div>
               <div>
-                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
                 <Input
                   id="phoneNumber"
                   type="tel"
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (Optional)"
                   value={formData.phoneNumber}
                   onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                  required
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="caseDescription">Case Description</Label>
+              <Label htmlFor="caseDescription">Case Description (Minimum 100 characters)</Label>
               <Textarea
                 id="caseDescription"
                 placeholder="Please describe your immigration situation, including any specific circumstances, deadlines, or concerns you have..."
                 value={formData.caseDescription}
                 onChange={(e) => handleInputChange('caseDescription', e.target.value)}
                 rows={4}
+                minLength={100}
                 required
               />
+              <p className="text-sm text-gray-500 mt-1">
+                {formData.caseDescription.length}/100 characters minimum
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

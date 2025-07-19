@@ -84,7 +84,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
         caseType: 'family-based-immigrant-visa-immediate-relative',
         email: 'linktolawyers.us@gmail.com',
         phoneNumber: '(555) 123-4567',
-        caseDescription: 'Necesito ayuda con la petición de visa de inmigrante para mi esposo. Él está actualmente en México y queremos reunirnos lo antes posible. Tenemos todos los documentos necesarios pero necesitamos orientación sobre el proceso.',
+        caseDescription: 'Necesito ayuda con la petición de visa de inmigrante para mi esposo. Él está actualmente en México y queremos reunirnos lo antes posible. Tenemos todos los documentos necesarios incluyendo acta de matrimonio, certificados de nacimiento y documentos financieros, pero necesitamos orientación profesional sobre el proceso completo y expectativas realistas de tiempo.',
         urgencyLevel: 'urgent',
         budgetRange: '2500-5000',
         location: 'Miami, FL',
@@ -346,28 +346,31 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phoneNumber">Número de Teléfono</Label>
+                  <Label htmlFor="phoneNumber">Número de Teléfono (Opcional)</Label>
                   <Input
                     id="phoneNumber"
                     type="tel"
-                    placeholder="Número de Teléfono"
+                    placeholder="Número de Teléfono (Opcional)"
                     value={formData.phoneNumber}
                     onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                    required
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="caseDescription">Descripción del Caso</Label>
+                <Label htmlFor="caseDescription">Descripción del Caso (Mínimo 100 caracteres)</Label>
                 <Textarea
                   id="caseDescription"
                   placeholder="Por favor, describe tu situación migratoria, incluyendo cualquier circunstancia específica, fechas límite o inquietudes que tengas..."
                   value={formData.caseDescription}
                   onChange={(e) => handleInputChange('caseDescription', e.target.value)}
                   rows={4}
+                  minLength={100}
                   required
                 />
+                <p className="text-sm text-gray-500 mt-1">
+                  {formData.caseDescription.length}/100 caracteres mínimo
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
