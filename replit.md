@@ -18,6 +18,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Modal State Management Fix** (July 19, 2025): Resolved stuck modal header issues across attorney dashboard
+  - Fixed Dialog components in both MyReferralsList and ReferralList to use controlled open state
+  - Added proper onOpenChange handlers to clear selectedReferral state when modals close
+  - Eliminated "Referral Details -" header that remained on screen after quote submission or assignment
+  - Removed duplicate toast notification that created impression of multiple popups in quote submission
+  - Reorganized fee schedule loading to occur before modal opens, eliminating visual flicker
+  - Enhanced quote submission workflow to automatically close both quote modal and referral details modal
+  - Improved cache invalidation to refresh Available Referrals tab when attorney unassigns after creating quotes
+  - All modal interactions now provide clean, professional user experience without UI artifacts
+
 - **Attorney Self-Management System Implementation** (July 19, 2025): Built comprehensive attorney self-management functionality with quote editing capabilities
   - Added backend API endpoints for attorney self-unassignment with automatic quote deletion when unassigning with existing quotes
   - Created Edit Quote and Delete Quote buttons that appear for attorneys with submitted quotes (status 'quoted')

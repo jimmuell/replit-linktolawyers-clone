@@ -230,7 +230,11 @@ export default function ReferralList({ title, endpoint, showAssignButton = false
                     <TableCell>{formatDate(referral.createdAt)}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
-                        <Dialog>
+                        <Dialog open={selectedReferral?.id === referral.id} onOpenChange={(open) => {
+                          if (!open) {
+                            setSelectedReferral(null);
+                          }
+                        }}>
                           <DialogTrigger asChild>
                             <Button 
                               variant="outline" 
