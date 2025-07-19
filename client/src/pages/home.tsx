@@ -387,7 +387,7 @@ export default function Home() {
       {/* Hero Section */}
       <section id="home" className="bg-white py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-stretch min-h-[600px]">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-end min-h-[600px]">
             <div className="mb-8 lg:mb-0 flex flex-col justify-between">
               <div>
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
@@ -424,7 +424,7 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="flex justify-center items-center">
+            <div className="flex justify-center items-end">
               <img 
                 src={girlThinkingImage} 
                 alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($1,200), Law Firm B ($1,750), and Law Firm C ($2,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
