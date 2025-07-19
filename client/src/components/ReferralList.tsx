@@ -32,6 +32,25 @@ export default function ReferralList({ title, endpoint, showAssignButton = false
   // Fetch referrals
   const { data: referralsData, isLoading } = useQuery({
     queryKey: [endpoint, { caseType: caseTypeFilter, location: locationFilter, sortBy, sortOrder }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (caseTypeFilter && caseTypeFilter !== 'all') params.append('caseType', caseTypeFilter);
+      if (locationFilter && locationFilter !== 'all') params.append('location', locationFilter);
+      params.append('sortBy', sortBy);
+      params.append('sortOrder', sortOrder);
+      
+      const response = await fetch(`${endpoint}?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch referrals');
+      }
+      
+      return response.json();
+    },
     retry: false,
   });
 

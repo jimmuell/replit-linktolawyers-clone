@@ -47,6 +47,19 @@ export default function MyReferralsList() {
   // Fetch my referrals
   const { data: referralsData, isLoading } = useQuery({
     queryKey: ['/api/attorney-referrals/my-referrals'],
+    queryFn: async () => {
+      const response = await fetch('/api/attorney-referrals/my-referrals', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch my referrals');
+      }
+      
+      return response.json();
+    },
     retry: false,
   });
 
