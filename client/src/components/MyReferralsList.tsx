@@ -336,43 +336,7 @@ export default function MyReferralsList() {
     return null;
   };
 
-  // Effect to load fee schedule when quote modal opens
-  useEffect(() => {
-    if (isQuoteModalOpen && selectedReferral) {
-      const fetchAttorneyFeeSchedule = async () => {
-        try {
-          const feeSchedule = await fetchFeeSchedule(selectedReferral.request.caseType);
-          
-          if (feeSchedule) {
-            setFeeScheduleData(feeSchedule);
-            // Pre-populate the quote form with fee schedule data
-            setQuote(prev => ({
-              ...prev,
-              serviceFee: (feeSchedule.fee / 100).toString(), // Convert from cents to dollars
-              description: feeSchedule.notes || `${feeSchedule.feeType === 'flat' ? 'Flat fee' : feeSchedule.feeType} for ${selectedReferral.request.caseType}`,
-            }));
-            
-            toast({
-              title: "Fee Schedule Loaded",
-              description: `Loaded your ${feeSchedule.feeType} fee schedule: $${(feeSchedule.fee / 100).toFixed(2)}`,
-            });
-          } else {
-            // Clear any existing data if no fee schedule found
-            setFeeScheduleData(null);
-            setQuote(prev => ({
-              ...prev,
-              serviceFee: '',
-              description: '',
-            }));
-          }
-        } catch (error) {
-          console.error('Error fetching attorney fee schedule:', error);
-        }
-      };
-      
-      fetchAttorneyFeeSchedule();
-    }
-  }, [isQuoteModalOpen, selectedReferral]);
+  // Removed useEffect for fee schedule loading - now handled in button click
 
   const handleSubmitInfoRequest = () => {
     if (!selectedReferral || !infoRequest.subject || !infoRequest.message) return;
@@ -655,7 +619,35 @@ export default function MyReferralsList() {
                                         size="sm"
                                         variant="default"
                                         className="bg-green-600 hover:bg-green-700"
-                                        onClick={() => setIsQuoteModalOpen(true)}
+                                        onClick={async () => {
+                                          // Load fee schedule first, then open modal
+                                          if (selectedReferral) {
+                                            try {
+                                              const feeSchedule = await fetchFeeSchedule(selectedReferral.request.caseType);
+                                              
+                                              if (feeSchedule) {
+                                                setFeeScheduleData(feeSchedule);
+                                                // Pre-populate the quote form with fee schedule data
+                                                setQuote(prev => ({
+                                                  ...prev,
+                                                  serviceFee: (feeSchedule.fee / 100).toString(), // Convert from cents to dollars
+                                                  description: feeSchedule.notes || `${feeSchedule.feeType === 'flat' ? 'Flat fee' : feeSchedule.feeType} for ${selectedReferral.request.caseType}`,
+                                                }));
+                                              } else {
+                                                // Clear any existing data if no fee schedule found
+                                                setFeeScheduleData(null);
+                                                setQuote(prev => ({
+                                                  ...prev,
+                                                  serviceFee: '',
+                                                  description: '',
+                                                }));
+                                              }
+                                            } catch (error) {
+                                              console.error('Error fetching attorney fee schedule:', error);
+                                            }
+                                          }
+                                          setIsQuoteModalOpen(true);
+                                        }}
                                       >
                                         <DollarSign className="h-3 w-3 mr-1" />
                                         Submit Quote
