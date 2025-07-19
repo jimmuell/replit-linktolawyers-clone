@@ -147,6 +147,7 @@ export const emailTemplates = pgTable("email_templates", {
 
 export const attorneys = pgTable("attorneys", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),

@@ -75,9 +75,20 @@ router.get("/available", requireAuth, async (req, res) => {
 // Get attorney's assigned referrals
 router.get("/my-referrals", requireAuth, async (req, res) => {
   try {
-    // For now, we'll need to link user to attorney - this assumes user.id = attorney.id
-    // In a real system, you'd have a user_id field in attorneys table
-    const attorneyId = req.user!.id;
+    const userId = req.user!.id;
+    
+    // Get the attorney ID from the attorneys table using the user ID
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+      
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+    
+    const attorneyId = attorney[0].id;
 
     const myReferrals = await db
       .select({
@@ -115,8 +126,21 @@ router.get("/my-referrals", requireAuth, async (req, res) => {
 router.post("/assign/:requestId", requireAuth, async (req, res) => {
   try {
     const requestId = parseInt(req.params.requestId);
-    const attorneyId = req.user!.id;
+    const userId = req.user!.id;
     const { notes } = req.body;
+    
+    // Get the attorney ID from the attorneys table using the user ID
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+      
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+    
+    const attorneyId = attorney[0].id;
 
     // Check if request exists and is not already assigned
     const existingAssignment = await db
@@ -152,7 +176,20 @@ router.patch("/assignment/:assignmentId/status", requireAuth, async (req, res) =
   try {
     const assignmentId = parseInt(req.params.assignmentId);
     const { status, notes } = req.body;
-    const attorneyId = req.user!.id;
+    const userId = req.user!.id;
+    
+    // Get the attorney ID from the attorneys table using the user ID
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+      
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+    
+    const attorneyId = attorney[0].id;
 
     // Verify the assignment belongs to this attorney
     const assignment = await db
