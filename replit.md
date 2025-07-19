@@ -26,6 +26,8 @@ Preferred communication style: Simple, everyday language.
   - Added new API route `/api/attorney-referrals/assignment/:assignmentId/quotes` for fetching attorney's quotes by assignment
   - System allows attorneys to: unassign themselves from referrals, edit submitted quotes, delete quotes independently
   - Fixed JSON parsing errors in quote fetching by handling empty responses properly with text-first parsing
+  - Fixed timestamp format issue in quote deletion by changing toISOString() to new Date() for proper database compatibility
+  - Reorganized UI to move all action buttons into the View Referral Details popup for cleaner table interface
 
 - **Public Quote Display Integration** (July 19, 2025): Connected attorney dashboard quotes to public track request functionality
   - Created public API endpoint `/api/attorney-referrals/public/request/:requestId/quotes` to fetch quotes for tracking without authentication
