@@ -22,7 +22,7 @@ import TrackRequestModal from "@/components/TrackRequestModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
-import girlThinkingImage from "@assets/girl-final_500x500_1752927345358.png";
+import girlThinkingImage from "@assets/girl-final_1752714322954_1752927927876.png";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
