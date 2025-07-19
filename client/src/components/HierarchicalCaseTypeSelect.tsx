@@ -40,12 +40,16 @@ export default function HierarchicalCaseTypeSelect({
     if (!isSpanish) return category;
     
     const translations: { [key: string]: string } = {
-      'Family-Based Immigration': 'Inmigración Basada en Familia',
-      'Fiancé Visa': 'Visa de Prometido(a)',
+      'Family-Based Immigration': 'Visa de Inmigrante Basada en Familia',
+      'Family-Based Immigrant Visa': 'Visa de Inmigrante Basada en Familia',
+      'Fiancé Visa': 'Visa K-1 de Prometido(a)',
+      'K-1 Fiancé(e) Visa': 'Visa K-1 de Prometido(a)',
       'Citizenship & Naturalization': 'Ciudadanía y Naturalización',
       'Asylum': 'Asilo',
       'Deportation Defense': 'Defensa de Deportación',
-      'Violence Against Women Act': 'Ley de Violencia Contra las Mujeres',
+      'Deportation Defense / Removal Proceedings': 'Defensa de Deportación',
+      'Violence Against Women Act': 'Ley de Violencia Contra las Mujeres (VAWA)',
+      'Violence Against Women Act (VAWA)': 'Ley de Violencia Contra las Mujeres (VAWA)',
       'Other': 'Otro'
     };
     
