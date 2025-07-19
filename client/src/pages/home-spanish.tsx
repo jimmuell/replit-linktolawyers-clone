@@ -7,7 +7,7 @@ import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
 import { Link } from "wouter";
-import girlThinkingSpanishImage from "@assets/girl-final_1752714322954_1752927927876.png";
+import girlThinkingSpanishImage from "@assets/girl-final_spanish_1752930289127.png";
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
@@ -118,7 +118,7 @@ export default function HomeSpanish() {
             <div className="flex justify-center items-start">
               <img 
                 src={girlThinkingSpanishImage} 
-                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales con burbujas de pensamiento mostrando Law Firm A ($1,200), Law Firm B ($1,750), y Law Firm C ($2,500)" 
+                alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales con burbujas de pensamiento mostrando Abogada A (US$1,200), Abogada B (US$1,750), y Abogada C (US$2,500)" 
                 className="w-[500px] h-auto object-contain" 
               />
             </div>
