@@ -82,12 +82,12 @@ export default function HomeSpanish() {
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                   Encuentra Tu Abogado de Inmigración
                 </h1>
-                <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-6 leading-relaxed">
+                <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-8 leading-relaxed">
                   Compara Y Negocia Honorarios Legales<br />
                   De Firmas Jurídicas En Todo El País
                 </h2>
                 
-                <div className="flex-grow flex flex-col justify-center space-y-6">
+                <div className="space-y-6 mb-8">
                   <p className="text-xl text-gray-600 max-w-lg">
                     Nuestra plataforma simplifica el proceso de encontrar y conectar con abogados experimentados, asegurando que recibas el mejor apoyo legal adaptado a tu situación única, a un precio asequible.
                   </p>
