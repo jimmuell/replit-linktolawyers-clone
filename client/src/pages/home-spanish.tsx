@@ -87,13 +87,11 @@ export default function HomeSpanish() {
                   De Firmas Jurídicas En Todo El País
                 </h2>
                 
-                <p className="text-gray-600 mb-8 max-w-lg">
+                <p className="text-gray-600 mb-6 max-w-lg">
                   Nuestra plataforma simplifica el proceso de encontrar y conectar con abogados experimentados, asegurando que recibas el mejor apoyo legal adaptado a tu situación única, a un precio asequible.
                 </p>
-              </div>
-              
-              <div className="mb-6">
-                <p className="text-gray-600 max-w-lg">
+                
+                <p className="text-gray-600 mb-6 max-w-lg">
                   Toma control de tus gastos legales hoy. Compara cotizaciones de múltiples abogados, negocia precios justos y toma decisiones informadas sobre tu representación legal. Comienza tu camino hacia servicios legales asequibles ahora.
                 </p>
               </div>

@@ -398,13 +398,11 @@ export default function Home() {
                   From Law Firms Nationwide
                 </h2>
                 
-                <p className="text-gray-600 mb-8 max-w-lg">
+                <p className="text-gray-600 mb-6 max-w-lg">
                   Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
                 </p>
-              </div>
-              
-              <div className="mb-6">
-                <p className="text-gray-600 max-w-lg">
+                
+                <p className="text-gray-600 mb-6 max-w-lg">
                   Take control of your legal expenses today. Compare quotes from multiple attorneys, negotiate fair pricing, and make confident decisions about your legal representation. Start your journey to affordable legal services now.
                 </p>
               </div>
