@@ -101,7 +101,7 @@ export default function AttorneyOnboarding() {
     mutationFn: async (data: any) => {
       return await apiRequest('/api/attorneys', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: data,
       });
     },
     onSuccess: () => {
@@ -126,7 +126,7 @@ export default function AttorneyOnboarding() {
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
       return await apiRequest(`/api/attorneys/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        body: data,
       });
     },
     onSuccess: () => {

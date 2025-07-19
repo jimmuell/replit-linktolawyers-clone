@@ -24,7 +24,9 @@ Preferred communication style: Simple, everyday language.
   - Built frontend components (ReferralList, MyReferralsList) for browsing and managing referrals
   - Updated attorney dashboard with tabbed interface for referral workflow management
   - Fixed Select component errors and implemented proper query parameter handling
-  - Created attorney profile for James L. Mueller Jr. (CA-123456, 15 years experience, immigration law specialist)
+  - Created attorney profiles for James L. Mueller Jr. and Jim Mueller with proper user account linking
+  - Fixed foreign key constraint issues by adding user_id field to attorneys table and updating backend routes
+  - Fixed JSON parsing errors in fee schedule and attorney creation forms by removing double JSON.stringify
   - System ready for testing with 1 available unassigned legal request in database
 
 - **Attorney Dashboard Implementation** (July 19, 2025): Created comprehensive attorney dashboard system with role-based authentication

@@ -114,7 +114,7 @@ export default function AttorneyFeeSchedule() {
     mutationFn: async (data: any) => {
       return await apiRequest('/api/attorney-fee-schedule', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: data,
       });
     },
     onSuccess: () => {
@@ -139,7 +139,7 @@ export default function AttorneyFeeSchedule() {
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
       return await apiRequest(`/api/attorney-fee-schedule/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(data),
+        body: data,
       });
     },
     onSuccess: () => {
