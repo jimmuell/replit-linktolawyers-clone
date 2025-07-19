@@ -387,9 +387,9 @@ export default function Home() {
       {/* Hero Section */}
       <section id="home" className="bg-white py-12 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-end min-h-[600px]">
-            <div className="mb-8 lg:mb-0 flex flex-col justify-between">
-              <div>
+          <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-start min-h-[600px]">
+            <div className="mb-8 lg:mb-0 flex flex-col h-full">
+              <div className="flex-grow flex flex-col">
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                   Find Your Immigration Attorney
                 </h1>
@@ -398,16 +398,18 @@ export default function Home() {
                   From Law Firms Nationwide
                 </h2>
                 
-                <p className="text-xl text-gray-600 mb-6 max-w-lg">
-                  Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
-                </p>
-                
-                <p className="text-xl text-gray-600 mb-6 max-w-lg">
-                  Take control of your legal expenses today. Compare quotes from multiple attorneys, negotiate fair pricing, and make confident decisions about your legal representation. Start your journey to affordable legal services now.
-                </p>
+                <div className="flex-grow flex flex-col justify-center space-y-6">
+                  <p className="text-xl text-gray-600 max-w-lg">
+                    Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
+                  </p>
+                  
+                  <p className="text-xl text-gray-600 max-w-lg">
+                    Take control of your legal expenses today. Compare quotes from multiple attorneys, negotiate fair pricing, and make confident decisions about your legal representation. Start your journey to affordable legal services now.
+                  </p>
+                </div>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 mt-8">
                 <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsQuoteModalOpen(true)}
@@ -424,7 +426,7 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="flex justify-center items-end">
+            <div className="flex justify-center items-start">
               <img 
                 src={girlThinkingImage} 
                 alt="Free Legal Quotes - Professional woman thinking about legal options with thought bubbles showing Law Firm A ($1,200), Law Firm B ($1,750), and Law Firm C ($2,500) for Immigration Law, Personal Injury, Criminal Law, and Family Law services" 
