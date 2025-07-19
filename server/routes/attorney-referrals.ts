@@ -45,13 +45,13 @@ router.get("/available", requireAuth, async (req, res) => {
       .where(isNull(referralAssignments.id)); // Only unassigned requests
 
     // Apply filters
-    if (caseType && typeof caseType === 'string') {
+    if (caseType && typeof caseType === 'string' && caseType !== 'all') {
       query = query.where(eq(legalRequests.caseType, caseType));
     }
-    if (location && typeof location === 'string') {
+    if (location && typeof location === 'string' && location !== 'all') {
       query = query.where(eq(legalRequests.location, location));
     }
-    if (status && typeof status === 'string') {
+    if (status && typeof status === 'string' && status !== 'all') {
       query = query.where(eq(legalRequests.status, status));
     }
 

@@ -20,8 +20,8 @@ interface ReferralListProps {
 
 export default function ReferralList({ title, endpoint, showAssignButton = false }: ReferralListProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [caseTypeFilter, setCaseTypeFilter] = useState('');
-  const [locationFilter, setLocationFilter] = useState('');
+  const [caseTypeFilter, setCaseTypeFilter] = useState('all');
+  const [locationFilter, setLocationFilter] = useState('all');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [selectedReferral, setSelectedReferral] = useState<LegalRequest | null>(null);
@@ -141,7 +141,7 @@ export default function ReferralList({ title, endpoint, showAssignButton = false
                 <SelectValue placeholder="Case Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Case Types</SelectItem>
+                <SelectItem value="all">All Case Types</SelectItem>
                 {caseTypes.map((caseType: any) => (
                   <SelectItem key={caseType.id} value={caseType.value}>
                     {caseType.label}
@@ -156,8 +156,7 @@ export default function ReferralList({ title, endpoint, showAssignButton = false
               <SelectValue placeholder="Location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Locations</SelectItem>
-              {/* Add common locations here */}
+              <SelectItem value="all">All Locations</SelectItem>
               <SelectItem value="California">California</SelectItem>
               <SelectItem value="Texas">Texas</SelectItem>
               <SelectItem value="New York">New York</SelectItem>
