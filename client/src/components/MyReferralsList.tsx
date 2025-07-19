@@ -252,7 +252,10 @@ export default function MyReferralsList() {
         assignmentStatus: 'quoted'
       } : prev);
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
+      // Close the quote modal
       setIsQuoteModalOpen(false);
+      // Close the referral details modal to return to main list
+      setSelectedReferral(null);
       setQuote({ serviceFee: '', description: '', terms: '', validUntil: '' });
       setFeeScheduleData(null);
     },
