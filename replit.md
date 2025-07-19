@@ -18,11 +18,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **Form Validation Updates** (July 19, 2025): Enhanced legal request form validation requirements for both English and Spanish forms
+- **Form Field Updates** (July 19, 2025): Streamlined legal request forms by removing unnecessary fields and improving validation
+  - Removed urgency level field (radio buttons) from both English and Spanish forms
+  - Removed budget range field (dropdown) from both English and Spanish forms
   - Made phone number field optional with updated labels "Phone Number (Optional)" and "Número de Teléfono (Opcional)"
   - Added 100 character minimum requirement for case description with real-time character counter
-  - Updated prefill data to meet new 100 character minimum with more detailed case descriptions
-  - Enhanced user experience with clear validation feedback and character count displays
+  - Updated prefill data and form state management to reflect simplified field structure
+  - Enhanced user experience with streamlined form flow and clear validation feedback
 
 - **Spanish Case Type Translation System** (July 19, 2025): Implemented comprehensive Spanish translations for case type dropdown in legal request forms
   - Updated HierarchicalCaseTypeSelect component to support Spanish translations with isSpanish parameter

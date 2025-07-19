@@ -37,8 +37,6 @@ export default function Home() {
     email: '',
     phoneNumber: '',
     caseDescription: '',
-    urgencyLevel: '',
-    budgetRange: '',
     location: '',
     captcha: '',
     agreeToTerms: false
@@ -124,8 +122,7 @@ export default function Home() {
   // Check if form has any data
   const hasFormData = () => {
     return formData.firstName || formData.lastName || formData.email || formData.phoneNumber || 
-           formData.caseType || formData.caseDescription || formData.urgencyLevel || 
-           formData.budgetRange || formData.location || formData.captcha;
+           formData.caseType || formData.caseDescription || formData.location || formData.captcha;
   };
 
   // Handle modal close (cancel)
@@ -148,8 +145,6 @@ export default function Home() {
           email: '',
           phoneNumber: '',
           caseDescription: '',
-          urgencyLevel: '',
-          budgetRange: '',
           location: '',
           captcha: '',
           agreeToTerms: false
@@ -172,8 +167,6 @@ export default function Home() {
       email: '',
       phoneNumber: '',
       caseDescription: '',
-      urgencyLevel: '',
-      budgetRange: '',
       location: '',
       captcha: '',
       agreeToTerms: false
@@ -213,8 +206,6 @@ export default function Home() {
         email: 'linktolawyers.us@gmail.com',
         phoneNumber: '(555) 123-4567',
         caseDescription: 'I need assistance with filing a family-based immigrant visa petition for my spouse. We have been married for 2 years and have all the required documentation ready, including marriage certificate, birth certificates, and financial documents. Looking for experienced guidance on the complete process and realistic timeline expectations. We want to ensure everything is filed correctly the first time.',
-        urgencyLevel: 'moderate',
-        budgetRange: '2500-5000',
         location: 'Los Angeles, CA',
         captcha: '4',
         agreeToTerms: false
@@ -227,8 +218,6 @@ export default function Home() {
         email: '',
         phoneNumber: '',
         caseDescription: '',
-        urgencyLevel: '',
-        budgetRange: '',
         location: '',
         captcha: '',
         agreeToTerms: false
@@ -691,8 +680,6 @@ export default function Home() {
                     email: '',
                     phoneNumber: '',
                     caseDescription: '',
-                    urgencyLevel: '',
-                    budgetRange: '',
                     location: '',
                     captcha: '',
                     agreeToTerms: false
@@ -779,44 +766,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Urgency Level</Label>
-                <RadioGroup value={formData.urgencyLevel} onValueChange={(value) => handleInputChange('urgencyLevel', value)}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="not-urgent" id="not-urgent" />
-                    <Label htmlFor="not-urgent">Not urgent (6+ months)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="moderate" id="moderate" />
-                    <Label htmlFor="moderate">Moderate (3-6 months)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="urgent" id="urgent" />
-                    <Label htmlFor="urgent">Urgent (1-3 months)</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="immediate" id="immediate" />
-                    <Label htmlFor="immediate">Immediate (less than 1 month)</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-              <div>
-                <Label htmlFor="budgetRange">Budget Range</Label>
-                <Select value={formData.budgetRange} onValueChange={(value) => handleInputChange('budgetRange', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select budget range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="under-1000">Under $1,000</SelectItem>
-                    <SelectItem value="1000-2500">$1,000 - $2,500</SelectItem>
-                    <SelectItem value="2500-5000">$2,500 - $5,000</SelectItem>
-                    <SelectItem value="5000-10000">$5,000 - $10,000</SelectItem>
-                    <SelectItem value="over-10000">Over $10,000</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

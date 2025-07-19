@@ -27,8 +27,6 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
     email: '',
     phoneNumber: '',
     caseDescription: '',
-    urgencyLevel: '',
-    budgetRange: '',
     location: '',
     captcha: '',
     agreeToTerms: false
@@ -85,8 +83,6 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
         email: 'linktolawyers.us@gmail.com',
         phoneNumber: '(555) 123-4567',
         caseDescription: 'Necesito ayuda con la petición de visa de inmigrante para mi esposo. Él está actualmente en México y queremos reunirnos lo antes posible. Tenemos todos los documentos necesarios incluyendo acta de matrimonio, certificados de nacimiento y documentos financieros, pero necesitamos orientación profesional sobre el proceso completo y expectativas realistas de tiempo.',
-        urgencyLevel: 'urgent',
-        budgetRange: '2500-5000',
         location: 'Miami, FL',
         captcha: '4',
         agreeToTerms: true
@@ -127,8 +123,6 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
       email: '',
       phoneNumber: '',
       caseDescription: '',
-      urgencyLevel: '',
-      budgetRange: '',
       location: '',
       captcha: '',
       agreeToTerms: false
@@ -284,8 +278,6 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                     email: '',
                     phoneNumber: '',
                     caseDescription: '',
-                    urgencyLevel: '',
-                    budgetRange: '',
                     location: '',
                     captcha: '',
                     agreeToTerms: false
@@ -373,44 +365,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Nivel de Urgencia</Label>
-                  <RadioGroup value={formData.urgencyLevel} onValueChange={(value) => handleInputChange('urgencyLevel', value)}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="not-urgent" id="not-urgent-es" />
-                      <Label htmlFor="not-urgent-es">No urgente (6+ meses)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="moderate" id="moderate-es" />
-                      <Label htmlFor="moderate-es">Moderado (3-6 meses)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="urgent" id="urgent-es" />
-                      <Label htmlFor="urgent-es">Urgente (1-3 meses)</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="immediate" id="immediate-es" />
-                      <Label htmlFor="immediate-es">Inmediato (menos de 1 mes)</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-                <div>
-                  <Label htmlFor="budgetRange">Rango de Presupuesto</Label>
-                  <Select value={formData.budgetRange} onValueChange={(value) => handleInputChange('budgetRange', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona el rango de presupuesto" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="under-1000">Menos de $1,000</SelectItem>
-                      <SelectItem value="1000-2500">$1,000 - $2,500</SelectItem>
-                      <SelectItem value="2500-5000">$2,500 - $5,000</SelectItem>
-                      <SelectItem value="5000-10000">$5,000 - $10,000</SelectItem>
-                      <SelectItem value="over-10000">Más de $10,000</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
