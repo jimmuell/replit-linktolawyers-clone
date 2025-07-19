@@ -539,4 +539,183 @@ router.get("/public/request/:requestId/quotes", async (req, res) => {
   }
 });
 
+// Unassign attorney from a request
+router.delete("/assignment/:assignmentId/unassign", requireAuth, async (req, res) => {
+  try {
+    const assignmentId = parseInt(req.params.assignmentId);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get attorney ID from user
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    // Verify this assignment belongs to the attorney
+    const [assignment] = await db
+      .select()
+      .from(referralAssignments)
+      .where(and(
+        eq(referralAssignments.id, assignmentId),
+        eq(referralAssignments.attorneyId, attorney.id)
+      ));
+
+    if (!assignment) {
+      return res.status(404).json({ error: 'Assignment not found or unauthorized' });
+    }
+
+    // Check if there are any quotes for this assignment
+    const existingQuotes = await db
+      .select()
+      .from(quotes)
+      .where(eq(quotes.assignmentId, assignmentId));
+
+    // Delete any existing quotes first
+    if (existingQuotes.length > 0) {
+      await db.delete(quotes).where(eq(quotes.assignmentId, assignmentId));
+    }
+
+    // Delete the assignment
+    await db.delete(referralAssignments).where(eq(referralAssignments.id, assignmentId));
+
+    res.json({ 
+      success: true, 
+      message: 'Successfully unassigned from request',
+      quotesDeleted: existingQuotes.length
+    });
+  } catch (error) {
+    console.error('Error unassigning attorney:', error);
+    res.status(500).json({ error: 'Failed to unassign attorney' });
+  }
+});
+
+// Update/edit a quote
+router.put("/assignment/:assignmentId/quote/:quoteId", requireAuth, async (req, res) => {
+  try {
+    const assignmentId = parseInt(req.params.assignmentId);
+    const quoteId = parseInt(req.params.quoteId);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get attorney ID from user
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    // Verify this assignment belongs to the attorney
+    const [assignment] = await db
+      .select()
+      .from(referralAssignments)
+      .where(and(
+        eq(referralAssignments.id, assignmentId),
+        eq(referralAssignments.attorneyId, attorney.id)
+      ));
+
+    if (!assignment) {
+      return res.status(404).json({ error: 'Assignment not found or unauthorized' });
+    }
+
+    // Verify the quote belongs to this assignment
+    const [existingQuote] = await db
+      .select()
+      .from(quotes)
+      .where(and(
+        eq(quotes.id, quoteId),
+        eq(quotes.assignmentId, assignmentId)
+      ));
+
+    if (!existingQuote) {
+      return res.status(404).json({ error: 'Quote not found' });
+    }
+
+    // Validate the update data
+    const updateData = insertQuoteSchema.omit({ assignmentId: true }).parse(req.body);
+
+    // Update the quote
+    const [updatedQuote] = await db
+      .update(quotes)
+      .set({
+        ...updateData,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(quotes.id, quoteId))
+      .returning();
+
+    res.json({ success: true, data: updatedQuote });
+  } catch (error) {
+    console.error('Error updating quote:', error);
+    res.status(500).json({ error: 'Failed to update quote' });
+  }
+});
+
+// Delete a quote
+router.delete("/assignment/:assignmentId/quote/:quoteId", requireAuth, async (req, res) => {
+  try {
+    const assignmentId = parseInt(req.params.assignmentId);
+    const quoteId = parseInt(req.params.quoteId);
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get attorney ID from user
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    // Verify this assignment belongs to the attorney
+    const [assignment] = await db
+      .select()
+      .from(referralAssignments)
+      .where(and(
+        eq(referralAssignments.id, assignmentId),
+        eq(referralAssignments.attorneyId, attorney.id)
+      ));
+
+    if (!assignment) {
+      return res.status(404).json({ error: 'Assignment not found or unauthorized' });
+    }
+
+    // Verify the quote belongs to this assignment
+    const [existingQuote] = await db
+      .select()
+      .from(quotes)
+      .where(and(
+        eq(quotes.id, quoteId),
+        eq(quotes.assignmentId, assignmentId)
+      ));
+
+    if (!existingQuote) {
+      return res.status(404).json({ error: 'Quote not found' });
+    }
+
+    // Delete the quote
+    await db.delete(quotes).where(eq(quotes.id, quoteId));
+
+    // Update assignment status back to assigned since quote is removed
+    await db
+      .update(referralAssignments)
+      .set({ 
+        status: 'assigned',
+        updatedAt: new Date().toISOString()
+      })
+      .where(eq(referralAssignments.id, assignmentId));
+
+    res.json({ success: true, message: 'Quote deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting quote:', error);
+    res.status(500).json({ error: 'Failed to delete quote' });
+  }
+});
+
 export default router;

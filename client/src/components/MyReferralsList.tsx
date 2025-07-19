@@ -3,12 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Eye, MessageSquare, DollarSign, FileText, Clock } from 'lucide-react';
+import { Eye, MessageSquare, DollarSign, FileText, Clock, Edit2, Trash2, UserMinus, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -37,10 +38,14 @@ export default function MyReferralsList() {
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
+  const [isEditQuoteModalOpen, setIsEditQuoteModalOpen] = useState(false);
   const [infoRequest, setInfoRequest] = useState({ subject: '', message: '' });
   const [quote, setQuote] = useState({ serviceFee: '', description: '', terms: '', validUntil: '' });
+  const [editQuote, setEditQuote] = useState({ id: 0, serviceFee: '', description: '', terms: '', validUntil: '' });
   const [feeScheduleData, setFeeScheduleData] = useState<any>(null);
   const [note, setNote] = useState('');
+  const [existingQuote, setExistingQuote] = useState<any>(null);
+  const [unassignWarning, setUnassignWarning] = useState<{ assignmentId: number; hasQuote: boolean } | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -64,7 +69,101 @@ export default function MyReferralsList() {
     retry: false,
   });
 
+  // Fetch existing quote for a referral
+  const fetchExistingQuote = async (assignmentId: number) => {
+    try {
+      const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/quotes`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.data.length > 0 ? data.data[0] : null;
+      }
+    } catch (error) {
+      console.error('Error fetching quote:', error);
+    }
+    return null;
+  };
+
   const referrals = referralsData?.data || [];
+
+  // Unassign mutation
+  const unassignMutation = useMutation({
+    mutationFn: async (assignmentId: number) => {
+      return await apiRequest(`/api/attorney-referrals/assignment/${assignmentId}/unassign`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Unassigned Successfully",
+        description: data.quotesDeleted > 0 
+          ? `Unassigned from request and deleted ${data.quotesDeleted} quote(s)`
+          : "Successfully unassigned from request",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
+      setUnassignWarning(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to unassign from request",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Edit quote mutation
+  const editQuoteMutation = useMutation({
+    mutationFn: async ({ assignmentId, quoteId, data }: { assignmentId: number; quoteId: number; data: any }) => {
+      return await apiRequest(`/api/attorney-referrals/assignment/${assignmentId}/quote/${quoteId}`, {
+        method: 'PUT',
+        body: data,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Quote Updated",
+        description: "Your quote has been updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
+      setIsEditQuoteModalOpen(false);
+      setEditQuote({ id: 0, serviceFee: '', description: '', terms: '', validUntil: '' });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update quote",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete quote mutation
+  const deleteQuoteMutation = useMutation({
+    mutationFn: async ({ assignmentId, quoteId }: { assignmentId: number; quoteId: number }) => {
+      return await apiRequest(`/api/attorney-referrals/assignment/${assignmentId}/quote/${quoteId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Quote Deleted",
+        description: "Your quote has been deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete quote",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Update status mutation
   const updateStatusMutation = useMutation({
@@ -289,6 +388,66 @@ export default function MyReferralsList() {
     });
   };
 
+  const handleEditQuoteSubmit = () => {
+    if (!selectedReferral || !editQuote.id) return;
+    
+    editQuoteMutation.mutate({
+      assignmentId: selectedReferral.assignmentId,
+      quoteId: editQuote.id,
+      data: {
+        serviceFee: Math.round(parseFloat(editQuote.serviceFee) * 100),
+        description: editQuote.description,
+        terms: editQuote.terms,
+        validUntil: editQuote.validUntil || undefined,
+      },
+    });
+  };
+
+  const handleUnassignClick = async (referral: MyReferral) => {
+    const quote = await fetchExistingQuote(referral.assignmentId);
+    setUnassignWarning({
+      assignmentId: referral.assignmentId,
+      hasQuote: !!quote
+    });
+  };
+
+  const handleEditQuoteClick = async (referral: MyReferral) => {
+    const quote = await fetchExistingQuote(referral.assignmentId);
+    if (quote) {
+      setEditQuote({
+        id: quote.id,
+        serviceFee: (quote.serviceFee / 100).toString(),
+        description: quote.description,
+        terms: quote.terms || '',
+        validUntil: quote.validUntil || '',
+      });
+      setSelectedReferral(referral);
+      setIsEditQuoteModalOpen(true);
+    } else {
+      toast({
+        title: "No Quote Found",
+        description: "No quote found for this referral",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteQuoteClick = async (referral: MyReferral) => {
+    const quote = await fetchExistingQuote(referral.assignmentId);
+    if (quote) {
+      deleteQuoteMutation.mutate({
+        assignmentId: referral.assignmentId,
+        quoteId: quote.id,
+      });
+    } else {
+      toast({
+        title: "No Quote Found",
+        description: "No quote found for this referral",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -483,6 +642,44 @@ export default function MyReferralsList() {
                             <FileText className="h-3 w-3 mr-1" />
                             Note
                           </Button>
+                          
+                          {/* Quote Management Actions */}
+                          {referral.assignmentStatus === 'quoted' && (
+                            <>
+                              <Button 
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEditQuoteClick(referral)}
+                                disabled={editQuoteMutation.isPending}
+                              >
+                                <Edit2 className="h-3 w-3 mr-1" />
+                                Edit Quote
+                              </Button>
+                              
+                              <Button 
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteQuoteClick(referral)}
+                                disabled={deleteQuoteMutation.isPending}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-3 w-3 mr-1" />
+                                Delete Quote
+                              </Button>
+                            </>
+                          )}
+                          
+                          {/* Unassign Action */}
+                          <Button 
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleUnassignClick(referral)}
+                            disabled={unassignMutation.isPending}
+                            className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                          >
+                            <UserMinus className="h-3 w-3 mr-1" />
+                            Unassign
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -653,6 +850,117 @@ export default function MyReferralsList() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Quote Modal */}
+      <Dialog open={isEditQuoteModalOpen} onOpenChange={setIsEditQuoteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Quote</DialogTitle>
+            <DialogDescription>
+              Update your quote details for this referral.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editServiceFee">Service Fee ($)</Label>
+              <Input
+                id="editServiceFee"
+                type="number"
+                step="0.01"
+                value={editQuote.serviceFee}
+                onChange={(e) => setEditQuote(prev => ({ ...prev, serviceFee: e.target.value }))}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editDescription">Service Description</Label>
+              <Textarea
+                id="editDescription"
+                value={editQuote.description}
+                onChange={(e) => setEditQuote(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe the services you will provide"
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="editTerms">Terms & Conditions</Label>
+              <Textarea
+                id="editTerms"
+                value={editQuote.terms}
+                onChange={(e) => setEditQuote(prev => ({ ...prev, terms: e.target.value }))}
+                placeholder="Payment terms, timeline, etc."
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="editValidUntil">Valid Until (Optional)</Label>
+              <Input
+                id="editValidUntil"
+                type="date"
+                value={editQuote.validUntil}
+                onChange={(e) => setEditQuote(prev => ({ ...prev, validUntil: e.target.value }))}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => {
+                setIsEditQuoteModalOpen(false);
+                setEditQuote({ id: 0, serviceFee: '', description: '', terms: '', validUntil: '' });
+              }}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleEditQuoteSubmit}
+                disabled={editQuoteMutation.isPending || !editQuote.serviceFee || !editQuote.description}
+              >
+                {editQuoteMutation.isPending ? 'Updating...' : 'Update Quote'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unassign Confirmation Dialog */}
+      <AlertDialog open={!!unassignWarning} onOpenChange={() => setUnassignWarning(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <span>Confirm Unassignment</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {unassignWarning?.hasQuote ? (
+                <>
+                  <div className="mb-3">
+                    <strong>Warning:</strong> You currently have a quote submitted for this referral.
+                  </div>
+                  <div className="text-sm">
+                    If you unassign yourself from this referral, your quote will be automatically deleted. 
+                    This action cannot be undone.
+                  </div>
+                </>
+              ) : (
+                <div>
+                  Are you sure you want to unassign yourself from this referral? 
+                  This action cannot be undone.
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-orange-600 hover:bg-orange-700"
+              onClick={() => {
+                if (unassignWarning) {
+                  unassignMutation.mutate(unassignWarning.assignmentId);
+                }
+              }}
+            >
+              {unassignWarning?.hasQuote ? 'Unassign and Delete Quote' : 'Unassign'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
