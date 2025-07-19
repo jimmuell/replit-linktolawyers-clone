@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Plus, Edit, Trash2, Eye, Power, PowerOff, Calendar, Type, Code, Monitor, Smartphone, Tablet, Star } from 'lucide-react';
+import { Mail, Plus, Edit, Trash2, Eye, Power, PowerOff, Calendar, Type, Code, Monitor, Smartphone, Tablet, Star, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -412,8 +412,9 @@ export default function EmailTemplatesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<EmailTemplate | null>(null);
 
-  const { data: templates, isLoading } = useQuery<EmailTemplate[]>({
+  const { data: templates, isLoading, refetch } = useQuery<EmailTemplate[]>({
     queryKey: ['/api/email-templates'],
+    staleTime: 0, // Always refetch on mount
   });
 
   const deleteMutation = useMutation({
@@ -502,10 +503,21 @@ export default function EmailTemplatesPage() {
               <h1 className="text-3xl font-bold text-gray-900">Email Templates</h1>
               <p className="text-gray-600 mt-2">Manage email templates for various system communications</p>
             </div>
-            <Button onClick={handleCreate} className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Template
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => refetch()} 
+                disabled={isLoading}
+                className="flex items-center"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button onClick={handleCreate} className="bg-purple-600 hover:bg-purple-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Template
+              </Button>
+            </div>
           </div>
         </div>
 
