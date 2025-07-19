@@ -117,7 +117,7 @@ export default function HomeSpanish() {
               <img 
                 src={girlThinkingSpanishImage} 
                 alt="Cotizaciones Legales Gratuitas - Mujer profesional pensando en opciones legales con burbujas de pensamiento mostrando Bufete A (US$1,200), Bufete B (US$1,750), y Bufete C (US$2,500)" 
-                className="max-w-lg w-full h-auto" 
+                className="h-[500px] w-auto object-contain" 
               />
             </div>
           </div>
