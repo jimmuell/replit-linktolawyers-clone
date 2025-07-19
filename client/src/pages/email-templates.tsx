@@ -24,13 +24,19 @@ import { ConfirmDialog } from '@/components/ConfirmDialog';
 const emailTemplateSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   subject: z.string().min(1, 'Subject is required'),
-  htmlContent: z.string().min(1, 'HTML content is required'),
+  htmlContent: z.string().optional(),
   textContent: z.string().optional(),
   templateType: z.string().min(1, 'Template type is required'),
   variables: z.string().optional(),
   isActive: z.boolean().default(true),
   useInProduction: z.boolean().default(false),
-});
+}).refine(
+  (data) => data.htmlContent || data.textContent,
+  {
+    message: 'Either HTML content or text content is required',
+    path: ['htmlContent'],
+  }
+);
 
 type EmailTemplateForm = z.infer<typeof emailTemplateSchema>;
 

@@ -258,7 +258,13 @@ export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).pick
   variables: true,
   isActive: true,
   useInProduction: true,
-});
+}).refine(
+  (data) => data.htmlContent || data.textContent,
+  {
+    message: 'Either HTML content or text content is required',
+    path: ['htmlContent'],
+  }
+);
 
 export const sendEmailSchema = z.object({
   to: z.string().email("Please enter a valid email address"),
