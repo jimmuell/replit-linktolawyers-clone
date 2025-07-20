@@ -113,6 +113,8 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     },
     enabled: !!request?.id,
     retry: false,
+    staleTime: 0, // Always refetch to get latest quote status
+    gcTime: 0, // Don't cache
   });
 
   const quotes = quotesData || [];
