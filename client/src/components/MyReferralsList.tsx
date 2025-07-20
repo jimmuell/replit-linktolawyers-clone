@@ -18,6 +18,7 @@ interface MyReferral {
   assignmentStatus: string;
   assignedAt: string;
   notes: string;
+  quoteStatus?: string;
   request: {
     id: number;
     requestNumber: string;
@@ -46,6 +47,8 @@ export default function MyReferralsList() {
   const [note, setNote] = useState('');
   const [existingQuote, setExistingQuote] = useState<any>(null);
   const [unassignWarning, setUnassignWarning] = useState<{ assignmentId: number; hasQuote: boolean } | null>(null);
+  const [isStartCaseModalOpen, setIsStartCaseModalOpen] = useState(false);
+  const [caseNotes, setCaseNotes] = useState('');
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -287,6 +290,32 @@ export default function MyReferralsList() {
     },
   });
 
+  // Start case mutation
+  const startCaseMutation = useMutation({
+    mutationFn: async ({ quoteId, notes }: { quoteId: number; notes?: string }) => {
+      return await apiRequest('/api/attorney-referrals/cases/start', {
+        method: 'POST',
+        body: { quoteId, notes },
+      });
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Case Started",
+        description: `Case ${data.data.caseNumber} has been started successfully`,
+      });
+      setIsStartCaseModalOpen(false);
+      setCaseNotes('');
+      queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start case",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'assigned': return 'secondary';
@@ -410,6 +439,30 @@ export default function MyReferralsList() {
     }
   };
 
+  const handleStartCaseClick = async (referral: MyReferral) => {
+    const quote = await fetchExistingQuote(referral.assignmentId);
+    if (quote && quote.status === 'accepted') {
+      setSelectedReferral(referral);
+      setExistingQuote(quote);
+      setIsStartCaseModalOpen(true);
+    } else {
+      toast({
+        title: "Cannot Start Case",
+        description: "Quote must be accepted to start a case",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStartCaseSubmit = () => {
+    if (!existingQuote) return;
+    
+    startCaseMutation.mutate({
+      quoteId: existingQuote.id,
+      notes: caseNotes.trim() || undefined,
+    });
+  };
+
   const handleDeleteQuoteClick = async (referral: MyReferral) => {
     const quote = await fetchExistingQuote(referral.assignmentId);
     if (quote) {
@@ -504,7 +557,14 @@ export default function MyReferralsList() {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              onClick={() => setSelectedReferral(referral)}
+                              onClick={async () => {
+                                setSelectedReferral(referral);
+                                // Load existing quote if status is quoted
+                                if (referral.assignmentStatus === 'quoted') {
+                                  const quote = await fetchExistingQuote(referral.assignmentId);
+                                  setExistingQuote(quote);
+                                }
+                              }}
                             >
                               <Eye className="h-3 w-3 mr-1" />
                               View Details
@@ -703,6 +763,48 @@ export default function MyReferralsList() {
                                       Unassign Myself
                                     </Button>
                                   </div>
+                                  
+                                  {/* Quote Status and Start Case Section */}
+                                  {selectedReferral.assignmentStatus === 'quoted' && (
+                                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-600">Quote Status:</label>
+                                          <div className="mt-1">
+                                            <Badge 
+                                              variant={
+                                                existingQuote?.status === 'accepted' ? 'default' :
+                                                existingQuote?.status === 'declined' ? 'destructive' : 
+                                                'secondary'
+                                              }
+                                              className={
+                                                existingQuote?.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                                existingQuote?.status === 'declined' ? 'bg-red-100 text-red-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                              }
+                                            >
+                                              {existingQuote?.status === 'pending' ? 'Pending' :
+                                               existingQuote?.status === 'accepted' ? 'Accepted' :
+                                               existingQuote?.status === 'declined' ? 'Declined' : 
+                                               'Unknown'}
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                        
+                                        {existingQuote?.status === 'accepted' && (
+                                          <Button 
+                                            size="sm"
+                                            onClick={() => handleStartCaseClick(selectedReferral)}
+                                            disabled={startCaseMutation.isPending}
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                          >
+                                            <FileText className="h-3 w-3 mr-1" />
+                                            Start Case
+                                          </Button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             )}
@@ -988,6 +1090,57 @@ export default function MyReferralsList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Start Case Modal */}
+      <Dialog open={isStartCaseModalOpen} onOpenChange={setIsStartCaseModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start Case</DialogTitle>
+            <DialogDescription>
+              Create a new case from the accepted quote.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+              <p className="text-sm text-green-800">
+                <strong>Quote Accepted:</strong> The client has accepted your quote. You can now start the case.
+              </p>
+              {existingQuote && (
+                <p className="text-sm text-green-700 mt-1">
+                  Service Fee: {formatCurrency(existingQuote.serviceFee)}
+                </p>
+              )}
+            </div>
+            
+            <div>
+              <Label htmlFor="caseNotes">Case Notes (Optional)</Label>
+              <Textarea
+                id="caseNotes"
+                value={caseNotes}
+                onChange={(e) => setCaseNotes(e.target.value)}
+                placeholder="Add any initial notes for this case..."
+                rows={3}
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => {
+                setIsStartCaseModalOpen(false);
+                setCaseNotes('');
+              }}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleStartCaseSubmit}
+                disabled={startCaseMutation.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {startCaseMutation.isPending ? 'Starting Case...' : 'Start Case'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

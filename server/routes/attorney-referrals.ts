@@ -856,4 +856,198 @@ router.patch("/quotes/:quoteId/status", async (req, res) => {
   }
 });
 
+// Start a case from an accepted quote
+router.post("/cases/start", requireAuth, async (req, res) => {
+  try {
+    const { quoteId, notes } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get attorney ID from user
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    // Verify the quote exists and is accepted
+    const [quote] = await db
+      .select({
+        id: quotes.id,
+        assignmentId: quotes.assignmentId,
+        status: quotes.status,
+      })
+      .from(quotes)
+      .innerJoin(referralAssignments, eq(quotes.assignmentId, referralAssignments.id))
+      .where(and(
+        eq(quotes.id, quoteId),
+        eq(referralAssignments.attorneyId, attorney.id),
+        eq(quotes.status, 'accepted')
+      ));
+
+    if (!quote) {
+      return res.status(404).json({ error: 'Quote not found, not accepted, or unauthorized' });
+    }
+
+    // Check if case already exists for this quote
+    const [existingCase] = await db
+      .select()
+      .from(cases)
+      .where(eq(cases.quoteId, quoteId));
+
+    if (existingCase) {
+      return res.status(400).json({ error: 'Case already exists for this quote' });
+    }
+
+    // Generate case number
+    const caseCount = await db.select({ count: sql<number>`count(*)` }).from(cases);
+    const caseNumber = `CS-${String(caseCount[0].count + 1).padStart(6, '0')}`;
+
+    // Create the case
+    const [newCase] = await db
+      .insert(cases)
+      .values({
+        assignmentId: quote.assignmentId,
+        quoteId: quoteId,
+        caseNumber: caseNumber,
+        status: 'active',
+        startDate: new Date(),
+        notes: notes || '',
+      })
+      .returning();
+
+    res.json({ success: true, data: newCase });
+  } catch (error) {
+    console.error('Error starting case:', error);
+    res.status(500).json({ error: 'Failed to start case' });
+  }
+});
+
+// Get cases for an attorney
+router.get("/cases", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get attorney ID from user
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    // Get cases for this attorney with related data
+    const attorneyCases = await db.execute(sql`
+      SELECT 
+        c.id as case_id,
+        c.case_number,
+        c.status as case_status,
+        c.start_date,
+        c.completed_date,
+        c.notes as case_notes,
+        c.updated_at as case_updated_at,
+        q.service_fee,
+        q.description as quote_description,
+        lr.id as request_id,
+        lr.request_number,
+        lr.first_name,
+        lr.last_name,
+        lr.email,
+        lr.phone_number,
+        lr.case_type,
+        lr.case_description,
+        lr.location
+      FROM cases c
+      JOIN quotes q ON c.quote_id = q.id
+      JOIN referral_assignments ra ON c.assignment_id = ra.id
+      JOIN legal_requests lr ON ra.request_id = lr.id
+      WHERE ra.attorney_id = ${attorney.id}
+      ORDER BY c.start_date DESC
+    `);
+
+    // Transform the data
+    const transformedCases = attorneyCases.rows.map((row: any) => ({
+      caseId: row.case_id,
+      caseNumber: row.case_number,
+      caseStatus: row.case_status,
+      startDate: row.start_date,
+      completedDate: row.completed_date,
+      caseNotes: row.case_notes,
+      caseUpdatedAt: row.case_updated_at,
+      serviceFee: row.service_fee,
+      quoteDescription: row.quote_description,
+      request: {
+        id: row.request_id,
+        requestNumber: row.request_number,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        email: row.email,
+        phoneNumber: row.phone_number,
+        caseType: row.case_type,
+        caseDescription: row.case_description,
+        location: row.location,
+      }
+    }));
+
+    res.json({ success: true, data: transformedCases });
+  } catch (error) {
+    console.error('Error fetching cases:', error);
+    res.status(500).json({ error: 'Failed to fetch cases' });
+  }
+});
+
+// Update case status or notes
+router.patch("/cases/:caseId", requireAuth, async (req, res) => {
+  try {
+    const caseId = parseInt(req.params.caseId);
+    const { status, notes } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Get attorney ID from user
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    // Verify case belongs to this attorney
+    const [caseData] = await db
+      .select()
+      .from(cases)
+      .innerJoin(referralAssignments, eq(cases.assignmentId, referralAssignments.id))
+      .where(and(
+        eq(cases.id, caseId),
+        eq(referralAssignments.attorneyId, attorney.id)
+      ));
+
+    if (!caseData) {
+      return res.status(404).json({ error: 'Case not found or unauthorized' });
+    }
+
+    // Update case
+    const updateData: any = { updatedAt: new Date() };
+    if (status) updateData.status = status;
+    if (notes !== undefined) updateData.notes = notes;
+    if (status === 'completed') updateData.completedDate = new Date();
+
+    const [updatedCase] = await db
+      .update(cases)
+      .set(updateData)
+      .where(eq(cases.id, caseId))
+      .returning();
+
+    res.json({ success: true, data: updatedCase });
+  } catch (error) {
+    console.error('Error updating case:', error);
+    res.status(500).json({ error: 'Failed to update case' });
+  }
+});
+
 export default router;
