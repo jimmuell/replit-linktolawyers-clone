@@ -1,6 +1,6 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate } from "@shared/schema";
 import { db } from "./db";
-import { eq, asc, desc, and, or, isNull } from "drizzle-orm";
+import { eq, asc, desc, and, or, isNull, sql } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -194,6 +194,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteLegalRequest(id: number): Promise<void> {
+    // Delete in proper order to handle foreign key constraints
+    // 1. Delete cases first (references quotes)
+    await db.delete(cases).where(
+      sql`quote_id IN (
+        SELECT q.id FROM quotes q
+        JOIN referral_assignments ra ON q.assignment_id = ra.id
+        WHERE ra.request_id = ${id}
+      )`
+    );
+    
+    // 2. Delete quotes (references referral_assignments)  
+    await db.delete(quotes).where(
+      sql`assignment_id IN (
+        SELECT id FROM referral_assignments WHERE request_id = ${id}
+      )`
+    );
+    
+    // 3. Delete referral assignments (references legal_requests)
+    await db.delete(referralAssignments).where(eq(referralAssignments.requestId, id));
+    
+    // 4. Finally delete the legal request
     await db.delete(legalRequests).where(eq(legalRequests.id, id));
   }
 
