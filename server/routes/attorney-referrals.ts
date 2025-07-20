@@ -98,6 +98,8 @@ router.get("/my-referrals", requireAuth, async (req, res) => {
         assignmentStatus: referralAssignments.status,
         assignedAt: referralAssignments.assignedAt,
         notes: referralAssignments.notes,
+        quoteId: quotes.id,
+        quoteStatus: quotes.status,
         request: {
           id: legalRequests.id,
           requestNumber: legalRequests.requestNumber,
@@ -114,6 +116,7 @@ router.get("/my-referrals", requireAuth, async (req, res) => {
       })
       .from(referralAssignments)
       .innerJoin(legalRequests, eq(referralAssignments.requestId, legalRequests.id))
+      .leftJoin(quotes, eq(quotes.assignmentId, referralAssignments.id))
       .where(eq(referralAssignments.attorneyId, attorneyId))
       .orderBy(desc(referralAssignments.assignedAt));
 

@@ -8,6 +8,7 @@ import { Briefcase, Clock, DollarSign, Users, Bell, MessageSquare } from 'lucide
 import AttorneyAppBar from '@/components/AttorneyAppBar';
 import ReferralList from '@/components/ReferralList';
 import MyReferralsList from '@/components/MyReferralsList';
+import ActiveCasesList from '@/components/ActiveCasesList';
 
 export default function AttorneyDashboard() {
   const { user, loading } = useAuth();
@@ -199,19 +200,7 @@ export default function AttorneyDashboard() {
           </TabsContent>
 
           <TabsContent value="cases">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Cases</CardTitle>
-                <p className="text-sm text-gray-600">Monitor your ongoing legal cases</p>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>Case management feature is under construction.</p>
-                  <p className="text-sm">This section will show your active legal cases and allow you to track progress and manage case details.</p>
-                </div>
-              </CardContent>
-            </Card>
+            <ActiveCasesList />
           </TabsContent>
         </Tabs>
       </div>

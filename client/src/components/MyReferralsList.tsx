@@ -19,6 +19,7 @@ interface MyReferral {
   assignedAt: string;
   notes: string;
   quoteStatus?: string;
+  quoteId?: number; // Add quoteId to check against active cases
   request: {
     id: number;
     requestNumber: string;
@@ -113,7 +114,8 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
       if (response.ok) {
         const data = await response.json();
         const cases = data.data || [];
-        return cases.find((c: any) => c.quoteId === quoteId) || null;
+        // Match using quoteId (note: API returns camelCase)
+        return cases.find((c: any) => c.quoteId === quoteId || c.quote_id === quoteId) || null;
       }
     } catch (error) {
       console.error('Error fetching case:', error);
@@ -123,16 +125,41 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
 
   const allReferrals = referralsData?.data || [];
   
+  // Fetch active cases to determine which quotes have been turned into cases
+  const { data: casesData } = useQuery({
+    queryKey: ['/api/attorney-referrals/cases'],
+    queryFn: async () => {
+      const response = await fetch('/api/attorney-referrals/cases', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      
+      if (!response.ok) {
+        return { data: [] };
+      }
+      
+      return response.json();
+    },
+    retry: false,
+  });
+
+  const activeCases = casesData?.data || [];
+  const activeCaseQuoteIds = new Set(activeCases.map((c: any) => c.quoteId || c.quote_id));
+
   // Filter referrals based on assignment status or quote status
   const referrals = allReferrals.filter((referral: MyReferral) => {
+    // Check if this referral has an active case (should be excluded from Accepted Quotes)
+    const hasActiveCase = activeCaseQuoteIds.size > 0 && referral.quoteId && activeCaseQuoteIds.has(referral.quoteId);
+    
     if (!filterStatus) {
       // No filter means show all EXCEPT accepted ones (they belong in "Accepted Quotes" tab)
       return referral.assignmentStatus !== 'accepted';
     }
     
     if (filterStatus === 'accepted') {
-      // For accepted quotes, only show referrals with "accepted" assignment status
-      return referral.assignmentStatus === 'accepted';
+      // For accepted quotes, only show referrals with "accepted" assignment status AND no active case
+      return referral.assignmentStatus === 'accepted' && !hasActiveCase;
     }
     
     return referral.assignmentStatus === filterStatus;
@@ -145,7 +172,7 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
         method: 'DELETE',
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Unassigned Successfully",
         description: data.quotesDeleted > 0 
@@ -338,7 +365,7 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
         body: { quoteId, notes },
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Case Started",
         description: `Case ${data.data.caseNumber} has been started successfully`,
@@ -611,6 +638,8 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                                   if (quote && quote.status === 'accepted') {
                                     const existingCase = await fetchExistingCase(quote.id);
                                     setExistingCase(existingCase);
+                                  } else {
+                                    setExistingCase(null);
                                   }
                                 }
                               }}
