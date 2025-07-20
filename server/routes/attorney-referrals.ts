@@ -331,6 +331,15 @@ router.post("/assignment/:assignmentId/quote", requireAuth, async (req, res) => 
       })
       .where(eq(referralAssignments.id, assignmentId));
 
+    // Update the request status to quotes_received (first quote makes it "Quotes Available")
+    await db
+      .update(legalRequests)
+      .set({
+        status: 'quotes_received',
+        updatedAt: new Date(),
+      })
+      .where(eq(legalRequests.id, assignment[0].requestId));
+
     res.json({ success: true, data: quote });
   } catch (error) {
     console.error('Error submitting quote:', error);
