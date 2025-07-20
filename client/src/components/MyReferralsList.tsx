@@ -104,7 +104,10 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
   
   // Filter referrals based on assignment status or quote status
   const referrals = allReferrals.filter((referral: MyReferral) => {
-    if (!filterStatus) return true; // No filter, show all
+    if (!filterStatus) {
+      // No filter means show all EXCEPT accepted ones (they belong in "Accepted Quotes" tab)
+      return referral.assignmentStatus !== 'accepted';
+    }
     
     if (filterStatus === 'accepted') {
       // For accepted quotes, only show referrals with "accepted" assignment status
