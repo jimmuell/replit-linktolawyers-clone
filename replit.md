@@ -18,6 +18,12 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Database Schema Cleanup** (July 19, 2025): Removed unnecessary fields from legal requests system
+  - Removed urgency_level and budget_range columns from legal_requests table
+  - Updated schema to exclude these fields for cleaner data model
+  - Maintained "Under Review" status for requests regardless of quote submission status
+  - Decision: Keep status simple since users don't need to distinguish between 1 or multiple quotes - they just need to know quotes are available
+
 - **Modal State Management Fix** (July 19, 2025): Resolved stuck modal header issues across attorney dashboard
   - Fixed Dialog components in both MyReferralsList and ReferralList to use controlled open state
   - Added proper onOpenChange handlers to clear selectedReferral state when modals close

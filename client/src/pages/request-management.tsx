@@ -28,8 +28,6 @@ interface LegalRequest {
   phoneNumber: string;
   caseType: string;
   caseDescription: string;
-  urgencyLevel: string;
-  budgetRange: string;
   location: string;
   status: string;
   createdAt: string;
@@ -394,20 +392,7 @@ export default function RequestManagementPage() {
   const isAllSelected = filteredRequests.length > 0 && selectedRequestIds.length === filteredRequests.length;
   const isIndeterminate = selectedRequestIds.length > 0 && selectedRequestIds.length < filteredRequests.length;
 
-  const getUrgencyBadge = (urgency: string) => {
-    switch (urgency?.toLowerCase()) {
-      case 'urgent':
-        return <Badge variant="destructive">Urgent</Badge>;
-      case 'high':
-        return <Badge variant="destructive">High</Badge>;
-      case 'moderate':
-        return <Badge variant="secondary">Moderate</Badge>;
-      case 'low':
-        return <Badge variant="outline">Low</Badge>;
-      default:
-        return <Badge variant="outline">{urgency || 'Not specified'}</Badge>;
-    }
-  };
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -479,8 +464,6 @@ export default function RequestManagementPage() {
                         <TableHead>Email</TableHead>
                         <TableHead>Case Type</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead>Urgency</TableHead>
-                        <TableHead>Budget</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -514,10 +497,6 @@ export default function RequestManagementPage() {
                               {getStatusInfo(request.status).label}
                             </Badge>
                           </TableCell>
-                          <TableCell>
-                            {getUrgencyBadge(request.urgencyLevel)}
-                          </TableCell>
-                          <TableCell>{request.budgetRange || 'Not specified'}</TableCell>
                           <TableCell>
                             {format(new Date(request.createdAt), 'MMM d, yyyy')}
                           </TableCell>

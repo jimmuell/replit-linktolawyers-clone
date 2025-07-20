@@ -36,8 +36,6 @@ export const legalRequests = pgTable("legal_requests", {
   phoneNumber: varchar("phone_number", { length: 50 }),
   caseType: varchar("case_type", { length: 255 }).notNull(),
   caseDescription: text("case_description").notNull(),
-  urgencyLevel: varchar("urgency_level", { length: 50 }),
-  budgetRange: varchar("budget_range", { length: 50 }),
   location: varchar("location", { length: 255 }),
   captcha: varchar("captcha", { length: 10 }),
   agreeToTerms: boolean("agree_to_terms").default(false),
