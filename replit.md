@@ -18,6 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Quote Accept/Decline System Implementation** (July 20, 2025): Built comprehensive quote acceptance/decline workflow with confirmation dialogs
+  - Added "Accept Quote" and "Decline Quote" buttons to quote details in both English and Spanish track request modals
+  - Implemented confirmation dialogs with clear messaging for both accept and decline actions
+  - Created backend API endpoint `/api/attorney-referrals/quotes/:quoteId/status` for updating quote status
+  - Added automatic declining of other quotes when one is accepted to prevent conflicts
+  - Quote statuses: "Pending", "Accepted", "Declined" with proper visual indicators and color coding
+  - Real-time UI updates with toast notifications and cache invalidation for seamless user experience
+  - Bilingual support with Spanish translations for all quote management functionality
+
 - **Status Code Implementation** (July 19, 2025): Implemented Option 1 status flow for better user experience
   - Request status changes from "Under Review" to "Quotes Available" when first attorney submits quote
   - Status remains "Quotes Available" as additional attorneys submit quotes (no distinction between 1 or multiple quotes)

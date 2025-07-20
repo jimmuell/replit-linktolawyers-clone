@@ -1,12 +1,24 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign, ChevronDown, ChevronUp, Star, Award } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign, ChevronDown, ChevronUp, Star, Award, Check, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getStatusInfoSpanish } from '@shared/statusCodes';
@@ -64,6 +76,15 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
   const [requestNumber, setRequestNumber] = useState('');
   const [shouldFetch, setShouldFetch] = useState(false);
   const [expandedQuote, setExpandedQuote] = useState<number | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'accept' | 'decline';
+    quoteId: number;
+    attorneyName: string;
+  } | null>(null);
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: request, isLoading, error, refetch } = useQuery<LegalRequest>({
     queryKey: ['/api/legal-requests', requestNumber],
@@ -107,7 +128,69 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
     setRequestNumber('');
     setShouldFetch(false);
     setExpandedQuote(null);
+    setConfirmDialog(null);
     onClose();
+  };
+
+  // Mutation for updating quote status
+  const updateQuoteStatusMutation = useMutation({
+    mutationFn: async ({ quoteId, status }: { quoteId: number; status: 'accepted' | 'declined' }) => {
+      return apiRequest(`/api/attorney-referrals/quotes/${quoteId}/status`, {
+        method: 'PATCH',
+        body: { status }
+      });
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: variables.status === 'accepted' ? 'Cotización Aceptada' : 'Cotización Rechazada',
+        description: variables.status === 'accepted' 
+          ? 'Has aceptado exitosamente esta cotización. El abogado será notificado.'
+          : 'Has rechazado esta cotización. El abogado será notificado.',
+      });
+      
+      // Invalidate quotes query to refresh the data
+      if (request) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['/api/attorney-referrals/public/request', request.id, 'quotes'] 
+        });
+      }
+      setConfirmDialog(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'No se pudo actualizar el estado de la cotización. Por favor, inténtalo de nuevo.',
+        variant: 'destructive',
+      });
+      console.error('Error updating quote status:', error);
+    }
+  });
+
+  const handleAcceptQuote = (quoteId: number, attorneyName: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'accept',
+      quoteId,
+      attorneyName
+    });
+  };
+
+  const handleDeclineQuote = (quoteId: number, attorneyName: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'decline',
+      quoteId,
+      attorneyName
+    });
+  };
+
+  const confirmQuoteAction = () => {
+    if (confirmDialog) {
+      updateQuoteStatusMutation.mutate({
+        quoteId: confirmDialog.quoteId,
+        status: confirmDialog.type === 'accept' ? 'accepted' : 'declined'
+      });
+    }
   };
 
   const formatCurrency = (cents: number) => {
@@ -474,13 +557,52 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
                             )}
                           </div>
 
-                          <div className="flex justify-end">
-                            <Button 
-                              size="sm" 
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              Contactar Abogado
-                            </Button>
+                          {/* Quote Status Badge and Action Buttons */}
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center space-x-2">
+                              <Label className="text-xs font-medium text-gray-600">Estado de la Cotización:</Label>
+                              <Badge 
+                                variant={
+                                  quoteData.quote.status === 'accepted' ? 'default' :
+                                  quoteData.quote.status === 'declined' ? 'destructive' : 
+                                  'secondary'
+                                }
+                                className={
+                                  quoteData.quote.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                  quoteData.quote.status === 'declined' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }
+                              >
+                                {quoteData.quote.status === 'pending' ? 'Pendiente' :
+                                 quoteData.quote.status === 'accepted' ? 'Aceptada' :
+                                 quoteData.quote.status === 'declined' ? 'Rechazada' : 
+                                 quoteData.quote.status}
+                              </Badge>
+                            </div>
+                            
+                            {quoteData.quote.status === 'pending' && (
+                              <div className="flex space-x-2">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleAcceptQuote(quoteData.quote.id, `${quoteData.attorney.firstName} ${quoteData.attorney.lastName}`)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                  disabled={updateQuoteStatusMutation.isPending}
+                                >
+                                  <Check className="w-4 h-4 mr-1" />
+                                  Aceptar Cotización
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleDeclineQuote(quoteData.quote.id, `${quoteData.attorney.firstName} ${quoteData.attorney.lastName}`)}
+                                  className="border-red-300 text-red-600 hover:bg-red-50"
+                                  disabled={updateQuoteStatusMutation.isPending}
+                                >
+                                  <X className="w-4 h-4 mr-1" />
+                                  Rechazar Cotización
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -498,6 +620,36 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
           </Button>
         </div>
       </DialogContent>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={confirmDialog?.isOpen || false} onOpenChange={() => setConfirmDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog?.type === 'accept' ? 'Aceptar Cotización' : 'Rechazar Cotización'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog?.type === 'accept' 
+                ? `¿Estás seguro de que quieres aceptar la cotización de ${confirmDialog?.attorneyName}? Esto notificará al abogado que has elegido sus servicios.`
+                : `¿Estás seguro de que quieres rechazar la cotización de ${confirmDialog?.attorneyName}? Esta acción no se puede deshacer.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmQuoteAction}
+              disabled={updateQuoteStatusMutation.isPending}
+              className={confirmDialog?.type === 'accept' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+            >
+              {updateQuoteStatusMutation.isPending 
+                ? 'Procesando...' 
+                : confirmDialog?.type === 'accept' ? 'Aceptar Cotización' : 'Rechazar Cotización'
+              }
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

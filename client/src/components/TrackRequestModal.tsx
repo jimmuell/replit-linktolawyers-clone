@@ -1,12 +1,24 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { 
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign, ChevronDown, ChevronUp, Star, Award } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign, ChevronDown, ChevronUp, Star, Award, Check, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { getStatusInfo } from '@shared/statusCodes';
 
@@ -63,6 +75,15 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
   const [requestNumber, setRequestNumber] = useState('');
   const [shouldFetch, setShouldFetch] = useState(false);
   const [expandedQuote, setExpandedQuote] = useState<number | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'accept' | 'decline';
+    quoteId: number;
+    attorneyName: string;
+  } | null>(null);
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: request, isLoading, error, refetch } = useQuery<LegalRequest>({
     queryKey: ['/api/legal-requests', requestNumber],
@@ -106,7 +127,69 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     setRequestNumber('');
     setShouldFetch(false);
     setExpandedQuote(null);
+    setConfirmDialog(null);
     onClose();
+  };
+
+  // Mutation for updating quote status
+  const updateQuoteStatusMutation = useMutation({
+    mutationFn: async ({ quoteId, status }: { quoteId: number; status: 'accepted' | 'declined' }) => {
+      return apiRequest(`/api/attorney-referrals/quotes/${quoteId}/status`, {
+        method: 'PATCH',
+        body: { status }
+      });
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: variables.status === 'accepted' ? 'Quote Accepted' : 'Quote Declined',
+        description: variables.status === 'accepted' 
+          ? 'You have successfully accepted this quote. The attorney will be notified.'
+          : 'You have declined this quote. The attorney will be notified.',
+      });
+      
+      // Invalidate quotes query to refresh the data
+      if (request) {
+        queryClient.invalidateQueries({ 
+          queryKey: ['/api/attorney-referrals/public/request', request.id, 'quotes'] 
+        });
+      }
+      setConfirmDialog(null);
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to update quote status. Please try again.',
+        variant: 'destructive',
+      });
+      console.error('Error updating quote status:', error);
+    }
+  });
+
+  const handleAcceptQuote = (quoteId: number, attorneyName: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'accept',
+      quoteId,
+      attorneyName
+    });
+  };
+
+  const handleDeclineQuote = (quoteId: number, attorneyName: string) => {
+    setConfirmDialog({
+      isOpen: true,
+      type: 'decline',
+      quoteId,
+      attorneyName
+    });
+  };
+
+  const confirmQuoteAction = () => {
+    if (confirmDialog) {
+      updateQuoteStatusMutation.mutate({
+        quoteId: confirmDialog.quoteId,
+        status: confirmDialog.type === 'accept' ? 'accepted' : 'declined'
+      });
+    }
   };
 
   const formatCurrency = (cents: number) => {
@@ -269,19 +352,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                       <p className="text-sm">{request.location}</p>
                     </div>
                   )}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-600">Urgency Level</Label>
-                    <div>{getUrgencyBadge(request.urgencyLevel)}</div>
-                  </div>
-                  {request.budgetRange && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-600 flex items-center space-x-1">
-                        <DollarSign className="w-4 h-4" />
-                        <span>Budget Range</span>
-                      </Label>
-                      <p className="text-sm">{request.budgetRange}</p>
-                    </div>
-                  )}
+
                 </div>
                 
                 <div className="space-y-2">
@@ -445,13 +516,52 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                             )}
                           </div>
 
-                          <div className="flex justify-end">
-                            <Button 
-                              size="sm" 
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              Contact Attorney
-                            </Button>
+                          {/* Quote Status Badge and Action Buttons */}
+                          <div className="flex items-center justify-between pt-2">
+                            <div className="flex items-center space-x-2">
+                              <Label className="text-xs font-medium text-gray-600">Quote Status:</Label>
+                              <Badge 
+                                variant={
+                                  quoteData.quote.status === 'accepted' ? 'default' :
+                                  quoteData.quote.status === 'declined' ? 'destructive' : 
+                                  'secondary'
+                                }
+                                className={
+                                  quoteData.quote.status === 'accepted' ? 'bg-green-100 text-green-800' :
+                                  quoteData.quote.status === 'declined' ? 'bg-red-100 text-red-800' :
+                                  'bg-yellow-100 text-yellow-800'
+                                }
+                              >
+                                {quoteData.quote.status === 'pending' ? 'Pending' :
+                                 quoteData.quote.status === 'accepted' ? 'Accepted' :
+                                 quoteData.quote.status === 'declined' ? 'Declined' : 
+                                 quoteData.quote.status}
+                              </Badge>
+                            </div>
+                            
+                            {quoteData.quote.status === 'pending' && (
+                              <div className="flex space-x-2">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleAcceptQuote(quoteData.quote.id, `${quoteData.attorney.firstName} ${quoteData.attorney.lastName}`)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                  disabled={updateQuoteStatusMutation.isPending}
+                                >
+                                  <Check className="w-4 h-4 mr-1" />
+                                  Accept Quote
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleDeclineQuote(quoteData.quote.id, `${quoteData.attorney.firstName} ${quoteData.attorney.lastName}`)}
+                                  className="border-red-300 text-red-600 hover:bg-red-50"
+                                  disabled={updateQuoteStatusMutation.isPending}
+                                >
+                                  <X className="w-4 h-4 mr-1" />
+                                  Decline Quote
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -469,6 +579,36 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
           </Button>
         </div>
       </DialogContent>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={confirmDialog?.isOpen || false} onOpenChange={() => setConfirmDialog(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog?.type === 'accept' ? 'Accept Quote' : 'Decline Quote'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog?.type === 'accept' 
+                ? `Are you sure you want to accept the quote from ${confirmDialog?.attorneyName}? This will notify the attorney that you've chosen their services.`
+                : `Are you sure you want to decline the quote from ${confirmDialog?.attorneyName}? This action cannot be undone.`
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmQuoteAction}
+              disabled={updateQuoteStatusMutation.isPending}
+              className={confirmDialog?.type === 'accept' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}
+            >
+              {updateQuoteStatusMutation.isPending 
+                ? 'Processing...' 
+                : confirmDialog?.type === 'accept' ? 'Accept Quote' : 'Decline Quote'
+              }
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

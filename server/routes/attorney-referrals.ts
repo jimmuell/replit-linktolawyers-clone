@@ -774,4 +774,86 @@ router.delete("/assignment/:assignmentId/quote/:quoteId", requireAuth, async (re
   }
 });
 
+// PATCH /api/attorney-referrals/quotes/:quoteId/status - Update quote status (public endpoint)
+router.patch("/quotes/:quoteId/status", async (req, res) => {
+  try {
+    const quoteId = parseInt(req.params.quoteId);
+    const { status } = req.body;
+
+    if (!quoteId || !status) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Quote ID and status are required' 
+      });
+    }
+
+    if (!['accepted', 'declined'].includes(status)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Status must be either "accepted" or "declined"' 
+      });
+    }
+
+    // Update the quote status
+    const [updatedQuote] = await db
+      .update(quotes)
+      .set({
+        status: status,
+        respondedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(quotes.id, quoteId))
+      .returning();
+
+    if (!updatedQuote) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Quote not found' 
+      });
+    }
+
+    // If quote is accepted, decline all other quotes for the same request
+    if (status === 'accepted') {
+      // First, get the assignment to find the request
+      const [assignment] = await db
+        .select()
+        .from(referralAssignments)
+        .where(eq(referralAssignments.id, updatedQuote.assignmentId));
+
+      if (assignment) {
+        // Get all other assignments for the same request
+        const otherAssignments = await db
+          .select()
+          .from(referralAssignments)
+          .where(eq(referralAssignments.requestId, assignment.requestId));
+
+        // Decline all other quotes for this request
+        for (const otherAssignment of otherAssignments) {
+          if (otherAssignment.id !== updatedQuote.assignmentId) {
+            await db
+              .update(quotes)
+              .set({
+                status: 'declined',
+                respondedAt: new Date(),
+                updatedAt: new Date(),
+              })
+              .where(and(
+                eq(quotes.assignmentId, otherAssignment.id),
+                eq(quotes.status, 'pending')
+              ));
+          }
+        }
+      }
+    }
+
+    res.json({ success: true, data: updatedQuote });
+  } catch (error) {
+    console.error('Error updating quote status:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to update quote status' 
+    });
+  }
+});
+
 export default router;
