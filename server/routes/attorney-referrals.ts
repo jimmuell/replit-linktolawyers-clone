@@ -965,6 +965,7 @@ router.get("/cases", requireAuth, async (req, res) => {
         c.completed_date,
         c.notes as case_notes,
         c.updated_at as case_updated_at,
+        c.quote_id,
         q.service_fee,
         q.description as quote_description,
         lr.id as request_id,
@@ -993,6 +994,7 @@ router.get("/cases", requireAuth, async (req, res) => {
       completedDate: row.completed_date,
       caseNotes: row.case_notes,
       caseUpdatedAt: row.case_updated_at,
+      quoteId: row.quote_id,
       serviceFee: row.service_fee,
       quoteDescription: row.quote_description,
       request: {

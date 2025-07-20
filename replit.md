@@ -18,18 +18,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **Attorney Dashboard Tab Restructure and Accepted Quotes Implementation** (July 20, 2025): Updated attorney dashboard with new tab structure and assignment status workflow
+- **Attorney Dashboard Tab Restructure and Case State Management** (July 20, 2025): Updated attorney dashboard with proper case state tracking and filtering
   - Removed Profile tab from attorney dashboard (no longer needed)  
   - Added new "Accepted Quotes" tab between "My Referrals" and "Active Cases"
-  - Implemented new "accepted" assignment status that gets set when client accepts a quote
-  - Updated quote acceptance workflow: when quote is accepted, assignment status changes from "quoted" to "accepted"
-  - Enhanced MyReferralsList component with filterStatus prop to show only accepted quotes in new tab
-  - Quote status badges now properly display in attorney interface with color coding (green=accepted, red=declined, yellow=pending)
-  - Updated backend route to automatically update assignment status when quote status changes
-  - Fixed duplicate assignment bug by adding unique constraint and improving assignment logic
-  - Updated filtering logic so "My Referrals" tab excludes accepted quotes (they appear only in "Accepted Quotes" tab)
-  - Fixed Start Case button visibility by updating quote loading logic for accepted assignments
-  - Attorney dashboard now follows: Overview → Available Referrals → My Referrals → Accepted Quotes → Active Cases
+  - Implemented comprehensive "Active Cases" tab with case management dashboard, statistics, and revenue tracking
+  - Fixed quote loading logic for accepted assignments so Start Case button appears correctly
+  - Added case existence checking to prevent duplicate case creation attempts
+  - Enhanced UI to show "Case Started: [Case Number]" badge when case already exists
+  - Improved filtering logic to move started cases out of "Accepted Quotes" into "Active Cases" tab
+  - Added proper case state management: Quote acceptance → Start Case → Active Case management
+  - Quote statuses remain "accepted" while case statuses become "active" (separate entities)
+  - Fixed status assignment confusion between quote status vs case status
+  - Attorney dashboard workflow: Overview → Available Referrals → My Referrals → Accepted Quotes → Active Cases
 
 - **Database Schema Cleanup - urgency_level and budget_range Fields Removal** (July 20, 2025): Completed comprehensive removal of urgency_level and budget_range fields from entire system
   - Removed fields from legal_requests database table schema (verified columns don't exist)

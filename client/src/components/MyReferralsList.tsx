@@ -146,6 +146,18 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
 
   const activeCases = casesData?.data || [];
   const activeCaseQuoteIds = new Set(activeCases.map((c: any) => c.quoteId || c.quote_id));
+  
+  // Debug logging to understand the data flow
+  console.log('Active cases:', activeCases);
+  console.log('Active case quote IDs:', Array.from(activeCaseQuoteIds));
+  console.log('All referrals:', allReferrals.map(r => ({ 
+    assignmentId: r.assignmentId, 
+    quoteId: r.quoteId, 
+    assignmentStatus: r.assignmentStatus,
+    quoteStatus: r.quoteStatus,
+    hasActiveCase: activeCaseQuoteIds.has(r.quoteId)
+  })));
+  console.log('Filter status:', filterStatus);
 
   // Filter referrals based on assignment status or quote status
   const referrals = allReferrals.filter((referral: MyReferral) => {
@@ -159,6 +171,7 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
     
     if (filterStatus === 'accepted') {
       // For accepted quotes, only show referrals with "accepted" assignment status AND no active case
+      // This ensures that once a case is started, it disappears from "Accepted Quotes" tab
       return referral.assignmentStatus === 'accepted' && !hasActiveCase;
     }
     
