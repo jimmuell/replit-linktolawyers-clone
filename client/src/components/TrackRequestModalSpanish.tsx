@@ -87,8 +87,11 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
   const queryClient = useQueryClient();
 
   const { data: request, isLoading, error, refetch } = useQuery<LegalRequest>({
-    queryKey: ['/api/legal-requests', requestNumber],
+    queryKey: ['/api/legal-requests', shouldFetch ? requestNumber : 'disabled'],
     queryFn: async () => {
+      if (!shouldFetch) {
+        throw new Error('Query should not run');
+      }
       const response = await fetch(`/api/legal-requests/${requestNumber}`);
       if (!response.ok) {
         throw new Error('Request not found');
@@ -96,7 +99,7 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
       const data = await response.json();
       return data.data;
     },
-    enabled: false, // Never auto-fetch, only when explicitly triggered
+    enabled: shouldFetch && requestNumber.length > 0,
     retry: false,
   });
 
@@ -280,22 +283,31 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="requestNumber">Número de Solicitud Legal</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="requestNumber"
-                  placeholder="Ingresa tu número de solicitud (ej: lr-123456)"
-                  value={requestNumber}
-                  onChange={handleInputChange}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleTrackRequest}
-                  disabled={!requestNumber.trim() || isLoading}
-                >
-                  <Search className="w-4 h-4 mr-2" />
-                  {isLoading ? 'Buscando...' : 'Rastrear'}
-                </Button>
-              </div>
+              <form onSubmit={(e) => { e.preventDefault(); handleTrackRequest(); }}>
+                <div className="flex space-x-2">
+                  <Input
+                    id="requestNumber"
+                    placeholder="Ingresa tu número de solicitud (ej: lr-123456)"
+                    value={requestNumber}
+                    onChange={handleInputChange}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleTrackRequest();
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button"
+                    onClick={handleTrackRequest}
+                    disabled={!requestNumber.trim() || isLoading}
+                  >
+                    <Search className="w-4 h-4 mr-2" />
+                    {isLoading ? 'Buscando...' : 'Rastrear'}
+                  </Button>
+                </div>
+              </form>
             </div>
             
             <p className="text-sm text-gray-500">
