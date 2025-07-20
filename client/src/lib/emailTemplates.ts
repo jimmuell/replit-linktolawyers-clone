@@ -6,8 +6,6 @@ interface LegalRequestData {
   phoneNumber: string;
   caseType: string;
   caseDescription: string;
-  urgencyLevel: string;
-  budgetRange: string;
   location: string;
 }
 
@@ -18,7 +16,7 @@ interface CaseType {
 }
 
 export function generateConfirmationEmail(requestData: LegalRequestData, caseTypeData?: CaseType) {
-  const { requestNumber, firstName, lastName, email, phoneNumber, caseType, caseDescription, urgencyLevel, budgetRange, location } = requestData;
+  const { requestNumber, firstName, lastName, email, phoneNumber, caseType, caseDescription, location } = requestData;
   
   const caseTypeDisplay = caseTypeData?.label || caseType;
   
@@ -78,14 +76,6 @@ export function generateConfirmationEmail(requestData: LegalRequestData, caseTyp
           <div class="info-row">
             <div class="info-label">Case Type:</div>
             <div class="info-value">${caseTypeDisplay}</div>
-          </div>
-          <div class="info-row">
-            <div class="info-label">Urgency Level:</div>
-            <div class="info-value">${urgencyLevel || 'Not specified'}</div>
-          </div>
-          <div class="info-row">
-            <div class="info-label">Budget Range:</div>
-            <div class="info-value">${budgetRange || 'Not specified'}</div>
           </div>
           <div class="info-row">
             <div class="info-label">Location:</div>
@@ -149,8 +139,6 @@ REQUEST SUMMARY:
 - Email: ${email}
 - Phone: ${phoneNumber || 'Not provided'}
 - Case Type: ${caseTypeDisplay}
-- Urgency Level: ${urgencyLevel || 'Not specified'}
-- Budget Range: ${budgetRange || 'Not specified'}
 - Location: ${location || 'Not specified'}
 
 CASE DESCRIPTION:

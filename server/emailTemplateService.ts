@@ -74,8 +74,6 @@ export function getLegalRequestConfirmationVariables(legalRequest: any, caseType
     phoneNumber: legalRequest.phoneNumber || 'Not provided',
     caseType: caseTypeData?.label || legalRequest.caseType,
     caseDescription: legalRequest.caseDescription,
-    urgencyLevel: legalRequest.urgencyLevel || 'Not specified',
-    budgetRange: legalRequest.budgetRange || 'Not specified',
     location: legalRequest.location || 'Not specified'
   };
 }
@@ -100,8 +98,6 @@ export function getAttorneyAssignmentVariables(
     caseDescription: legalRequest.caseDescription,
     status: legalRequest.status || 'under_review',
     submittedDate: new Date(legalRequest.createdAt).toLocaleDateString(),
-    budgetRange: legalRequest.budgetRange || 'Not specified',
-    urgencyLevel: legalRequest.urgencyLevel || 'Not specified',
     location: legalRequest.location || 'Not specified'
   };
 }

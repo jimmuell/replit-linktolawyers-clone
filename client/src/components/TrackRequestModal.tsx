@@ -36,8 +36,6 @@ interface LegalRequest {
   phoneNumber: string;
   caseType: string;
   caseDescription: string;
-  urgencyLevel: string;
-  budgetRange: string;
   location: string;
   status: string;
   createdAt: string;
@@ -203,20 +201,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     setExpandedQuote(expandedQuote === quoteId ? null : quoteId);
   };
 
-  const getUrgencyBadge = (urgency: string) => {
-    switch (urgency?.toLowerCase()) {
-      case 'urgent':
-        return <Badge variant="destructive">Urgent</Badge>;
-      case 'high':
-        return <Badge variant="destructive">High</Badge>;
-      case 'moderate':
-        return <Badge variant="secondary">Moderate</Badge>;
-      case 'low':
-        return <Badge variant="outline">Low</Badge>;
-      default:
-        return <Badge variant="outline">{urgency || 'Not specified'}</Badge>;
-    }
-  };
+
 
   const formatRequestNumber = (value: string) => {
     // Remove any non-alphanumeric characters and convert to lowercase

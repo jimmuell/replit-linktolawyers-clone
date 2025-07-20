@@ -37,8 +37,6 @@ interface LegalRequest {
   phoneNumber: string;
   caseType: string;
   caseDescription: string;
-  urgencyLevel: string;
-  budgetRange: string;
   location: string;
   status: string;
   createdAt: string;
@@ -204,31 +202,7 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
     setExpandedQuote(expandedQuote === quoteId ? null : quoteId);
   };
 
-  const getUrgencyBadgeSpanish = (urgency: string) => {
-    switch (urgency?.toLowerCase()) {
-      case 'urgent':
-        return <Badge variant="destructive">Urgente</Badge>;
-      case 'high':
-        return <Badge variant="destructive">Alta</Badge>;
-      case 'moderate':
-        return <Badge variant="secondary">Moderada</Badge>;
-      case 'low':
-        return <Badge variant="outline">Baja</Badge>;
-      default:
-        return <Badge variant="outline">{urgency || 'No especificado'}</Badge>;
-    }
-  };
 
-  const getBudgetRangeSpanish = (budgetRange: string) => {
-    const budgetMap: { [key: string]: string } = {
-      '0-1000': '$0 - $1,000',
-      '1000-2500': '$1,000 - $2,500',
-      '2500-5000': '$2,500 - $5,000',
-      '5000-10000': '$5,000 - $10,000',
-      '10000+': '$10,000+',
-    };
-    return budgetMap[budgetRange] || budgetRange;
-  };
 
   const getCaseTypeSpanish = (caseType: string) => {
     const caseTypeMap: { [key: string]: string } = {
@@ -393,19 +367,7 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
                       <p className="text-sm">{request.location}</p>
                     </div>
                   )}
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-600">Nivel de Urgencia</Label>
-                    <div>{getUrgencyBadgeSpanish(request.urgencyLevel)}</div>
-                  </div>
-                  {request.budgetRange && (
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-600 flex items-center space-x-1">
-                        <DollarSign className="w-4 h-4" />
-                        <span>Rango de Presupuesto</span>
-                      </Label>
-                      <p className="text-sm">{getBudgetRangeSpanish(request.budgetRange)}</p>
-                    </div>
-                  )}
+
                 </div>
                 
                 <div className="space-y-2">

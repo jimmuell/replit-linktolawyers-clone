@@ -240,8 +240,6 @@ export const insertLegalRequestSchema = createInsertSchema(legalRequests).pick({
   phoneNumber: true,
   caseType: true,
   caseDescription: true,
-  urgencyLevel: true,
-  budgetRange: true,
   location: true,
   captcha: true,
   agreeToTerms: true,
