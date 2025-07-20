@@ -18,6 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Database Schema Cleanup - urgency_level and budget_range Fields Removal** (July 20, 2025): Completed comprehensive removal of urgency_level and budget_range fields from entire system
+  - Removed fields from legal_requests database table schema (verified columns don't exist)
+  - Updated shared/schema.ts to remove fields from insertLegalRequestSchema
+  - Fixed TrackRequestModal and TrackRequestModalSpanish interfaces to remove urgencyLevel and budgetRange
+  - Removed getUrgencyBadge and getBudgetRange functions and their usage from track request modals
+  - Updated emailTemplateService.ts functions to remove urgency/budget variable processing
+  - Cleaned email templates in client/src/lib/emailTemplates.ts to remove urgency/budget content from both HTML and plain text
+  - Eliminated all code references to these deprecated fields preventing database column errors
+
 - **Quote Accept/Decline System Implementation** (July 20, 2025): Built comprehensive quote acceptance/decline workflow with confirmation dialogs
   - Added "Accept Quote" and "Decline Quote" buttons to quote details in both English and Spanish track request modals
   - Implemented confirmation dialogs with clear messaging for both accept and decline actions
