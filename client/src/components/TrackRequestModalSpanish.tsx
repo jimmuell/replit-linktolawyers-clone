@@ -96,7 +96,7 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
       const data = await response.json();
       return data.data;
     },
-    enabled: shouldFetch && requestNumber.length > 0,
+    enabled: false, // Never auto-fetch, only when explicitly triggered
     retry: false,
   });
 

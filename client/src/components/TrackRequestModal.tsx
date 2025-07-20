@@ -95,7 +95,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
       const data = await response.json();
       return data.data;
     },
-    enabled: shouldFetch && requestNumber.length > 0,
+    enabled: false, // Never auto-fetch, only when explicitly triggered
     retry: false,
   });
 
