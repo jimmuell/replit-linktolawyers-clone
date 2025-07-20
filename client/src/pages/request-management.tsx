@@ -74,16 +74,14 @@ export default function RequestManagementPage() {
   const { data: currentAssignments = [], isLoading: assignmentsLoading } = useQuery({
     queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'],
     enabled: !!selectedRequest?.id && isAttorneyAssignmentModalOpen,
-    staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache the results
+    staleTime: 0,
   });
 
   // Fetch current assignments for the selected request (for view modal)
   const { data: viewAssignments = [], isLoading: viewAssignmentsLoading } = useQuery({
     queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'],
     enabled: !!selectedRequest?.id && isViewModalOpen,
-    staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache the results
+    staleTime: 0,
   });
 
   // Update selected attorney IDs when current assignments load
@@ -570,14 +568,7 @@ export default function RequestManagementPage() {
                   <Label className="text-sm font-medium text-gray-600">Location</Label>
                   <p>{selectedRequest.location || 'Not provided'}</p>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Urgency Level</Label>
-                  <div className="mt-1">{getUrgencyBadge(selectedRequest.urgencyLevel)}</div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Budget Range</Label>
-                  <p>{selectedRequest.budgetRange || 'Not specified'}</p>
-                </div>
+
                 <div>
                   <Label className="text-sm font-medium text-gray-600">Status</Label>
                   <div className="mt-1">
@@ -732,14 +723,7 @@ export default function RequestManagementPage() {
                     onChange={(e) => setEditFormData({...editFormData, location: e.target.value})}
                   />
                 </div>
-                <div>
-                  <Label htmlFor="budgetRange">Budget Range</Label>
-                  <Input
-                    id="budgetRange"
-                    value={editFormData.budgetRange || ''}
-                    onChange={(e) => setEditFormData({...editFormData, budgetRange: e.target.value})}
-                  />
-                </div>
+
                 <div>
                   <Label htmlFor="status">Status</Label>
                   <Select value={editFormData.status || REQUEST_STATUS.UNDER_REVIEW} onValueChange={(value) => setEditFormData({...editFormData, status: value})}>
@@ -871,9 +855,7 @@ export default function RequestManagementPage() {
                   <div>
                     <span className="font-medium">Case Type:</span> {selectedRequest.caseType}
                   </div>
-                  <div>
-                    <span className="font-medium">Budget:</span> {selectedRequest.budgetRange || 'Not specified'}
-                  </div>
+
                 </div>
               </div>
 
