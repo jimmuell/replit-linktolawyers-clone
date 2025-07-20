@@ -129,6 +129,8 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     setShouldFetch(false);
     setExpandedQuote(null);
     setConfirmDialog(null);
+    // Clear any cached error state
+    queryClient.removeQueries({ queryKey: ['/api/legal-requests'] });
     onClose();
   };
 
@@ -272,8 +274,8 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
             </p>
           </div>
 
-          {/* Error State */}
-          {error && (
+          {/* Error State - Only show if user has attempted a search */}
+          {error && shouldFetch && (
             <Card className="border-red-200 bg-red-50">
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-2 text-red-700">
