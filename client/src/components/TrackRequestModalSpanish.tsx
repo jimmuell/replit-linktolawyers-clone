@@ -616,7 +616,7 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
 
         <div className="flex justify-end">
           <Button variant="outline" onClick={handleClose}>
-            Cerrar
+            Cerrar Solicitud
           </Button>
         </div>
       </DialogContent>

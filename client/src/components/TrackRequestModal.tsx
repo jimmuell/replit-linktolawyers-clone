@@ -575,7 +575,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
 
         <div className="flex justify-end">
           <Button variant="outline" onClick={handleClose}>
-            Close
+            Close Request
           </Button>
         </div>
       </DialogContent>
