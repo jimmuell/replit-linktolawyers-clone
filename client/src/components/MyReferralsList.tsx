@@ -578,8 +578,8 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                               size="sm"
                               onClick={async () => {
                                 setSelectedReferral(referral);
-                                // Load existing quote if status is quoted
-                                if (referral.assignmentStatus === 'quoted') {
+                                // Load existing quote if status is quoted or accepted
+                                if (referral.assignmentStatus === 'quoted' || referral.assignmentStatus === 'accepted') {
                                   const quote = await fetchExistingQuote(referral.assignmentId);
                                   setExistingQuote(quote);
                                 }

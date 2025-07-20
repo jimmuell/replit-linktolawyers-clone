@@ -28,6 +28,7 @@ Preferred communication style: Simple, everyday language.
   - Updated backend route to automatically update assignment status when quote status changes
   - Fixed duplicate assignment bug by adding unique constraint and improving assignment logic
   - Updated filtering logic so "My Referrals" tab excludes accepted quotes (they appear only in "Accepted Quotes" tab)
+  - Fixed Start Case button visibility by updating quote loading logic for accepted assignments
   - Attorney dashboard now follows: Overview → Available Referrals → My Referrals → Accepted Quotes → Active Cases
 
 - **Database Schema Cleanup - urgency_level and budget_range Fields Removal** (July 20, 2025): Completed comprehensive removal of urgency_level and budget_range fields from entire system
