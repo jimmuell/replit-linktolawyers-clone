@@ -58,8 +58,8 @@ export default function AttorneyDashboard() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="available">Available Referrals</TabsTrigger>
             <TabsTrigger value="my-referrals">My Referrals</TabsTrigger>
+            <TabsTrigger value="accepted-quotes">Accepted Quotes</TabsTrigger>
             <TabsTrigger value="cases">Active Cases</TabsTrigger>
-            <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -186,6 +186,18 @@ export default function AttorneyDashboard() {
             <MyReferralsList />
           </TabsContent>
 
+          <TabsContent value="accepted-quotes">
+            <Card>
+              <CardHeader>
+                <CardTitle>Accepted Quotes</CardTitle>
+                <p className="text-sm text-gray-600">Quotes that have been accepted by clients and are ready to start cases</p>
+              </CardHeader>
+              <CardContent>
+                <MyReferralsList filterStatus="accepted" />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="cases">
             <Card>
               <CardHeader>
@@ -197,22 +209,6 @@ export default function AttorneyDashboard() {
                   <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>Case management feature is under construction.</p>
                   <p className="text-sm">This section will show your active legal cases and allow you to track progress and manage case details.</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="profile">
-            <Card>
-              <CardHeader>
-                <CardTitle>Attorney Profile</CardTitle>
-                <p className="text-sm text-gray-600">Update your professional information</p>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>Profile management feature is under construction.</p>
-                  <p className="text-sm">This section will allow you to update your attorney profile, practice areas, and contact information.</p>
                 </div>
               </CardContent>
             </Card>

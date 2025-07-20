@@ -34,7 +34,11 @@ interface MyReferral {
   };
 }
 
-export default function MyReferralsList() {
+interface MyReferralsListProps {
+  filterStatus?: string;
+}
+
+export default function MyReferralsList({ filterStatus }: MyReferralsListProps) {
   const [selectedReferral, setSelectedReferral] = useState<MyReferral | null>(null);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
@@ -96,7 +100,19 @@ export default function MyReferralsList() {
     return null;
   };
 
-  const referrals = referralsData?.data || [];
+  const allReferrals = referralsData?.data || [];
+  
+  // Filter referrals based on assignment status or quote status
+  const referrals = allReferrals.filter((referral: MyReferral) => {
+    if (!filterStatus) return true; // No filter, show all
+    
+    if (filterStatus === 'accepted') {
+      // For accepted quotes, only show referrals with "accepted" assignment status
+      return referral.assignmentStatus === 'accepted';
+    }
+    
+    return referral.assignmentStatus === filterStatus;
+  });
 
   // Unassign mutation
   const unassignMutation = useMutation({

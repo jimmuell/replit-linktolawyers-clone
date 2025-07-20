@@ -812,7 +812,7 @@ router.patch("/quotes/:quoteId/status", async (req, res) => {
       });
     }
 
-    // If quote is accepted, decline all other quotes for the same request
+    // If quote is accepted, update assignment status and decline all other quotes for the same request
     if (status === 'accepted') {
       // First, get the assignment to find the request
       const [assignment] = await db
@@ -821,6 +821,15 @@ router.patch("/quotes/:quoteId/status", async (req, res) => {
         .where(eq(referralAssignments.id, updatedQuote.assignmentId));
 
       if (assignment) {
+        // Update the assignment status to "accepted"
+        await db
+          .update(referralAssignments)
+          .set({
+            status: 'accepted',
+            updatedAt: new Date(),
+          })
+          .where(eq(referralAssignments.id, updatedQuote.assignmentId));
+
         // Get all other assignments for the same request
         const otherAssignments = await db
           .select()

@@ -18,6 +18,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Dashboard Tab Restructure and Accepted Quotes Implementation** (July 20, 2025): Updated attorney dashboard with new tab structure and assignment status workflow
+  - Removed Profile tab from attorney dashboard (no longer needed)  
+  - Added new "Accepted Quotes" tab between "My Referrals" and "Active Cases"
+  - Implemented new "accepted" assignment status that gets set when client accepts a quote
+  - Updated quote acceptance workflow: when quote is accepted, assignment status changes from "quoted" to "accepted"
+  - Enhanced MyReferralsList component with filterStatus prop to show only accepted quotes in new tab
+  - Quote status badges now properly display in attorney interface with color coding (green=accepted, red=declined, yellow=pending)
+  - Updated backend route to automatically update assignment status when quote status changes
+  - Attorney dashboard now follows: Overview → Available Referrals → My Referrals → Accepted Quotes → Active Cases
+
 - **Database Schema Cleanup - urgency_level and budget_range Fields Removal** (July 20, 2025): Completed comprehensive removal of urgency_level and budget_range fields from entire system
   - Removed fields from legal_requests database table schema (verified columns don't exist)
   - Updated shared/schema.ts to remove fields from insertLegalRequestSchema
