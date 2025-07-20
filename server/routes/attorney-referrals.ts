@@ -147,15 +147,18 @@ router.post("/assign/:requestId", requireAuth, async (req, res) => {
     const attorneyId = attorney[0].id;
     console.log('ASSIGN ENDPOINT: Using attorney ID:', attorneyId);
 
-    // Check if request exists and is not already assigned
+    // Check if this attorney is already assigned to this request
     const existingAssignment = await db
       .select()
       .from(referralAssignments)
-      .where(eq(referralAssignments.requestId, requestId))
+      .where(and(
+        eq(referralAssignments.requestId, requestId),
+        eq(referralAssignments.attorneyId, attorneyId)
+      ))
       .limit(1);
 
     if (existingAssignment.length > 0) {
-      return res.status(400).json({ error: 'This referral is already assigned' });
+      return res.status(400).json({ error: 'You are already assigned to this referral' });
     }
 
     // Create the assignment
