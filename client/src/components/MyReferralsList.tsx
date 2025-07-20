@@ -50,6 +50,7 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
   const [feeScheduleData, setFeeScheduleData] = useState<any>(null);
   const [note, setNote] = useState('');
   const [existingQuote, setExistingQuote] = useState<any>(null);
+  const [existingCase, setExistingCase] = useState<any>(null);
   const [unassignWarning, setUnassignWarning] = useState<{ assignmentId: number; hasQuote: boolean } | null>(null);
   const [isStartCaseModalOpen, setIsStartCaseModalOpen] = useState(false);
   const [caseNotes, setCaseNotes] = useState('');
@@ -96,6 +97,26 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
       }
     } catch (error) {
       console.error('Error fetching quote:', error);
+    }
+    return null;
+  };
+
+  // Fetch existing case for a quote
+  const fetchExistingCase = async (quoteId: number) => {
+    try {
+      const response = await fetch('/api/attorney-referrals/cases', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const cases = data.data || [];
+        return cases.find((c: any) => c.quoteId === quoteId) || null;
+      }
+    } catch (error) {
+      console.error('Error fetching case:', error);
     }
     return null;
   };
@@ -324,6 +345,7 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
       });
       setIsStartCaseModalOpen(false);
       setCaseNotes('');
+      setExistingCase(data.data); // Update the case state to show case info instead of button
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
     },
     onError: (error: Error) => {
@@ -570,6 +592,8 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                         <Dialog open={selectedReferral?.assignmentId === referral.assignmentId} onOpenChange={(open) => {
                           if (!open) {
                             setSelectedReferral(null);
+                            setExistingQuote(null);
+                            setExistingCase(null);
                           }
                         }}>
                           <DialogTrigger asChild>
@@ -582,6 +606,12 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                                 if (referral.assignmentStatus === 'quoted' || referral.assignmentStatus === 'accepted') {
                                   const quote = await fetchExistingQuote(referral.assignmentId);
                                   setExistingQuote(quote);
+                                  
+                                  // If quote exists and is accepted, check for existing case
+                                  if (quote && quote.status === 'accepted') {
+                                    const existingCase = await fetchExistingCase(quote.id);
+                                    setExistingCase(existingCase);
+                                  }
                                 }
                               }}
                             >
@@ -811,15 +841,23 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                                         </div>
                                         
                                         {existingQuote?.status === 'accepted' && (
-                                          <Button 
-                                            size="sm"
-                                            onClick={() => handleStartCaseClick(selectedReferral)}
-                                            disabled={startCaseMutation.isPending}
-                                            className="bg-green-600 hover:bg-green-700 text-white"
-                                          >
-                                            <FileText className="h-3 w-3 mr-1" />
-                                            Start Case
-                                          </Button>
+                                          existingCase ? (
+                                            <div className="text-sm">
+                                              <Badge variant="default" className="bg-blue-100 text-blue-800">
+                                                Case Started: {existingCase.caseNumber}
+                                              </Badge>
+                                            </div>
+                                          ) : (
+                                            <Button 
+                                              size="sm"
+                                              onClick={() => handleStartCaseClick(selectedReferral)}
+                                              disabled={startCaseMutation.isPending}
+                                              className="bg-green-600 hover:bg-green-700 text-white"
+                                            >
+                                              <FileText className="h-3 w-3 mr-1" />
+                                              Start Case
+                                            </Button>
+                                          )
                                         )}
                                       </div>
                                     </div>
