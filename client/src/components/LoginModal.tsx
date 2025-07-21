@@ -92,7 +92,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
@@ -153,7 +153,7 @@ export default function LoginModal({ open, onClose }: LoginModalProps) {
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white" disabled={loading}>
                 {loading ? 'Creating account...' : 'Create Account'}
               </Button>
             </form>
