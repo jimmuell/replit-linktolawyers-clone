@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AdminNavbar from '@/components/AdminNavbar';
-import { Eye, Edit, Trash2, Plus, Search, Filter, Users, Mail } from 'lucide-react';
+import { Eye, Edit, Trash2, Plus, Search, Filter, Users, Mail, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -598,7 +598,7 @@ export default function RequestManagementPage() {
                       className="bg-blue-600 hover:bg-blue-700"
                       size="sm"
                     >
-                      <Users className="w-4 h-4 mr-2" />
+                      <UserPlus className="w-4 h-4 mr-2" />
                       {viewAssignments.length > 0 ? 'Edit Assigned Attorneys' : 'Assign Attorneys'}
                     </Button>
                     {viewAssignments.length > 0 && (
