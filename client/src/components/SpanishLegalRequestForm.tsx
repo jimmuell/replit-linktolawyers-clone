@@ -442,7 +442,11 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
 
               <Button 
                 type="submit" 
-                className="w-full bg-gray-400 hover:bg-gray-500 text-white py-3 rounded-md"
+                className={`w-full text-white py-3 rounded-md ${
+                  formData.agreeToTerms 
+                    ? 'bg-black hover:bg-gray-800' 
+                    : 'bg-gray-400 hover:bg-gray-500'
+                }`}
                 disabled={!formData.agreeToTerms || isSubmitting || formData.captcha !== '4'}
               >
                 {isSubmitting ? 'Enviando...' : 'Enviar'}
