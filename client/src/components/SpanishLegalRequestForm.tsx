@@ -270,29 +270,42 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                   </p>
                 </div>
               </div>
-              <Button
-                type="button"
-                onClick={() => {
-                  setSubmittedRequestNumber(null);
-                  onClose();
-                  setPrefillChecked(false);
-                  setIsCopied(false);
-                  setFormData({
-                    firstName: '',
-                    lastName: '',
-                    caseType: '',
-                    email: '',
-                    phoneNumber: '',
-                    caseDescription: '',
-                    location: '',
-                    captcha: '',
-                    agreeToTerms: false
-                  });
-                }}
-                className="w-full"
-              >
-                Cerrar
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setSubmittedRequestNumber(null);
+                    onClose();
+                    setPrefillChecked(false);
+                    setIsCopied(false);
+                    setFormData({
+                      firstName: '',
+                      lastName: '',
+                      caseType: '',
+                      email: '',
+                      phoneNumber: '',
+                      caseDescription: '',
+                      location: '',
+                      captcha: '',
+                      agreeToTerms: false
+                    });
+                  }}
+                  className="w-full bg-black hover:bg-gray-800 text-white"
+                >
+                  Cerrar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // Handle workflow test action
+                    console.log("Workflow (Test) clicked - Spanish");
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Workflow (Test)
+                </Button>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

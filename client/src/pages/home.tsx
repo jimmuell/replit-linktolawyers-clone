@@ -678,32 +678,45 @@ export default function Home() {
                   </p>
                 </div>
               </div>
-              <Button
-                type="button"
-                onClick={() => {
-                  setSubmittedRequestNumber(null);
-                  setIsQuoteModalOpen(false);
-                  setIsEmailPreviewOpen(false);
-                  setEmailPreview(null);
-                  setPrefillChecked(false); // Reset the prefill checkbox
-                  setIsCopied(false); // Reset copy state
-                  // Reset form
-                  setFormData({
-                    firstName: '',
-                    lastName: '',
-                    caseType: '',
-                    email: '',
-                    phoneNumber: '',
-                    caseDescription: '',
-                    location: '',
-                    captcha: '',
-                    agreeToTerms: false
-                  });
-                }}
-                className="w-full"
-              >
-                Close
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setSubmittedRequestNumber(null);
+                    setIsQuoteModalOpen(false);
+                    setIsEmailPreviewOpen(false);
+                    setEmailPreview(null);
+                    setPrefillChecked(false); // Reset the prefill checkbox
+                    setIsCopied(false); // Reset copy state
+                    // Reset form
+                    setFormData({
+                      firstName: '',
+                      lastName: '',
+                      caseType: '',
+                      email: '',
+                      phoneNumber: '',
+                      caseDescription: '',
+                      location: '',
+                      captcha: '',
+                      agreeToTerms: false
+                    });
+                  }}
+                  className="w-full bg-black hover:bg-gray-800 text-white"
+                >
+                  Close
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    // Handle workflow test action
+                    console.log("Workflow (Test) clicked");
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Workflow (Test)
+                </Button>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
