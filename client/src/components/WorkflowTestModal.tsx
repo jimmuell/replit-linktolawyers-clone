@@ -103,6 +103,14 @@ export default function WorkflowTestModal({ isOpen, onClose }: WorkflowTestModal
   const [selectedAttorneys, setSelectedAttorneys] = useState<Attorney[]>([]);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showFinalModal, setShowFinalModal] = useState(false);
+  
+  // Generate a realistic legal request number
+  const generateRequestNumber = () => {
+    const randomNum = Math.floor(Math.random() * 900000) + 100000; // 6-digit number
+    return `LR-${randomNum}`;
+  };
+  
+  const [requestNumber] = useState(generateRequestNumber());
 
   // Reset state when modal opens
   useEffect(() => {
@@ -309,7 +317,7 @@ export default function WorkflowTestModal({ isOpen, onClose }: WorkflowTestModal
           <ArrowLeft className="w-4 h-4 mr-2" />
           Exit
         </button>
-        <h1 className="text-2xl font-semibold text-gray-900">Quote Confirmation</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Request Confirmation</h1>
         <div className="text-gray-400 text-sm">07/21/2025</div>
       </div>
 
@@ -333,8 +341,8 @@ export default function WorkflowTestModal({ isOpen, onClose }: WorkflowTestModal
 
       <div className="grid grid-cols-2 gap-6">
         <div>
-          <p className="text-sm font-medium text-gray-600">Quote Number:</p>
-          <p className="text-lg font-mono font-bold">QN908951</p>
+          <p className="text-sm font-medium text-gray-600">Legal Request Number:</p>
+          <p className="text-lg font-mono font-bold">{requestNumber}</p>
         </div>
         <div>
           <p className="text-sm font-medium text-gray-600">Case Type:</p>
@@ -450,15 +458,15 @@ export default function WorkflowTestModal({ isOpen, onClose }: WorkflowTestModal
           <div className="text-center py-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Exit Confirmation</h3>
             <p className="text-sm text-gray-600 mb-4">
-              To track your quote request later, use the quote number shown below, or in the confirmation email.
+              Track your legal request later. Use the legal request number shown below.
             </p>
             
             <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <div className="text-2xl font-mono font-bold text-gray-900">QN908951</div>
+              <div className="text-2xl font-mono font-bold text-gray-900">{requestNumber}</div>
             </div>
             
             <p className="text-xs text-gray-500 mb-6">
-              On the home page, click the "Track Request" button and enter this quote number to view the status of your request and any attorney responses.
+              On the home page, click the "Track Request" button and enter this legal request number to view the status of your request and any attorney responses.
             </p>
             
             <div className="flex space-x-3">

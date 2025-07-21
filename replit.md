@@ -18,6 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Workflow Test Modal Updates and Email Badge Implementation** (July 21, 2025): Updated workflow test modal terminology and added email status badges
+  - Updated WorkflowTestModal quote confirmation page to use "Legal Request Number" instead of "Quote Number"
+  - Changed title from "Quote Confirmation" to "Request Confirmation" for consistency
+  - Updated exit confirmation dialog text to "Track your legal request later. Use the legal request number shown below"
+  - Generated dynamic LR-format request numbers (e.g., LR-456789) that remain consistent throughout modal session
+  - Added "Email Sent" badges to attorney cards in assignment modal when emails have been sent to attorneys
+  - Badges automatically appear when attorneys receive assignment emails and disappear when attorneys are unassigned
+  - Enhanced UI with green styling (background, text, border) and mail icons for email status visibility
+
 - **Attorney Assignment Email Automation Fix** (July 21, 2025): Fixed critical issue where attorneys weren't receiving assignment notification emails
   - Updated assignAttorneysMutation in request-management.tsx to automatically trigger email sending after successful attorney assignments
   - Modified onSuccess callback to call sendEmailMutation.mutateAsync() when new attorneys are assigned
