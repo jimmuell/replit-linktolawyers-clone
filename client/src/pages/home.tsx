@@ -19,6 +19,7 @@ import LoginModal from "@/components/LoginModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
+import WorkflowTestModal from "@/components/WorkflowTestModal";
 import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
 import PrivacyPolicyModal from "@/components/PrivacyPolicyModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
@@ -31,6 +32,7 @@ export default function Home() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
+  const [isWorkflowTestModalOpen, setIsWorkflowTestModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
@@ -708,8 +710,7 @@ export default function Home() {
                 <Button
                   type="button"
                   onClick={() => {
-                    // Handle workflow test action
-                    console.log("Workflow (Test) clicked");
+                    setIsWorkflowTestModalOpen(true);
                   }}
                   variant="outline"
                   className="w-full"
@@ -902,6 +903,12 @@ export default function Home() {
       <TrackRequestModal
         isOpen={isTrackRequestModalOpen}
         onClose={() => setIsTrackRequestModalOpen(false)}
+      />
+
+      {/* Workflow Test Modal */}
+      <WorkflowTestModal
+        isOpen={isWorkflowTestModalOpen}
+        onClose={() => setIsWorkflowTestModalOpen(false)}
       />
 
       {/* Terms and Conditions Modal */}
