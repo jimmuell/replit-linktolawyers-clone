@@ -196,9 +196,23 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl text-center">
-              {submittedRequestNumber ? "Tus Cotizaciones Están En Camino" : "Solicita Tu Cotización Gratuita"}
-            </DialogTitle>
+            <div className="flex items-center justify-between mb-2">
+              <DialogTitle className="text-xl">
+                {submittedRequestNumber ? "Tus Cotizaciones Están En Camino" : "Solicita Tu Cotización Gratuita"}
+              </DialogTitle>
+              {!submittedRequestNumber && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="prefill-spanish"
+                    checked={prefillChecked}
+                    onCheckedChange={handlePrefillToggle}
+                  />
+                  <Label htmlFor="prefill-spanish" className="text-sm font-medium">
+                    Rellenar Formulario
+                  </Label>
+                </div>
+              )}
+            </div>
             <DialogDescription className="text-center text-gray-600">
               {submittedRequestNumber 
                 ? "Te estamos conectando con abogados calificados a nivel nacional para proporcionarte cotizaciones personalizadas para tu caso"
@@ -216,19 +230,6 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
               <p className="text-xs text-blue-600 mt-1">
                 Este número será asignado a tu solicitud al enviarla
               </p>
-            </div>
-          )}
-          
-          {!submittedRequestNumber && (
-            <div className="flex items-center space-x-2 mb-4">
-              <Checkbox
-                id="prefill-spanish"
-                checked={prefillChecked}
-                onCheckedChange={handlePrefillToggle}
-              />
-              <Label htmlFor="prefill-spanish" className="text-sm font-medium">
-                Rellenar formulario con datos de ejemplo
-              </Label>
             </div>
           )}
 

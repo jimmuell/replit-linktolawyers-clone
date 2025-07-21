@@ -604,9 +604,23 @@ export default function Home() {
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl text-center">
-              {submittedRequestNumber ? "Your Quotes Are On The Way" : "Request Your Free Quote"}
-            </DialogTitle>
+            <div className="flex items-center justify-between mb-2">
+              <DialogTitle className="text-xl">
+                {submittedRequestNumber ? "Your Quotes Are On The Way" : "Request Your Free Quote"}
+              </DialogTitle>
+              {!submittedRequestNumber && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="prefill"
+                    checked={prefillChecked}
+                    onCheckedChange={handlePrefillToggle}
+                  />
+                  <Label htmlFor="prefill" className="text-sm font-medium">
+                    Pre-fill Form
+                  </Label>
+                </div>
+              )}
+            </div>
             <DialogDescription className="text-center text-gray-600">
               {submittedRequestNumber 
                 ? "We're connecting you with qualified attorneys nationwide to provide personalized quotes for your case"
@@ -624,19 +638,6 @@ export default function Home() {
               <p className="text-xs text-blue-600 mt-1">
                 This number will be assigned to your request upon submission
               </p>
-            </div>
-          )}
-          
-          {!submittedRequestNumber && (
-            <div className="flex items-center space-x-2 mb-4">
-              <Checkbox
-                id="prefill"
-                checked={prefillChecked}
-                onCheckedChange={handlePrefillToggle}
-              />
-              <Label htmlFor="prefill" className="text-sm font-medium">
-                Prefill form with sample data
-              </Label>
             </div>
           )}
 
