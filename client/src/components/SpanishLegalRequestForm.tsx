@@ -99,8 +99,6 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
         email: '',
         phoneNumber: '',
         caseDescription: '',
-        urgencyLevel: '',
-        budgetRange: '',
         location: '',
         captcha: '',
         agreeToTerms: false

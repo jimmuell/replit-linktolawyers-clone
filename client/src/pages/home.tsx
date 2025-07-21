@@ -219,7 +219,7 @@ export default function Home() {
         caseDescription: 'I need assistance with filing a family-based immigrant visa petition for my spouse. We have been married for 2 years and have all the required documentation ready, including marriage certificate, birth certificates, and financial documents. Looking for experienced guidance on the complete process and realistic timeline expectations. We want to ensure everything is filed correctly the first time.',
         location: 'Los Angeles, CA',
         captcha: '4',
-        agreeToTerms: false
+        agreeToTerms: true
       });
     } else {
       setFormData({
