@@ -18,6 +18,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Assignment Email Automation Fix** (July 21, 2025): Fixed critical issue where attorneys weren't receiving assignment notification emails
+  - Updated assignAttorneysMutation in request-management.tsx to automatically trigger email sending after successful attorney assignments
+  - Modified onSuccess callback to call sendEmailMutation.mutateAsync() when new attorneys are assigned
+  - System now automatically sends professional email notifications to attorneys when admin assigns them to legal cases
+  - Email sending uses existing notification templates with proper error handling and user feedback
+  - Attorneys now receive immediate notifications with case details, client information, and next steps
+
 - **Attorney Dashboard Tab Restructure and Case State Management** (July 20, 2025): Updated attorney dashboard with proper case state tracking and filtering
   - Removed Profile tab from attorney dashboard (no longer needed)  
   - Added new "Accepted Quotes" tab between "My Referrals" and "Active Cases"
