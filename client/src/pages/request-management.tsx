@@ -182,12 +182,12 @@ export default function RequestManagementPage() {
       });
       return response.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/requests', selectedRequest?.id, 'attorneys'] });
       queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
       setIsAttorneyAssignmentModalOpen(false);
       
-      const { attorneyIds } = variables;
+      const { requestId, attorneyIds } = variables;
       const currentAssignmentCount = currentAssignments.length;
       const newAssignmentCount = attorneyIds.length;
       
@@ -218,6 +218,17 @@ export default function RequestManagementPage() {
         title,
         description,
       });
+
+      // Automatically send emails to newly assigned attorneys
+      if (newAssignmentCount > 0) {
+        try {
+          await sendEmailMutation.mutateAsync(requestId);
+        } catch (emailError) {
+          console.error('Error sending assignment emails:', emailError);
+          // Don't show error toast as the assignment was successful
+          // Email error will be handled by sendEmailMutation's onError
+        }
+      }
     },
     onError: (error) => {
       console.error('Error updating attorney assignments:', error);
