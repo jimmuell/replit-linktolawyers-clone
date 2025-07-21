@@ -660,9 +660,9 @@ export default function RequestManagementPage() {
                               {assignment.status}
                             </Badge>
                             {assignment.emailSent && (
-                              <Badge variant="default" className="text-xs bg-green-100 text-green-800">
+                              <Badge variant="default" className="text-xs bg-green-100 text-green-800 border-green-200">
                                 <Mail className="w-3 h-3 mr-1" />
-                                Emailed
+                                Email Sent
                               </Badge>
                             )}
                           </div>
@@ -903,6 +903,14 @@ export default function RequestManagementPage() {
                                   <h4 className="font-medium">{attorney.firstName} {attorney.lastName}</h4>
                                   {attorney.isVerified && (
                                     <Badge variant="outline" className="text-xs">Verified</Badge>
+                                  )}
+                                  {currentAssignments.some((assignment: any) => 
+                                    assignment.attorneyId === attorney.id && assignment.emailSent
+                                  ) && (
+                                    <Badge variant="default" className="text-xs bg-green-100 text-green-800 border-green-200">
+                                      <Mail className="w-3 h-3 mr-1" />
+                                      Email Sent
+                                    </Badge>
                                   )}
                                 </div>
                                 <p className="text-sm text-gray-600">{attorney.email}</p>
