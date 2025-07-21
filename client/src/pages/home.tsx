@@ -710,6 +710,26 @@ export default function Home() {
                 <Button
                   type="button"
                   onClick={() => {
+                    // Close the confirmation modal
+                    setSubmittedRequestNumber(null);
+                    setIsQuoteModalOpen(false);
+                    setIsEmailPreviewOpen(false);
+                    setEmailPreview(null);
+                    setPrefillChecked(false);
+                    setIsCopied(false);
+                    // Reset form
+                    setFormData({
+                      firstName: '',
+                      lastName: '',
+                      caseType: '',
+                      email: '',
+                      phoneNumber: '',
+                      caseDescription: '',
+                      location: '',
+                      captcha: '',
+                      agreeToTerms: false
+                    });
+                    // Open workflow test modal
                     setIsWorkflowTestModalOpen(true);
                   }}
                   variant="outline"
