@@ -503,9 +503,10 @@ export default function RequestManagementPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleView(request)}
+                                onClick={() => handleAssignAttorneys(request)}
+                                title="Assign Attorneys"
                               >
-                                <Eye className="w-4 h-4" />
+                                <UserPlus className="w-4 h-4" />
                               </Button>
                               <Button
                                 variant="ghost"
