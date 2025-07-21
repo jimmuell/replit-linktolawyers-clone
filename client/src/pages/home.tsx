@@ -605,9 +605,6 @@ export default function Home() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between mb-2">
-              <DialogTitle className="text-xl">
-                {submittedRequestNumber ? "Your Quotes Are On The Way" : "Request Your Free Quote"}
-              </DialogTitle>
               {!submittedRequestNumber && (
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -619,6 +616,12 @@ export default function Home() {
                     Pre-fill Form
                   </Label>
                 </div>
+              )}
+              <DialogTitle className="text-xl flex-1 text-center">
+                {submittedRequestNumber ? "Your Quotes Are On The Way" : "Request Your Free Quote"}
+              </DialogTitle>
+              {!submittedRequestNumber && (
+                <div className="w-32"></div>
               )}
             </div>
             <DialogDescription className="text-center text-gray-600">

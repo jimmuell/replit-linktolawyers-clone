@@ -197,9 +197,6 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between mb-2">
-              <DialogTitle className="text-xl">
-                {submittedRequestNumber ? "Tus Cotizaciones Están En Camino" : "Solicita Tu Cotización Gratuita"}
-              </DialogTitle>
               {!submittedRequestNumber && (
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -211,6 +208,12 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                     Rellenar Formulario
                   </Label>
                 </div>
+              )}
+              <DialogTitle className="text-xl flex-1 text-center">
+                {submittedRequestNumber ? "Tus Cotizaciones Están En Camino" : "Solicita Tu Cotización Gratuita"}
+              </DialogTitle>
+              {!submittedRequestNumber && (
+                <div className="w-32"></div>
               )}
             </div>
             <DialogDescription className="text-center text-gray-600">
