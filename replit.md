@@ -18,6 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **QuotesPage Display Fix and Application Debug** (July 22, 2025): Fixed critical display issues and resolved TypeScript errors preventing application startup
+  - Resolved "assignedAttorneys.some is not a function" error by properly handling API response structure with success/data format
+  - Fixed TypeScript errors in server routes by adding proper error type handling and null checks for attorney data
+  - Updated LegalRequestData interface to handle nullable phoneNumber and location fields correctly
+  - Added dedicated "Selected Attorneys" section to QuotesPage showing assigned attorneys with blue styling and notification badges
+  - Enhanced attorney display with proper status indicators (Selected, Verified, Notified) and next steps information
+  - Fixed application startup sequence - database seeding, background translation service, and server now start successfully
+  - All TypeScript diagnostics resolved and application running smoothly on port 5000
+
 - **Attorney Email Notification System for QuotesPage** (July 22, 2025): Implemented complete attorney assignment and email notification system for public QuotesPage
   - Added attorney assignment mutations using same API endpoints as admin dashboard (/api/requests/:requestId/attorneys)
   - Integrated automatic email notification system (/api/requests/:requestId/send-attorney-emails) 

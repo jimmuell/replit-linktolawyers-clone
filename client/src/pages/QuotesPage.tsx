@@ -279,6 +279,104 @@ export default function QuotesPage() {
           </Card>
         )}
 
+        {/* Assigned Attorneys Section */}
+        {assignedAttorneys.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-semibold text-lg mb-4">Selected Attorneys ({assignedAttorneys.length})</h3>
+            <div className="space-y-6">
+              {assignedAttorneys.map((assignment: any) => {
+                const attorney = assignment.attorney;
+                return (
+                  <Card key={assignment.id} className="border border-blue-200 bg-blue-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {attorney.firstName} {attorney.lastName}
+                              </h3>
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Selected
+                              </span>
+                              {attorney.isVerified && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Verified
+                                </span>
+                              )}
+                              {assignment.emailSent && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <Mail className="w-3 h-3 mr-1" />
+                                  Notified
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{attorney.firmName}</p>
+                            <div className="flex items-center space-x-4 mt-1">
+                              <span className="text-sm text-gray-500">
+                                {attorney.licenseState}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {attorney.yearsOfExperience}+ years
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-gray-900">
+                            Will provide quote
+                          </div>
+                          <div className="text-sm text-gray-500">Contact within 24hrs</div>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-6">
+                        {attorney.bio}
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">Specialties</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {attorney.practiceAreas?.map((area: string, index: number) => (
+                                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {area}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">Next Steps</span>
+                            <div className="mt-2 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Attorney has been notified</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Clock className="w-3 h-3 text-blue-500" />
+                                <span className="text-xs text-gray-600">Attorney will contact you within 24 hours</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Free consultation will be scheduled</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Available Attorneys - matching admin dashboard format exactly */}
         {attorneysLoading ? (
           <div className="text-center py-8">
@@ -288,9 +386,9 @@ export default function QuotesPage() {
         ) : availableAttorneysWithQuotes.length === 0 ? (
           <div className="text-center py-8">
             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No attorneys available for this case type</p>
+            <p className="text-gray-600">No additional attorneys available for this case type</p>
             <p className="text-sm text-gray-500 mt-2">
-              Please ensure attorneys have fee schedules set up for "{getCaseTypeLabel(request?.data?.caseType || '')}"
+              You have already selected all available attorneys for "{getCaseTypeLabel(request?.data?.caseType || '')}"
             </p>
           </div>
         ) : (
