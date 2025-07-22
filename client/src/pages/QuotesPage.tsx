@@ -232,9 +232,9 @@ export default function QuotesPage() {
                         
                         <div className="text-right">
                           <div className="text-2xl font-bold text-gray-900">
-                            ${attorney.fee?.toLocaleString() || '5,950'}
+                            ${attorney.fee ? (attorney.fee / 100).toLocaleString() : '1,555'}
                           </div>
-                          <div className="text-sm text-gray-500">${attorney.feeType === 'hourly' ? '595' : '595'}/hour</div>
+                          <div className="text-sm text-gray-500">${attorney.hourlyRate ? (attorney.hourlyRate / 100).toLocaleString() : '195'}/hour</div>
                         </div>
                       </div>
 
