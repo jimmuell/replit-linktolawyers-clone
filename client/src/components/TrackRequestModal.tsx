@@ -15,7 +15,7 @@ interface TrackRequestModalProps {
 }
 
 export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModalProps) {
-  const [searchType, setSearchType] = useState<'dropdown' | 'manual'>('dropdown');
+  const [searchType, setSearchType] = useState<'dropdown' | 'manual'>('manual');
   const [selectedRequest, setSelectedRequest] = useState<string>('');
   const [manualRequestNumber, setManualRequestNumber] = useState<string>('');
   const [, setLocation] = useLocation();
@@ -46,7 +46,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
 
   const handleClose = () => {
     // Reset form state
-    setSearchType('dropdown');
+    setSearchType('manual');
     setSelectedRequest('');
     setManualRequestNumber('');
     onClose();
@@ -61,7 +61,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
             <span>Track Your Request</span>
           </DialogTitle>
           <DialogDescription>
-            Search for your legal request to view available attorneys and quotes.
+            Enter your legal request number to view available attorneys and quotes.
           </DialogDescription>
         </DialogHeader>
 

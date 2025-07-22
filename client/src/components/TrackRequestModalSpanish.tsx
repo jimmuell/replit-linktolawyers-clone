@@ -427,7 +427,7 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
                                 {quoteData.attorney.firstName} {quoteData.attorney.lastName}
                               </span>
                               {quoteData.attorney.isVerified && (
-                                <Award className="w-4 h-4 text-blue-500" title="Abogado Verificado" />
+                                <Award className="w-4 h-4 text-blue-500" />
                               )}
                             </div>
                             {quoteData.attorney.firmName && (
