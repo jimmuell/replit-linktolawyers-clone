@@ -18,6 +18,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Email Notification System for QuotesPage** (July 22, 2025): Implemented complete attorney assignment and email notification system for public QuotesPage
+  - Added attorney assignment mutations using same API endpoints as admin dashboard (/api/requests/:requestId/attorneys)
+  - Integrated automatic email notification system (/api/requests/:requestId/send-attorney-emails) 
+  - When "Selected Attorneys" button is clicked, system now assigns attorneys to legal request and sends notification emails
+  - Added loading states and error handling with toast notifications for user feedback
+  - Attorneys receive professional email notifications with case details and client information
+  - Fixed dropdown functionality in Track Request modal by resolving API endpoint route conflicts
+  - Public users can now complete full attorney selection workflow with real-time email notifications
+
 - **Attorney Quote Cards Implementation in QuotesPage** (July 22, 2025): Successfully implemented attorney quote card display functionality similar to admin dashboard
   - Fixed data transformation issues to properly handle API response structure
   - Updated quotes query to use correct request data path (request.data.id instead of request.id) 

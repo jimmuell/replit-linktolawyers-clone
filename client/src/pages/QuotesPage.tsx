@@ -6,7 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface Quote {
   id: number;
@@ -59,6 +61,9 @@ export default function QuotesPage() {
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Fetch request details
   const { data: request } = useQuery<LegalRequest>({
@@ -79,9 +84,61 @@ export default function QuotesPage() {
     enabled: !!request?.data?.caseType,
   });
 
-  const handleConnectWithAttorneys = () => {
-    console.log('Connecting with selected attorneys:', selectedQuotes);
-    setShowConfirmDialog(true);
+  // Mutation to assign attorneys to request
+  const assignAttorneysMutation = useMutation({
+    mutationFn: async ({ requestId, attorneyIds }: { requestId: number; attorneyIds: number[] }) => {
+      return apiRequest(`/api/requests/${requestId}/attorneys`, {
+        method: 'POST',
+        body: JSON.stringify({ attorneyIds })
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/requests'] });
+    }
+  });
+
+  // Mutation to send attorney notification emails
+  const sendEmailMutation = useMutation({
+    mutationFn: async (requestId: number) => {
+      return apiRequest(`/api/requests/${requestId}/send-attorney-emails`, {
+        method: 'POST'
+      });
+    }
+  });
+
+  const handleConnectWithAttorneys = async () => {
+    if (!request?.data || selectedQuotes.length === 0) return;
+    
+    setIsAssigning(true);
+    
+    try {
+      // First, assign attorneys to the request
+      await assignAttorneysMutation.mutateAsync({
+        requestId: request.data.id,
+        attorneyIds: selectedQuotes
+      });
+      
+      // Then send notification emails to the assigned attorneys
+      await sendEmailMutation.mutateAsync(request.data.id);
+      
+      toast({
+        title: "Success",
+        description: `${selectedQuotes.length} attorney(s) have been assigned and notified.`
+      });
+      
+      // Show confirmation dialog
+      setShowConfirmDialog(true);
+      
+    } catch (error: any) {
+      console.error('Error assigning attorneys:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign attorneys. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAssigning(false);
+    }
   };
 
   const handleConfirmRequest = () => {
@@ -338,8 +395,9 @@ export default function QuotesPage() {
               size="lg" 
               className="bg-black hover:bg-gray-800 text-white rounded-lg px-8 py-4 shadow-lg"
               onClick={handleConnectWithAttorneys}
+              disabled={isAssigning}
             >
-              Selected attorneys ({selectedQuotes.length})
+              {isAssigning ? 'Assigning attorneys...' : `Selected attorneys (${selectedQuotes.length})`}
             </Button>
           </div>
         )}
