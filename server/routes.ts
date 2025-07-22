@@ -920,8 +920,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           const mailOptions = {
-            from: smtpSettings.fromEmail,
-            to: attorney.email,
+            from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
+            to: 'linktolawyers.us@gmail.com', // Override email address
             subject: subject,
             html: htmlContent,
             text: textContent,
@@ -931,7 +931,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Store successful email in history
           await storage.createEmailHistory({
-            toAddress: attorney.email,
+            toAddress: 'linktolawyers.us@gmail.com',
             subject: subject,
             message: htmlContent,
             status: 'sent',
@@ -953,7 +953,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Store failed email in history
           await storage.createEmailHistory({
-            toAddress: attorney.email,
+            toAddress: 'linktolawyers.us@gmail.com',
             subject: `New Legal Case Assignment - ${request.requestNumber}`,
             message: 'Failed to send email',
             status: 'failed',
