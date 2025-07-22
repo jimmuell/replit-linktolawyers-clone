@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useQuery } from '@tanstack/react-query';
 
 interface Quote {
@@ -56,6 +57,7 @@ export default function QuotesPage() {
   const [match, params] = useRoute('/quotes/:requestNumber');
   const requestNumber = params?.requestNumber;
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([]);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Fetch request details
   const { data: request } = useQuery<LegalRequest>({
@@ -77,11 +79,16 @@ export default function QuotesPage() {
   });
 
   const handleConnectWithAttorneys = () => {
-    // TODO: Implement attorney connection logic
-    // This could involve updating quote status to "accepted" for selected attorneys
-    // and sending notifications to selected attorneys
     console.log('Connecting with selected attorneys:', selectedQuotes);
-    alert(`Connecting with ${selectedQuotes.length} selected attorney(s). They will be notified of your interest and will contact you directly.`);
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmRequest = () => {
+    // TODO: Implement actual quote request logic
+    console.log('Quote request confirmed for attorneys:', selectedQuotes);
+    setShowConfirmDialog(false);
+    // Reset selections after confirmation
+    setSelectedQuotes([]);
   };
 
   const handleBackToForm = () => {
@@ -331,6 +338,33 @@ export default function QuotesPage() {
             </Button>
           </div>
         )}
+
+        {/* Confirmation Dialog */}
+        <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Request Quotes from Selected Attorneys</DialogTitle>
+              <DialogDescription>
+                You have selected {selectedQuotes.length} attorney(s) to request quotes from. They will be notified of your interest and will contact you directly with personalized quotes.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <p className="text-sm text-gray-600">
+                Selected attorneys will receive your case details and contact information. You should expect to hear from them within 24-48 hours.
+              </p>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmRequest} className="bg-black hover:bg-gray-800 text-white">
+                Confirm Request
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
