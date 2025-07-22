@@ -376,7 +376,7 @@ export class DatabaseStorage implements IStorage {
         attorney: attorneys
       })
       .from(requestAttorneyAssignments)
-      .leftJoin(attorneys, eq(requestAttorneyAssignments.attorneyId, attorneys.id))
+      .innerJoin(attorneys, eq(requestAttorneyAssignments.attorneyId, attorneys.id))
       .where(eq(requestAttorneyAssignments.requestId, requestId))
       .orderBy(asc(requestAttorneyAssignments.assignedAt));
 
