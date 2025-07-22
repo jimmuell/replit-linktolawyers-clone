@@ -87,6 +87,8 @@ interface AssignedAttorney {
     bio?: string;
   };
   quoteStatus: 'pending' | 'sent' | 'accepted' | 'declined';
+  quoteAmount?: number;
+  quoteSentAt?: string;
 }
 
 export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModalProps) {
@@ -463,6 +465,15 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                                'Quote Declined'}
                             </Badge>
                           </div>
+                          
+                          {assignedAttorney.quoteAmount && (
+                            <div className="flex items-center space-x-1">
+                              <DollarSign className="w-4 h-4 text-green-600" />
+                              <span className="text-sm font-semibold text-green-700">
+                                ${assignedAttorney.quoteAmount.toLocaleString()}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {assignedAttorney.attorney.licenseState && (

@@ -549,7 +549,9 @@ router.get("/public/request/:requestId/attorneys", async (req, res) => {
         a.years_of_experience,
         a.is_verified,
         a.bio,
-        COALESCE(q.status, 'pending') as quote_status
+        COALESCE(q.status, 'pending') as quote_status,
+        q.service_fee as quote_amount,
+        q.sent_at as quote_sent_at
       FROM referral_assignments ra
       JOIN attorneys a ON ra.attorney_id = a.id
       LEFT JOIN quotes q ON q.assignment_id = ra.id
@@ -576,6 +578,8 @@ router.get("/public/request/:requestId/attorneys", async (req, res) => {
         bio: row.bio,
       },
       quoteStatus: row.quote_status,
+      quoteAmount: row.quote_amount,
+      quoteSentAt: row.quote_sent_at,
     }));
     
     res.json({ success: true, data: transformedAssignments });
