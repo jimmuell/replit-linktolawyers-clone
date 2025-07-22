@@ -93,8 +93,9 @@ export default function QuotesPage() {
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
-    if (Array.isArray(assignedAttorneys) && assignedAttorneys.length > 0) {
-      const assignedIds = assignedAttorneys.map((assignment: any) => assignment.attorney.id);
+    const attorneyData = assignedAttorneys?.data || assignedAttorneys;
+    if (Array.isArray(attorneyData) && attorneyData.length > 0) {
+      const assignedIds = attorneyData.map((assignment: any) => assignment.attorney.id);
       setSelectedQuotes(assignedIds);
       setIsSaved(true); // Mark as saved since these attorneys are already assigned
     }
@@ -197,7 +198,8 @@ export default function QuotesPage() {
 
   // Check if an attorney is already assigned to this request
   const isAttorneyAssigned = (attorneyId: number) => {
-    return Array.isArray(assignedAttorneys) && assignedAttorneys.some((assignment: any) => assignment.attorney.id === attorneyId);
+    const attorneyData = assignedAttorneys?.data || assignedAttorneys;
+    return Array.isArray(attorneyData) && attorneyData.some((assignment: any) => assignment.attorney.id === attorneyId);
   };
 
 
@@ -235,6 +237,7 @@ export default function QuotesPage() {
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Quote Summary for {request.data.firstName} {request.data.lastName}</CardTitle>
+              <CardDescription>Legal Request Number: {request.data.requestNumber}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
