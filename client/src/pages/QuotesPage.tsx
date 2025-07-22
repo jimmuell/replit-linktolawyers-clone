@@ -343,24 +343,24 @@ export default function QuotesPage() {
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Request Quotes from Selected Attorneys</DialogTitle>
+              <DialogTitle>Confirmation Email Sent!</DialogTitle>
               <DialogDescription>
-                You have selected {selectedQuotes.length} attorney(s) to request quotes from. They will be notified of your interest and will contact you directly with personalized quotes.
+                We've sent you a confirmation email with all the details about your selected attorneys.
               </DialogDescription>
             </DialogHeader>
             
             <div className="py-4">
               <p className="text-sm text-gray-600">
-                Selected attorneys will receive your case details and contact information. You should expect to hear from them within 24-48 hours.
+                Please check your spam or junk folder if you don't see the email in your inbox.
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                The selected attorneys have also been notified and will contact you directly within 24 hours.
               </p>
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowConfirmDialog(false)}>
-                Cancel
-              </Button>
               <Button onClick={handleConfirmRequest} className="bg-black hover:bg-gray-800 text-white">
-                Confirm Request
+                OK
               </Button>
             </DialogFooter>
           </DialogContent>
