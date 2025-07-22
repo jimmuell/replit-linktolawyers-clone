@@ -68,8 +68,8 @@ export default function QuotesPage() {
 
   // Fetch attorney assignments
   const { data: quotesResponse, isLoading: quotesLoading, error: quotesError } = useQuery<{success: boolean, data: any[]}>({
-    queryKey: ['/api/attorney-referrals/public/request', request?.id, 'attorneys'],
-    enabled: !!request?.id,
+    queryKey: ['/api/attorney-referrals/public/request', request?.data?.id, 'attorneys'],
+    enabled: !!request?.data?.id,
   });
 
   // Transform the API response to match the expected Quote[] format
@@ -114,15 +114,7 @@ export default function QuotesPage() {
     return caseType?.label || caseTypeValue;
   };
 
-  // Debug logging
-  console.log('QuotesPage Debug:', {
-    requestNumber,
-    request,
-    quotesResponse,
-    quotesData,
-    quotedAttorneys,
-    quotesLoading
-  });
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -153,16 +145,16 @@ export default function QuotesPage() {
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Quote Summary */}
-        {request && (
+        {request?.data && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Quote Summary for {request.firstName} {request.lastName}</CardTitle>
+              <CardTitle>Quote Summary for {request.data.firstName} {request.data.lastName}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <span className="text-sm font-medium text-gray-600">Case Type:</span>
-                  <p className="text-sm text-gray-900 mt-1">{getCaseTypeLabel(request.caseType)}</p>
+                  <p className="text-sm text-gray-900 mt-1">{getCaseTypeLabel(request.data.caseType)}</p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-600">Timeline:</span>
