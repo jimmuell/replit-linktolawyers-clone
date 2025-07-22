@@ -59,6 +59,13 @@ export default function QuotesPage() {
     enabled: !!requestNumber,
   });
 
+  // Fetch case types for display mapping
+  const { data: caseTypesResponse } = useQuery<{success: boolean, data: {value: string, label: string}[]}>({
+    queryKey: ['/api/case-types'],
+  });
+
+  const caseTypes = caseTypesResponse?.data || [];
+
   // Fetch attorney assignments
   const { data: quotesResponse, isLoading: quotesLoading, error: quotesError } = useQuery<{success: boolean, data: any[]}>({
     queryKey: ['/api/attorney-referrals/public/request', request?.id, 'attorneys'],
@@ -101,6 +108,22 @@ export default function QuotesPage() {
 
   const quotedAttorneys = quotesData?.filter(q => q.quoteStatus === 'sent') || [];
 
+  // Get human-readable case type
+  const getCaseTypeLabel = (caseTypeValue: string) => {
+    const caseType = caseTypes?.find(ct => ct.value === caseTypeValue);
+    return caseType?.label || caseTypeValue;
+  };
+
+  // Debug logging
+  console.log('QuotesPage Debug:', {
+    requestNumber,
+    request,
+    quotesResponse,
+    quotesData,
+    quotedAttorneys,
+    quotesLoading
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -139,7 +162,7 @@ export default function QuotesPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <span className="text-sm font-medium text-gray-600">Case Type:</span>
-                  <p className="text-sm text-gray-900 mt-1">{request.caseType}</p>
+                  <p className="text-sm text-gray-900 mt-1">{getCaseTypeLabel(request.caseType)}</p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-600">Timeline:</span>
