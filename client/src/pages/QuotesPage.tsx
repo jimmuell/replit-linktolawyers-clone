@@ -84,24 +84,30 @@ export default function QuotesPage() {
     enabled: !!request?.data?.caseType,
   });
 
-  // Mutation to assign attorneys to request
+  // Mutation to assign attorneys to request (using public endpoint)
   const assignAttorneysMutation = useMutation({
     mutationFn: async ({ requestId, attorneyIds }: { requestId: number; attorneyIds: number[] }) => {
-      return apiRequest(`/api/requests/${requestId}/attorneys`, {
+      return apiRequest(`/api/public/requests/${requestId}/attorneys`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ attorneyIds })
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/requests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
     }
   });
 
-  // Mutation to send attorney notification emails
+  // Mutation to send attorney notification emails (using public endpoint)
   const sendEmailMutation = useMutation({
     mutationFn: async (requestId: number) => {
-      return apiRequest(`/api/requests/${requestId}/send-attorney-emails`, {
-        method: 'POST'
+      return apiRequest(`/api/public/requests/${requestId}/send-attorney-emails`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
       });
     }
   });

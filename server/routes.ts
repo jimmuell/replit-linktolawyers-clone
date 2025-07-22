@@ -819,6 +819,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to assign attorneys to a request (for QuotesPage)
+  app.post('/api/public/requests/:requestId/attorneys', async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.requestId);
+      const { attorneyIds } = req.body;
+      
+      if (!Array.isArray(attorneyIds)) {
+        return res.status(400).json({ error: 'Attorney IDs must be an array' });
+      }
+
+      // Verify the request exists
+      const request = await storage.getLegalRequest(requestId);
+      if (!request) {
+        return res.status(404).json({ error: 'Legal request not found' });
+      }
+
+      // Update assignments for this request
+      const updatedAssignments = await storage.updateRequestAttorneyAssignments(requestId, attorneyIds);
+      res.json({ success: true, data: updatedAssignments });
+    } catch (error) {
+      console.error('Error updating attorney assignments:', error);
+      res.status(500).json({ success: false, error: 'Failed to update attorney assignments' });
+    }
+  });
+
+  // Public endpoint to send email to assigned attorneys for a request (for QuotesPage)
+  app.post('/api/public/requests/:requestId/send-attorney-emails', async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.requestId);
+      
+      // Get the legal request details
+      const request = await storage.getLegalRequest(requestId);
+      if (!request) {
+        return res.status(404).json({ error: 'Legal request not found' });
+      }
+
+      // Get assigned attorneys who haven't been emailed yet
+      const assignments = await storage.getRequestAttorneyAssignments(requestId);
+      const unEmailedAssignments = assignments.filter(assignment => !assignment.emailSent);
+
+      if (unEmailedAssignments.length === 0) {
+        return res.json({ success: true, message: 'All assigned attorneys have already been emailed' });
+      }
+
+      // Get SMTP settings
+      const smtpSettings = await storage.getSmtpSettings();
+      if (!smtpSettings) {
+        return res.status(400).json({ error: 'SMTP settings not configured' });
+      }
+
+      // Get attorney details for unemailed assignments
+      const attorneyDetails = await Promise.all(
+        unEmailedAssignments.map(async (assignment) => {
+          const attorney = await storage.getAttorney(assignment.attorneyId);
+          return { assignment, attorney };
+        })
+      );
+
+      // Create transporter
+      const transporter = await createTransporter();
+
+      // Send emails to all unnotified attorneys
+      const emailResults = [];
+      for (const { assignment, attorney } of attorneyDetails) {
+        try {
+          // Get case type data for better display
+          const caseTypes = await storage.getAllCaseTypes();
+          const caseTypeData = caseTypes.find(ct => ct.value === request.caseType);
+          
+          // Get attorney assignment email template variables
+          const templateVariables = getAttorneyAssignmentVariables(attorney, request, caseTypeData);
+          
+          // Get processed email template
+          const processedTemplate = await getProcessedTemplate('notification', templateVariables);
+          
+          let subject: string;
+          let htmlContent: string;
+          let textContent: string;
+          
+          if (processedTemplate) {
+            // Use production template
+            subject = processedTemplate.subject;
+            htmlContent = processedTemplate.html;
+            textContent = processedTemplate.text;
+          } else {
+            // Fallback to basic template if no production template is available
+            subject = `New Legal Case Assignment - ${request.requestNumber}`;
+            htmlContent = `
+              <h2>New Legal Case Assignment</h2>
+              <p>Dear ${attorney.firstName} ${attorney.lastName},</p>
+              <p>You have been assigned to a new legal case.</p>
+              <p><strong>Request Number:</strong> ${request.requestNumber}</p>
+              <p><strong>Client:</strong> ${request.firstName} ${request.lastName}</p>
+              <p><strong>Case Type:</strong> ${caseTypeData?.label || request.caseType}</p>
+              <p><strong>Location:</strong> ${request.location}</p>
+              <p>Please review the case details and contact the client to schedule a consultation.</p>
+            `;
+            textContent = `New Legal Case Assignment - ${request.requestNumber}\n\nDear ${attorney.firstName} ${attorney.lastName},\n\nYou have been assigned to a new legal case.\n\nRequest Number: ${request.requestNumber}\nClient: ${request.firstName} ${request.lastName}\nCase Type: ${caseTypeData?.label || request.caseType}\nLocation: ${request.location}\n\nPlease review the case details and contact the client to schedule a consultation.`;
+          }
+
+          const mailOptions = {
+            from: smtpSettings.fromEmail,
+            to: attorney.email,
+            subject: subject,
+            html: htmlContent,
+            text: textContent,
+          };
+
+          const result = await transporter.sendMail(mailOptions);
+          
+          // Store successful email in history
+          await storage.createEmailHistory({
+            toAddress: attorney.email,
+            subject: subject,
+            message: htmlContent,
+            status: 'sent',
+          });
+
+          // Mark assignment as emailed
+          await storage.updateRequestAttorneyAssignmentEmail(assignment.id, true);
+
+          emailResults.push({
+            attorneyId: attorney.id,
+            attorneyName: `${attorney.firstName} ${attorney.lastName}`,
+            email: attorney.email,
+            status: 'sent',
+            messageId: result.messageId
+          });
+
+        } catch (emailError: any) {
+          console.error(`Error sending email to attorney ${attorney.id}:`, emailError);
+          
+          // Store failed email in history
+          await storage.createEmailHistory({
+            toAddress: attorney.email,
+            subject: `New Legal Case Assignment - ${request.requestNumber}`,
+            message: 'Failed to send email',
+            status: 'failed',
+            errorMessage: emailError.message,
+          });
+
+          emailResults.push({
+            attorneyId: attorney.id,
+            attorneyName: `${attorney.firstName} ${attorney.lastName}`,
+            email: attorney.email,
+            status: 'failed',
+            error: emailError.message
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Emails sent to ${emailResults.filter(r => r.status === 'sent').length} of ${emailResults.length} attorneys`,
+        results: emailResults
+      });
+
+    } catch (error) {
+      console.error('Error sending attorney assignment emails:', error);
+      res.status(500).json({ success: false, error: 'Failed to send attorney assignment emails' });
+    }
+  });
+
   // Get attorney assignments for a request
   app.get('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
     try {
