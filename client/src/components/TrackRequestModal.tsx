@@ -459,10 +459,10 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                               assignedAttorney.quoteStatus === 'declined' ? 'destructive' :
                               'secondary'
                             }>
-                              {assignedAttorney.quoteStatus === 'pending' ? '"Quote Pending"' :
-                               assignedAttorney.quoteStatus === 'sent' ? '"Quote Sent"' :
-                               assignedAttorney.quoteStatus === 'accepted' ? '"Quote Accepted"' :
-                               '"Quote Declined"'}
+                              {assignedAttorney.quoteStatus === 'pending' ? 'Pending' :
+                               assignedAttorney.quoteStatus === 'sent' ? 'Quoted' :
+                               assignedAttorney.quoteStatus === 'accepted' ? 'Accepted' :
+                               'Declined'}
                             </Badge>
                           </div>
                           
