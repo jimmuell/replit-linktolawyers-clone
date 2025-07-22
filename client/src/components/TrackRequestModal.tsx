@@ -318,7 +318,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="requestNumber">Legal Request Number</Label>
+              <Label htmlFor="requestNumber">Search for request</Label>
               <form onSubmit={(e) => { e.preventDefault(); handleTrackRequest(); }}>
                 <div className="flex space-x-2">
                   <Input
