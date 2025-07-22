@@ -292,65 +292,67 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Search Section */}
-          <div className="space-y-4">
-            {/* Dropdown for existing requests */}
-            {legalRequests.length > 0 && (
-              <div className="space-y-2">
-                <Label htmlFor="requestDropdown">Select from Recent Requests</Label>
-                <Select onValueChange={handleDropdownSelection}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a request..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {legalRequests.map((req) => {
-                      // Shorten case type for display
-                      const shortCaseType = req.caseType.split(' - ')[0] || req.caseType;
-                      return (
-                        <SelectItem key={req.id} value={req.requestNumber}>
-                          {req.requestNumber} - {req.firstName} {req.lastName} ({shortCaseType})
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="requestNumber">Search for request</Label>
-              <form onSubmit={(e) => { e.preventDefault(); handleTrackRequest(); }}>
-                <div className="flex space-x-2">
-                  <Input
-                    id="requestNumber"
-                    placeholder="Enter your request number (e.g., lr-123456)"
-                    value={requestNumber}
-                    onChange={handleInputChange}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleTrackRequest();
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  <Button 
-                    type="button"
-                    onClick={handleTrackRequest}
-                    disabled={!requestNumber.trim() || isLoading}
-                  >
-                    <Search className="w-4 h-4 mr-2" />
-                    {isLoading ? 'Searching...' : 'Track'}
-                  </Button>
+          {/* Search Section - Only show when no request is loaded */}
+          {!request && (
+            <div className="space-y-4">
+              {/* Dropdown for existing requests */}
+              {legalRequests.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="requestDropdown">Select from Recent Requests</Label>
+                  <Select onValueChange={handleDropdownSelection}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a request..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {legalRequests.map((req) => {
+                        // Shorten case type for display
+                        const shortCaseType = req.caseType.split(' - ')[0] || req.caseType;
+                        return (
+                          <SelectItem key={req.id} value={req.requestNumber}>
+                            {req.requestNumber} - {req.firstName} {req.lastName} ({shortCaseType})
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </form>
+              )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="requestNumber">Search for request</Label>
+                <form onSubmit={(e) => { e.preventDefault(); handleTrackRequest(); }}>
+                  <div className="flex space-x-2">
+                    <Input
+                      id="requestNumber"
+                      placeholder="Enter your request number (e.g., lr-123456)"
+                      value={requestNumber}
+                      onChange={handleInputChange}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleTrackRequest();
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    <Button 
+                      type="button"
+                      onClick={handleTrackRequest}
+                      disabled={!requestNumber.trim() || isLoading}
+                    >
+                      <Search className="w-4 h-4 mr-2" />
+                      {isLoading ? 'Searching...' : 'Track'}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+              
+              <p className="text-sm text-gray-500">
+                Your request number was provided when you submitted your legal quote request. 
+                It should look like "lr-123456".
+              </p>
             </div>
-            
-            <p className="text-sm text-gray-500">
-              Your request number was provided when you submitted your legal quote request. 
-              It should look like "lr-123456".
-            </p>
-          </div>
+          )}
 
           {/* Error State - Only show if user has attempted a search */}
           {error && shouldFetch && (
@@ -370,14 +372,31 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
 
           {/* Request Details */}
           {request && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="w-5 h-5" />
-                  <span>Request Details</span>
-                </CardTitle>
+            <>
+              {/* Back to Search Button */}
+              <div className="flex justify-between items-center">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setRequestNumber('');
+                    setShouldFetch(false);
+                    queryClient.removeQueries({ queryKey: ['/api/legal-requests'] });
+                  }}
+                  className="flex items-center space-x-2"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>New Search</span>
+                </Button>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileText className="w-5 h-5" />
+                    <span>Request Details</span>
+                  </CardTitle>
                 <CardDescription>
-                  Request submitted on {format(new Date(request.createdAt), 'MMMM d, yyyy')}
+                  Request submitted on {request.createdAt ? format(new Date(request.createdAt), 'MMMM d, yyyy') : 'Unknown date'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -443,6 +462,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                 </div>
               </CardContent>
             </Card>
+            </>
           )}
 
           {/* Assigned Attorneys Section */}
