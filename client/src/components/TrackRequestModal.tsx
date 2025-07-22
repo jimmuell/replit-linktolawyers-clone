@@ -454,7 +454,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                               {assignedAttorney.attorney.firstName} {assignedAttorney.attorney.lastName}
                             </span>
                             {assignedAttorney.attorney.isVerified && (
-                              <Award className="w-4 h-4 text-blue-500" title="Verified Attorney" />
+                              <Award className="w-4 h-4 text-blue-500" />
                             )}
                           </div>
                           {assignedAttorney.attorney.firmName && (
@@ -537,7 +537,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                                 {quoteData.attorney.firstName} {quoteData.attorney.lastName}
                               </span>
                               {quoteData.attorney.isVerified && (
-                                <Award className="w-4 h-4 text-blue-500" title="Verified Attorney" />
+                                <Award className="w-4 h-4 text-blue-500" />
                               )}
                             </div>
                             {quoteData.attorney.firmName && (
