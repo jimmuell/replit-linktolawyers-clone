@@ -403,29 +403,6 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                   <Label className="text-sm font-medium text-gray-600">Case Description</Label>
                   <p className="text-sm text-gray-700 leading-relaxed">{request.caseDescription}</p>
                 </div>
-
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">Current Status</h4>
-                  <p className="text-sm text-blue-800 mb-3">{getStatusInfo(request.status).description}</p>
-                  <h4 className="font-medium text-blue-900 mb-2">What's Next?</h4>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    {assignedAttorneys.length > 0 ? (
-                      <>
-                        <li>• {assignedAttorneys.length} attorney(s) have been assigned to your case</li>
-                        <li>• Assigned attorneys will review your case and provide personalized quotes</li>
-                        <li>• You'll receive email notifications when quotes are available</li>
-                        <li>• Check your email (including spam folder) for updates</li>
-                      </>
-                    ) : (
-                      <>
-                        <li>• Our system is matching you with qualified attorneys</li>
-                        <li>• You'll receive personalized quotes once attorneys are assigned</li>
-                        <li>• Check your email (including spam folder) for updates</li>
-                        <li>• You can track your request anytime using this number</li>
-                      </>
-                    )}
-                  </ul>
-                </div>
               </CardContent>
             </Card>
           )}
@@ -507,6 +484,32 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                 ))}
               </CardContent>
             </Card>
+          )}
+
+          {/* Current Status Section */}
+          {request && (
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Current Status</h4>
+              <p className="text-sm text-blue-800 mb-3">{getStatusInfo(request.status).description}</p>
+              <h4 className="font-medium text-blue-900 mb-2">What's Next?</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
+                {assignedAttorneys.length > 0 ? (
+                  <>
+                    <li>• {assignedAttorneys.length} attorney(s) have been assigned to your case</li>
+                    <li>• Assigned attorneys will review your case and provide personalized quotes</li>
+                    <li>• You'll receive email notifications when quotes are available</li>
+                    <li>• Check your email (including spam folder) for updates</li>
+                  </>
+                ) : (
+                  <>
+                    <li>• Our system is matching you with qualified attorneys</li>
+                    <li>• You'll receive personalized quotes once attorneys are assigned</li>
+                    <li>• Check your email (including spam folder) for updates</li>
+                    <li>• You can track your request anytime using this number</li>
+                  </>
+                )}
+              </ul>
+            </div>
           )}
 
           {/* Attorney Quotes Section */}
