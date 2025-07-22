@@ -69,6 +69,26 @@ interface Quote {
   };
 }
 
+interface AssignedAttorney {
+  assignment: {
+    id: number;
+    status: string;
+    assignedAt: string;
+  };
+  attorney: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    firmName?: string;
+    licenseState?: string;
+    practiceAreas?: string[];
+    experienceYears?: number;
+    isVerified: boolean;
+    bio?: string;
+  };
+  quoteStatus: 'pending' | 'sent' | 'accepted' | 'declined';
+}
+
 export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModalProps) {
   const [requestNumber, setRequestNumber] = useState('');
   const [shouldFetch, setShouldFetch] = useState(false);
@@ -100,6 +120,23 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     retry: false,
   });
 
+  // Fetch assigned attorneys for the request
+  const { data: assignedAttorneysData } = useQuery<AssignedAttorney[]>({
+    queryKey: ['/api/attorney-referrals/public/request', request?.id, 'attorneys'],
+    queryFn: async () => {
+      const response = await fetch(`/api/attorney-referrals/public/request/${request!.id}/attorneys`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch assigned attorneys');
+      }
+      const data = await response.json();
+      return data.data;
+    },
+    enabled: !!request?.id,
+    retry: false,
+    staleTime: 0, // Always refetch to get latest assignment status
+    gcTime: 0, // Don't cache
+  });
+
   // Fetch quotes for the request
   const { data: quotesData } = useQuery<Quote[]>({
     queryKey: ['/api/attorney-referrals/public/request', request?.id, 'quotes'],
@@ -117,6 +154,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     gcTime: 0, // Don't cache
   });
 
+  const assignedAttorneys = assignedAttorneysData || [];
   const quotes = quotesData || [];
 
   const handleTrackRequest = () => {
@@ -371,12 +409,102 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                   <p className="text-sm text-blue-800 mb-3">{getStatusInfo(request.status).description}</p>
                   <h4 className="font-medium text-blue-900 mb-2">What's Next?</h4>
                   <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Our system is matching you with qualified attorneys</li>
-                    <li>• You'll receive personalized quotes</li>
-                    <li>• Check your email (including spam folder) for updates</li>
-                    <li>• You can track your request anytime using this number</li>
+                    {assignedAttorneys.length > 0 ? (
+                      <>
+                        <li>• {assignedAttorneys.length} attorney(s) have been assigned to your case</li>
+                        <li>• Assigned attorneys will review your case and provide personalized quotes</li>
+                        <li>• You'll receive email notifications when quotes are available</li>
+                        <li>• Check your email (including spam folder) for updates</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>• Our system is matching you with qualified attorneys</li>
+                        <li>• You'll receive personalized quotes once attorneys are assigned</li>
+                        <li>• Check your email (including spam folder) for updates</li>
+                        <li>• You can track your request anytime using this number</li>
+                      </>
+                    )}
                   </ul>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Assigned Attorneys Section */}
+          {request && assignedAttorneys.length > 0 && (
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <User className="w-5 h-5 text-blue-600" />
+                  <span>Assigned Attorneys ({assignedAttorneys.length})</span>
+                </CardTitle>
+                <CardDescription>
+                  These attorneys have been assigned to your case and will be working on providing you with quotes.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {assignedAttorneys.map((assignedAttorney) => (
+                  <div key={assignedAttorney.assignment.id} className="border rounded-lg p-4 bg-white">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">
+                              {assignedAttorney.attorney.firstName} {assignedAttorney.attorney.lastName}
+                            </span>
+                            {assignedAttorney.attorney.isVerified && (
+                              <Award className="w-4 h-4 text-blue-500" title="Verified Attorney" />
+                            )}
+                          </div>
+                          {assignedAttorney.attorney.firmName && (
+                            <span className="text-sm text-gray-600">
+                              at {assignedAttorney.attorney.firmName}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center space-x-4 mt-2">
+                          <div className="flex items-center space-x-1">
+                            <span className="text-sm text-gray-600">Assigned on:</span>
+                            <span className="text-sm font-medium">
+                              {format(new Date(assignedAttorney.assignment.assignedAt), 'MMM d, yyyy')}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center space-x-1">
+                            <span className="text-sm text-gray-600">Quote Status:</span>
+                            <Badge variant={
+                              assignedAttorney.quoteStatus === 'sent' ? 'default' :
+                              assignedAttorney.quoteStatus === 'accepted' ? 'default' :
+                              assignedAttorney.quoteStatus === 'declined' ? 'destructive' :
+                              'secondary'
+                            }>
+                              {assignedAttorney.quoteStatus === 'pending' ? 'Quote Pending' :
+                               assignedAttorney.quoteStatus === 'sent' ? 'Quote Sent' :
+                               assignedAttorney.quoteStatus === 'accepted' ? 'Quote Accepted' :
+                               'Quote Declined'}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {assignedAttorney.attorney.licenseState && (
+                          <div className="mt-2">
+                            <span className="text-sm text-gray-600">Licensed in: </span>
+                            <span className="text-sm font-medium">{assignedAttorney.attorney.licenseState}</span>
+                          </div>
+                        )}
+
+                        {assignedAttorney.attorney.experienceYears && (
+                          <div className="mt-1">
+                            <span className="text-sm text-gray-600">Experience: </span>
+                            <span className="text-sm font-medium">{assignedAttorney.attorney.experienceYears} years</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           )}

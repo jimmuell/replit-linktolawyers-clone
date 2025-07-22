@@ -529,6 +529,62 @@ router.get("/assignment/:assignmentId/quotes", requireAuth, async (req, res) => 
   }
 });
 
+// Get assigned attorneys for a specific request (public endpoint for tracking)
+router.get("/public/request/:requestId/attorneys", async (req, res) => {
+  try {
+    const requestId = parseInt(req.params.requestId);
+    
+    // Get all assigned attorneys for this request, regardless of quote status
+    const assignmentResults = await db.execute(sql`
+      SELECT 
+        ra.id as assignment_id,
+        ra.status as assignment_status,
+        ra.assigned_at,
+        a.id as attorney_id,
+        a.first_name,
+        a.last_name,
+        a.firm_name,
+        a.license_state,
+        a.practice_areas,
+        a.years_of_experience,
+        a.is_verified,
+        a.bio,
+        COALESCE(q.status, 'pending') as quote_status
+      FROM referral_assignments ra
+      JOIN attorneys a ON ra.attorney_id = a.id
+      LEFT JOIN quotes q ON q.assignment_id = ra.id
+      WHERE ra.request_id = ${requestId}
+      ORDER BY ra.assigned_at DESC
+    `);
+
+    // Transform the data to match the expected structure
+    const transformedAssignments = assignmentResults.rows.map((row: any) => ({
+      assignment: {
+        id: row.assignment_id,
+        status: row.assignment_status,
+        assignedAt: row.assigned_at,
+      },
+      attorney: {
+        id: row.attorney_id,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        firmName: row.firm_name,
+        licenseState: row.license_state,
+        practiceAreas: row.practice_areas,
+        experienceYears: row.years_of_experience,
+        isVerified: row.is_verified,
+        bio: row.bio,
+      },
+      quoteStatus: row.quote_status,
+    }));
+    
+    res.json({ success: true, data: transformedAssignments });
+  } catch (error) {
+    console.error('Error fetching assigned attorneys for request:', error);
+    res.status(500).json({ error: 'Failed to fetch assigned attorneys' });
+  }
+});
+
 // Get quotes for a specific request (public endpoint for tracking)
 router.get("/public/request/:requestId/quotes", async (req, res) => {
   try {
