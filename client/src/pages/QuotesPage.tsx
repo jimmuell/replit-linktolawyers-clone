@@ -349,11 +349,11 @@ export default function QuotesPage() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="py-4">
+            <div className="py-4 space-y-4">
               <p className="text-sm text-gray-600">
                 Please check your spam or junk folder if you don't see the email in your inbox.
               </p>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-gray-600">
                 The selected attorneys have also been notified and will contact you directly within 24 hours.
               </p>
             </div>
