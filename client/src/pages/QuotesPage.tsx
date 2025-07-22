@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRoute } from 'wouter';
+import { useRoute, useLocation } from 'wouter';
 import { ArrowLeft, Star, CheckCircle, Clock, DollarSign, Users, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +57,7 @@ interface LegalRequest {
 
 export default function QuotesPage() {
   const [match, params] = useRoute('/quotes/:requestNumber');
+  const [location, setLocation] = useLocation();
   const requestNumber = params?.requestNumber;
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -142,11 +143,12 @@ export default function QuotesPage() {
   };
 
   const handleConfirmRequest = () => {
-    // TODO: Implement actual quote request logic
     console.log('Quote request confirmed for attorneys:', selectedQuotes);
     setShowConfirmDialog(false);
     // Reset selections after confirmation
     setSelectedQuotes([]);
+    // Navigate to home page
+    setLocation('/');
   };
 
   const handleSaveAndReturn = () => {
