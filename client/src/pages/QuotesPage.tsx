@@ -89,10 +89,7 @@ export default function QuotesPage() {
     mutationFn: async ({ requestId, attorneyIds }: { requestId: number; attorneyIds: number[] }) => {
       return apiRequest(`/api/public/requests/${requestId}/attorneys`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ attorneyIds })
+        body: { attorneyIds }
       });
     },
     onSuccess: () => {
@@ -104,10 +101,7 @@ export default function QuotesPage() {
   const sendEmailMutation = useMutation({
     mutationFn: async (requestId: number) => {
       return apiRequest(`/api/public/requests/${requestId}/send-attorney-emails`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        method: 'POST'
       });
     }
   });
