@@ -19,7 +19,7 @@ import LoginModal from "@/components/LoginModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
-import WorkflowTestModal from "@/components/WorkflowTestModal";
+
 import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
 import PrivacyPolicyModal from "@/components/PrivacyPolicyModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
@@ -32,7 +32,7 @@ export default function Home() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
-  const [isWorkflowTestModalOpen, setIsWorkflowTestModalOpen] = useState(false);
+
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
@@ -710,27 +710,8 @@ export default function Home() {
                 <Button
                   type="button"
                   onClick={() => {
-                    // Close the confirmation modal
-                    setSubmittedRequestNumber(null);
-                    setIsQuoteModalOpen(false);
-                    setIsEmailPreviewOpen(false);
-                    setEmailPreview(null);
-                    setPrefillChecked(false);
-                    setIsCopied(false);
-                    // Reset form
-                    setFormData({
-                      firstName: '',
-                      lastName: '',
-                      caseType: '',
-                      email: '',
-                      phoneNumber: '',
-                      caseDescription: '',
-                      location: '',
-                      captcha: '',
-                      agreeToTerms: false
-                    });
-                    // Open workflow test modal
-                    setIsWorkflowTestModalOpen(true);
+                    // Navigate to quotes page with the submitted request number
+                    window.location.href = `/quotes/${submittedRequestNumber}`;
                   }}
                   variant="outline"
                   className="w-full"
@@ -925,11 +906,7 @@ export default function Home() {
         onClose={() => setIsTrackRequestModalOpen(false)}
       />
 
-      {/* Workflow Test Modal */}
-      <WorkflowTestModal
-        isOpen={isWorkflowTestModalOpen}
-        onClose={() => setIsWorkflowTestModalOpen(false)}
-      />
+
 
       {/* Terms and Conditions Modal */}
       <TermsAndConditionsModal

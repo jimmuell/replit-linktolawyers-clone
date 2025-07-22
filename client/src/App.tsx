@@ -24,6 +24,7 @@ import EmailTemplatesPage from "@/pages/email-templates";
 import NotFound from "@/pages/not-found";
 import HomeSpanish from "@/pages/home-spanish";
 import AttorneyDashboard from "@/pages/attorney-dashboard";
+import QuotesPage from "@/pages/QuotesPage";
 
 function Router() {
   return (
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/es/recursos-gratuitos" component={FreeResourcesSpanish} />
       <Route path="/help" component={Help} />
       <Route path="/es/ayuda" component={HelpSpanish} />
+      <Route path="/quotes/:requestNumber" component={QuotesPage} />
       <Route component={NotFound} />
     </Switch>
   );
