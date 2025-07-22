@@ -794,6 +794,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to get all legal requests (for dropdown in track request modal)
+  app.get('/api/legal-requests/public', async (req, res) => {
+    try {
+      const requests = await storage.getAllLegalRequests();
+      // Only return basic info needed for dropdown (no sensitive data)
+      const publicRequests = requests.map(req => ({
+        id: req.id,
+        requestNumber: req.requestNumber,
+        firstName: req.firstName,
+        lastName: req.lastName,
+        caseType: req.caseType,
+        status: req.status,
+        createdAt: req.createdAt
+      }));
+      res.json({ success: true, data: publicRequests });
+    } catch (error) {
+      console.error('Error fetching public legal requests:', error);
+      res.status(500).json({ error: 'Failed to fetch legal requests' });
+    }
+  });
+
   // Get attorney assignments for a request
   app.get('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
     try {

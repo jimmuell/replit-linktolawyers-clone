@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Clock, User, Mail, Phone, MapPin, FileText, DollarSign, ChevronDown, ChevronUp, Star, Award, Check, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -104,6 +105,14 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch all legal requests for dropdown (public access)
+  const { data: allRequestsResponse } = useQuery<{success: boolean, data: LegalRequest[]}>({
+    queryKey: ['/api/legal-requests/public'],
+    enabled: isOpen, // Only fetch when modal is open
+  });
+
+  const legalRequests = allRequestsResponse?.data || [];
 
   const { data: request, isLoading, error, refetch } = useQuery<LegalRequest>({
     queryKey: ['/api/legal-requests', shouldFetch ? requestNumber : 'disabled'],
@@ -268,6 +277,10 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
     setRequestNumber(formatted);
   };
 
+  const handleDropdownSelection = (value: string) => {
+    setRequestNumber(value);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -281,6 +294,29 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
         <div className="space-y-6">
           {/* Search Section */}
           <div className="space-y-4">
+            {/* Dropdown for existing requests */}
+            {legalRequests.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="requestDropdown">Select from Recent Requests</Label>
+                <Select onValueChange={handleDropdownSelection}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a request..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {legalRequests.map((req) => {
+                      // Shorten case type for display
+                      const shortCaseType = req.caseType.split(' - ')[0] || req.caseType;
+                      return (
+                        <SelectItem key={req.id} value={req.requestNumber}>
+                          {req.requestNumber} - {req.firstName} {req.lastName} ({shortCaseType})
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="requestNumber">Legal Request Number</Label>
               <form onSubmit={(e) => { e.preventDefault(); handleTrackRequest(); }}>
