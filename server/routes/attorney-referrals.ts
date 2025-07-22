@@ -534,12 +534,14 @@ router.get("/public/request/:requestId/attorneys", async (req, res) => {
   try {
     const requestId = parseInt(req.params.requestId);
     
-    // Get all assigned attorneys for this request, regardless of quote status
+    // Get all assigned attorneys from request_attorney_assignments table (admin system)
     const assignmentResults = await db.execute(sql`
       SELECT 
         ra.id as assignment_id,
         ra.status as assignment_status,
         ra.assigned_at,
+        ra.email_sent,
+        ra.email_sent_at,
         a.id as attorney_id,
         a.first_name,
         a.last_name,
@@ -548,24 +550,25 @@ router.get("/public/request/:requestId/attorneys", async (req, res) => {
         a.practice_areas,
         a.years_of_experience,
         a.is_verified,
-        a.bio,
-        COALESCE(q.status, 'pending') as quote_status,
-        q.service_fee as quote_amount,
-        q.sent_at as quote_sent_at
-      FROM referral_assignments ra
+        a.bio
+      FROM request_attorney_assignments ra
       JOIN attorneys a ON ra.attorney_id = a.id
-      LEFT JOIN quotes q ON q.assignment_id = ra.id
       WHERE ra.request_id = ${requestId}
       ORDER BY ra.assigned_at DESC
     `);
 
-    // Transform the data to match the expected structure
+    // Transform the data to match the admin endpoint structure
     const transformedAssignments = assignmentResults.rows.map((row: any) => ({
-      assignment: {
-        id: row.assignment_id,
-        status: row.assignment_status,
-        assignedAt: row.assigned_at,
-      },
+      id: row.assignment_id,
+      requestId: requestId,
+      attorneyId: row.attorney_id,
+      assignedAt: row.assigned_at,
+      status: row.assignment_status,
+      notes: null,
+      emailSent: row.email_sent,
+      emailSentAt: row.email_sent_at,
+      createdAt: row.assigned_at,
+      updatedAt: row.assigned_at,
       attorney: {
         id: row.attorney_id,
         firstName: row.first_name,
@@ -573,16 +576,14 @@ router.get("/public/request/:requestId/attorneys", async (req, res) => {
         firmName: row.firm_name,
         licenseState: row.license_state,
         practiceAreas: row.practice_areas,
-        experienceYears: row.years_of_experience,
+        yearsOfExperience: row.years_of_experience,
         isVerified: row.is_verified,
         bio: row.bio,
-      },
-      quoteStatus: row.quote_status,
-      quoteAmount: row.quote_amount,
-      quoteSentAt: row.quote_sent_at,
+      }
     }));
     
-    res.json({ success: true, data: transformedAssignments });
+    // Return raw array format to match admin endpoint
+    res.json(transformedAssignments);
   } catch (error) {
     console.error('Error fetching assigned attorneys for request:', error);
     res.status(500).json({ error: 'Failed to fetch assigned attorneys' });

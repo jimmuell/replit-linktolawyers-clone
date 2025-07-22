@@ -1,9 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { db } from "./storage";
-import { requestAttorneyAssignments, attorneys } from "@shared/schema";
-import { eq, asc } from "drizzle-orm";
 import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, type User } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -847,17 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint to get assigned attorneys for a request (for QuotesPage)
-  app.get('/api/attorney-referrals/public/request/:requestId/attorneys', async (req, res) => {
-    try {
-      const requestId = parseInt(req.params.requestId);
-      const assignments = await storage.getRequestAttorneyAssignments(requestId);
-      res.json({ success: true, data: assignments });
-    } catch (error) {
-      console.error('Error fetching request attorney assignments:', error);
-      res.status(500).json({ success: false, error: 'Failed to fetch assignments' });
-    }
-  });
+
 
   // Public endpoint to send email to assigned attorneys for a request (for QuotesPage)
   app.post('/api/public/requests/:requestId/send-attorney-emails', async (req, res) => {
