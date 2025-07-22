@@ -81,7 +81,7 @@ export default function Home() {
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
-  const caseTypes = caseTypesData?.data || [];
+  const caseTypes = (caseTypesData as any)?.data || [];
 
 
 
