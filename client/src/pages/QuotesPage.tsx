@@ -189,54 +189,130 @@ export default function QuotesPage() {
           <>
             <div>
               <h3 className="font-medium mb-3">Available Attorneys ({availableAttorneysWithQuotes.length})</h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-6">
                 {availableAttorneysWithQuotes.map((attorney: any) => (
-                  <div key={attorney.id} className="border rounded-lg p-4 hover:bg-gray-50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Checkbox
-                          id={`attorney-${attorney.id}`}
-                          checked={selectedQuotes.includes(attorney.id)}
-                          onCheckedChange={() => handleQuoteSelection(attorney.id)}
-                        />
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <h4 className="font-medium text-gray-900">
-                              {attorney.firstName} {attorney.lastName}
-                            </h4>
-                            {attorney.isVerified && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Verified
+                  <Card key={attorney.id} className="border border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start space-x-4">
+                          <Checkbox
+                            id={`attorney-${attorney.id}`}
+                            checked={selectedQuotes.includes(attorney.id)}
+                            onCheckedChange={() => handleQuoteSelection(attorney.id)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {attorney.firstName} {attorney.lastName}
+                              </h3>
+                              {attorney.isVerified && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Verified
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{attorney.firmName}</p>
+                            <div className="flex items-center space-x-4 mt-1">
+                              <span className="text-sm text-gray-500">
+                                {attorney.licenseState}
                               </span>
-                            )}
+                              <span className="text-sm text-gray-500">
+                                {attorney.experienceYears}+ years
+                              </span>
+                              {attorney.isVerified && (
+                                <div className="flex items-center space-x-1">
+                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                  <span className="text-sm text-gray-500">5 (30 reviews)</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-sm text-gray-600">
-                            {attorney.firmName} • {attorney.licenseState}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {attorney.experienceYears}+ years experience
-                          </p>
-                          {attorney.practiceAreas && attorney.practiceAreas.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {attorney.practiceAreas.map((area: string, index: number) => (
-                                <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-gray-900">
+                            ${attorney.fee?.toLocaleString() || '5,950'}
+                          </div>
+                          <div className="text-sm text-gray-500">${attorney.feeType === 'hourly' ? '595' : '595'}/hour</div>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-6">
+                        {attorney.bio || `With ${attorney.experienceYears} years of experience in immigration law, I'm committed to providing you with expert legal representation tailored to your specific needs.`}
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-600">Timeline</span>
+                          </div>
+                          <p className="text-sm text-gray-900 ml-6">2-4 weeks</p>
+
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">Specialties</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {attorney.practiceAreas?.map((area: string, index: number) => (
+                                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
                                   {area}
                                 </span>
-                              ))}
+                              )) || (
+                                <>
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
+                                    Immigration Law
+                                  </span>
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
+                                    Deportation Defense
+                                  </span>
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
+                                    Asylum Cases
+                                  </span>
+                                </>
+                              )}
                             </div>
-                          )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <DollarSign className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-600">Payment Options</span>
+                          </div>
+                          <div className="ml-6 space-y-1">
+                            <p className="text-sm text-gray-900">Hourly</p>
+                            <p className="text-sm text-gray-900">Flat Fee</p>
+                          </div>
+
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">What's Included</span>
+                            <div className="ml-6 mt-2 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Initial consultation and case assessment</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Legal strategy development</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Document preparation and review</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Filing of all necessary forms</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Regular case updates and communication</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-lg font-semibold text-gray-900">
-                          ${attorney.feeSchedule?.flatFee?.toLocaleString() || 'Quote Available'}
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {attorney.feeSchedule?.feeType || 'Contact for details'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -248,10 +324,10 @@ export default function QuotesPage() {
           <div className="mt-8 text-center">
             <Button 
               size="lg" 
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-black hover:bg-gray-800 text-white rounded-lg px-8 py-3"
               onClick={handleConnectWithAttorneys}
             >
-              Request Quotes from Selected Attorneys ({selectedQuotes.length})
+              Selected attorneys ({selectedQuotes.length})
             </Button>
           </div>
         )}
