@@ -86,13 +86,14 @@ export default function QuotesPage() {
   });
 
   // Fetch existing assigned attorneys for this request
-  const { data: assignedAttorneysResponse, isLoading: assignedLoading } = useQuery<{success: boolean, data: any[]}>({
+  const { data: assignedAttorneysResponse, isLoading: assignedLoading } = useQuery<any[]>({
     queryKey: ['/api/attorney-referrals/public/request', request?.data?.id, 'attorneys'],
     enabled: !!request?.data?.id,
   });
 
-  const assignedAttorneys = assignedAttorneysResponse?.data || [];
+  const assignedAttorneys = Array.isArray(assignedAttorneysResponse) ? assignedAttorneysResponse : [];
   console.log('Assigned attorneys data:', assignedAttorneysResponse);
+  console.log('Assigned attorneys final:', assignedAttorneys);
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
