@@ -85,6 +85,21 @@ export default function QuotesPage() {
     enabled: !!request?.data?.caseType,
   });
 
+  // Fetch existing assigned attorneys for this request
+  const { data: assignedAttorneys, isLoading: assignedLoading } = useQuery<any[]>({
+    queryKey: ['/api/attorney-referrals/public/request', request?.data?.id, 'attorneys'],
+    enabled: !!request?.data?.id,
+  });
+
+  // Pre-select assigned attorneys when data loads
+  useEffect(() => {
+    if (assignedAttorneys && assignedAttorneys.length > 0) {
+      const assignedIds = assignedAttorneys.map((assignment: any) => assignment.attorney.id);
+      setSelectedQuotes(assignedIds);
+      setIsSaved(true); // Mark as saved since these attorneys are already assigned
+    }
+  }, [assignedAttorneys]);
+
   // Mutation to assign attorneys to request (using public endpoint)
   const assignAttorneysMutation = useMutation({
     mutationFn: async ({ requestId, attorneyIds }: { requestId: number; attorneyIds: number[] }) => {
@@ -178,6 +193,11 @@ export default function QuotesPage() {
   const getCaseTypeLabel = (caseTypeValue: string) => {
     const caseType = caseTypes?.find(ct => ct.value === caseTypeValue);
     return caseType?.label || caseTypeValue;
+  };
+
+  // Check if an attorney is already assigned to this request
+  const isAttorneyAssigned = (attorneyId: number) => {
+    return assignedAttorneys?.some((assignment: any) => assignment.attorney.id === attorneyId);
   };
 
 
@@ -280,6 +300,11 @@ export default function QuotesPage() {
                               {attorney.isVerified && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                   Verified
+                                </span>
+                              )}
+                              {isAttorneyAssigned(attorney.id) && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  Already Assigned
                                 </span>
                               )}
                             </div>
