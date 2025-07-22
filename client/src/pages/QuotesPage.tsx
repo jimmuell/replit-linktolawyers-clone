@@ -60,21 +60,28 @@ export default function QuotesPage() {
   });
 
   // Fetch attorney assignments
-  const { data: quotesData, isLoading: quotesLoading, error: quotesError } = useQuery<Quote[]>({
+  const { data: quotesResponse, isLoading: quotesLoading, error: quotesError } = useQuery<{success: boolean, data: any[]}>({
     queryKey: ['/api/attorney-referrals/public/request', request?.id, 'attorneys'],
     enabled: !!request?.id,
   });
 
-  // Debug logging
-  useEffect(() => {
-    console.log('QuotesPage Debug:', {
-      requestNumber,
-      request,
-      quotesData,
-      quotesLoading,
-      quotesError
-    });
-  }, [requestNumber, request, quotesData, quotesLoading, quotesError]);
+  // Transform the API response to match the expected Quote[] format
+  const quotesData: Quote[] = quotesResponse?.data?.map((item: any) => ({
+    id: item.assignment.id,
+    assignment: item.assignment,
+    attorney: item.attorney,
+    quoteStatus: item.quoteStatus,
+    quoteAmount: item.quoteAmount,
+    quoteSentAt: item.quoteSentAt
+  })) || [];
+
+  const handleConnectWithAttorneys = () => {
+    // TODO: Implement attorney connection logic
+    // This could involve updating quote status to "accepted" for selected attorneys
+    // and sending notifications to selected attorneys
+    console.log('Connecting with selected attorneys:', selectedQuotes);
+    alert(`Connecting with ${selectedQuotes.length} selected attorney(s). They will be notified of your interest and will contact you directly.`);
+  };
 
   const handleBackToForm = () => {
     window.location.href = '/';
@@ -270,7 +277,11 @@ export default function QuotesPage() {
         {/* Action Button */}
         {selectedQuotes.length > 0 && (
           <div className="mt-8 text-center">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+            <Button 
+              size="lg" 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={handleConnectWithAttorneys}
+            >
               Connect with Selected Attorneys ({selectedQuotes.length})
             </Button>
           </div>
