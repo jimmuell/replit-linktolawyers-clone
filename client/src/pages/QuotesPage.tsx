@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { ArrowLeft, Star, CheckCircle, Clock, DollarSign, Users, X, Check } from 'lucide-react';
+import { ArrowLeft, Star, CheckCircle, Clock, DollarSign, Users, X, Check, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -123,23 +123,24 @@ export default function QuotesPage() {
   });
 
   const handleConnectWithAttorneys = async () => {
-    if (!request?.data || selectedQuotes.length === 0) return;
+    const newlySelectedAttorneys = getNewlySelectedAttorneys();
+    if (!request?.data || newlySelectedAttorneys.length === 0) return;
     
     setIsAssigning(true);
     
     try {
-      // First, assign attorneys to the request
+      // First, assign only newly selected attorneys to the request
       await assignAttorneysMutation.mutateAsync({
         requestId: request.data.id,
-        attorneyIds: selectedQuotes
+        attorneyIds: newlySelectedAttorneys
       });
       
-      // Then send notification emails to the assigned attorneys
+      // Then send notification emails to the newly assigned attorneys
       await sendEmailMutation.mutateAsync(request.data.id);
       
       toast({
         title: "Success",
-        description: `${selectedQuotes.length} attorney(s) have been assigned and notified.`
+        description: `${newlySelectedAttorneys.length} new attorney(s) have been assigned and notified.`
       });
       
       // Show confirmation dialog
@@ -158,7 +159,8 @@ export default function QuotesPage() {
   };
 
   const handleConfirmRequest = () => {
-    console.log('Quote request confirmed for attorneys:', selectedQuotes);
+    const newlySelected = getNewlySelectedAttorneys();
+    console.log('Quote request confirmed for newly selected attorneys:', newlySelected);
     setShowConfirmDialog(false);
     // Reset selections after confirmation
     setSelectedQuotes([]);
@@ -198,6 +200,17 @@ export default function QuotesPage() {
   // Check if an attorney is already assigned to this request
   const isAttorneyAssigned = (attorneyId: number) => {
     return Array.isArray(assignedAttorneys) && assignedAttorneys.some((assignment: any) => assignment.attorney.id === attorneyId);
+  };
+
+  // Check if an attorney has been emailed
+  const isAttorneyEmailed = (attorneyId: number) => {
+    const assignment = Array.isArray(assignedAttorneys) && assignedAttorneys.find((assignment: any) => assignment.attorney.id === attorneyId);
+    return assignment && assignment.emailSent;
+  };
+
+  // Get only newly selected attorneys (exclude already assigned ones)
+  const getNewlySelectedAttorneys = () => {
+    return selectedQuotes.filter(attorneyId => !isAttorneyAssigned(attorneyId));
   };
 
 
@@ -304,8 +317,14 @@ export default function QuotesPage() {
                                 </span>
                               )}
                               {isAttorneyAssigned(attorney.id) && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-black text-white">
                                   Already Assigned
+                                </span>
+                              )}
+                              {isAttorneyEmailed(attorney.id) && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <Mail className="w-3 h-3 mr-1" />
+                                  Email Sent
                                 </span>
                               )}
                             </div>
@@ -417,7 +436,7 @@ export default function QuotesPage() {
         )}
 
         {/* Floating Action Button */}
-        {selectedQuotes.length > 0 && (
+        {getNewlySelectedAttorneys().length > 0 && (
           <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
             <Button 
               size="lg" 
@@ -425,7 +444,7 @@ export default function QuotesPage() {
               onClick={handleConnectWithAttorneys}
               disabled={isAssigning}
             >
-              {isAssigning ? 'Assigning attorneys...' : `Selected attorneys (${selectedQuotes.length})`}
+              {isAssigning ? 'Assigning attorneys...' : `Selected attorneys (${getNewlySelectedAttorneys().length})`}
             </Button>
           </div>
         )}
