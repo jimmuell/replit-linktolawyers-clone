@@ -415,7 +415,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <User className="w-5 h-5 text-blue-600" />
-                  <span>Assigned Attorneys ({assignedAttorneys.length})</span>
+                  <span>Matched Attorneys ({assignedAttorneys.length})</span>
                 </CardTitle>
                 <CardDescription>
                   These attorneys have been assigned to your case and will be working on providing you with quotes.
@@ -452,17 +452,17 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                           </div>
                           
                           <div className="flex items-center space-x-1">
-                            <span className="text-sm text-gray-600">Quote Status:</span>
+                            <span className="text-sm text-gray-600">Status:</span>
                             <Badge variant={
                               assignedAttorney.quoteStatus === 'sent' ? 'default' :
                               assignedAttorney.quoteStatus === 'accepted' ? 'default' :
                               assignedAttorney.quoteStatus === 'declined' ? 'destructive' :
                               'secondary'
                             }>
-                              {assignedAttorney.quoteStatus === 'pending' ? 'Quote Pending' :
-                               assignedAttorney.quoteStatus === 'sent' ? 'Quote Sent' :
-                               assignedAttorney.quoteStatus === 'accepted' ? 'Quote Accepted' :
-                               'Quote Declined'}
+                              {assignedAttorney.quoteStatus === 'pending' ? '"Quote Pending"' :
+                               assignedAttorney.quoteStatus === 'sent' ? '"Quote Sent"' :
+                               assignedAttorney.quoteStatus === 'accepted' ? '"Quote Accepted"' :
+                               '"Quote Declined"'}
                             </Badge>
                           </div>
                           
