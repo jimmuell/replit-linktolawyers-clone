@@ -319,12 +319,12 @@ export default function QuotesPage() {
           </>
         )}
 
-        {/* Action Button */}
+        {/* Floating Action Button */}
         {selectedQuotes.length > 0 && (
-          <div className="mt-8 text-center">
+          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
             <Button 
               size="lg" 
-              className="bg-black hover:bg-gray-800 text-white rounded-lg px-8 py-3"
+              className="bg-black hover:bg-gray-800 text-white rounded-lg px-8 py-4 shadow-lg"
               onClick={handleConnectWithAttorneys}
             >
               Selected attorneys ({selectedQuotes.length})
