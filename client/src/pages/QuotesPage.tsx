@@ -93,7 +93,7 @@ export default function QuotesPage() {
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
-    if (assignedAttorneys && assignedAttorneys.length > 0) {
+    if (Array.isArray(assignedAttorneys) && assignedAttorneys.length > 0) {
       const assignedIds = assignedAttorneys.map((assignment: any) => assignment.attorney.id);
       setSelectedQuotes(assignedIds);
       setIsSaved(true); // Mark as saved since these attorneys are already assigned
@@ -197,7 +197,7 @@ export default function QuotesPage() {
 
   // Check if an attorney is already assigned to this request
   const isAttorneyAssigned = (attorneyId: number) => {
-    return assignedAttorneys?.some((assignment: any) => assignment.attorney.id === attorneyId);
+    return Array.isArray(assignedAttorneys) && assignedAttorneys.some((assignment: any) => assignment.attorney.id === attorneyId);
   };
 
 
