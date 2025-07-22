@@ -350,7 +350,7 @@ export default function QuotesPage() {
             </DialogHeader>
             
             <div className="py-4 space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 font-bold">
                 Please check your spam or junk folder if you don't see the email in your inbox.
               </p>
               <p className="text-sm text-gray-600">
