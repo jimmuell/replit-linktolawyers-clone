@@ -60,10 +60,21 @@ export default function QuotesPage() {
   });
 
   // Fetch attorney assignments
-  const { data: quotesData } = useQuery<Quote[]>({
+  const { data: quotesData, isLoading: quotesLoading, error: quotesError } = useQuery<Quote[]>({
     queryKey: ['/api/attorney-referrals/public/request', request?.id, 'attorneys'],
     enabled: !!request?.id,
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('QuotesPage Debug:', {
+      requestNumber,
+      request,
+      quotesData,
+      quotesLoading,
+      quotesError
+    });
+  }, [requestNumber, request, quotesData, quotesLoading, quotesError]);
 
   const handleBackToForm = () => {
     window.location.href = '/';
