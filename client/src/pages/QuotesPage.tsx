@@ -86,10 +86,13 @@ export default function QuotesPage() {
   });
 
   // Fetch existing assigned attorneys for this request
-  const { data: assignedAttorneys, isLoading: assignedLoading } = useQuery<any[]>({
+  const { data: assignedAttorneysResponse, isLoading: assignedLoading } = useQuery<{success: boolean, data: any[]}>({
     queryKey: ['/api/attorney-referrals/public/request', request?.data?.id, 'attorneys'],
     enabled: !!request?.data?.id,
   });
+
+  const assignedAttorneys = assignedAttorneysResponse?.data || [];
+  console.log('Assigned attorneys data:', assignedAttorneysResponse);
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
@@ -199,12 +202,12 @@ export default function QuotesPage() {
 
   // Check if an attorney is already assigned to this request
   const isAttorneyAssigned = (attorneyId: number) => {
-    return Array.isArray(assignedAttorneys) && assignedAttorneys.some((assignment: any) => assignment.attorney.id === attorneyId);
+    return assignedAttorneys.some((assignment: any) => assignment.attorney.id === attorneyId);
   };
 
   // Check if an attorney has been emailed
   const isAttorneyEmailed = (attorneyId: number) => {
-    const assignment = Array.isArray(assignedAttorneys) && assignedAttorneys.find((assignment: any) => assignment.attorney.id === attorneyId);
+    const assignment = assignedAttorneys.find((assignment: any) => assignment.attorney.id === attorneyId);
     return assignment && assignment.emailSent;
   };
 

@@ -567,11 +567,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transporter = await createTransporter();
       await transporter.verify();
       res.json({ message: 'SMTP connection successful', status: 'connected' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('SMTP test failed:', error);
       res.status(500).json({ 
         message: 'SMTP connection failed', 
-        error: error.message,
+        error: error?.message || 'Unknown error',
         status: 'failed'
       });
     }
@@ -612,26 +612,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'Email sent successfully',
           messageId: result.messageId 
         });
-      } catch (error) {
+      } catch (error: any) {
         // Store failed email in history
         await storage.createEmailHistory({
           toAddress: validatedData.to,
           subject: validatedData.subject,
           message: validatedData.message,
           status: 'failed',
-          errorMessage: error.message,
+          errorMessage: error?.message || 'Unknown error',
         });
 
         res.status(500).json({ 
           message: 'Failed to send email',
-          error: error.message
+          error: error?.message || 'Unknown error'
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Email send error:', error);
       res.status(400).json({ 
         message: 'Invalid email data',
-        error: error.message
+        error: error?.message || 'Unknown error'
       });
     }
   });
@@ -885,6 +885,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send emails to all unnotified attorneys
       const emailResults = [];
       for (const { assignment, attorney } of attorneyDetails) {
+        if (!attorney) {
+          console.error('Attorney is undefined for assignment:', assignment.id);
+          continue;
+        }
+        
         try {
           // Get case type data for better display
           const caseTypes = await storage.getAllCaseTypes();
@@ -959,7 +964,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             subject: `New Legal Case Assignment - ${request.requestNumber}`,
             message: 'Failed to send email',
             status: 'failed',
-            errorMessage: emailError.message,
+            errorMessage: emailError?.message || 'Unknown error',
           });
 
           emailResults.push({
@@ -967,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             attorneyName: `${attorney.firstName} ${attorney.lastName}`,
             email: attorney.email,
             status: 'failed',
-            error: emailError.message
+            error: emailError?.message || 'Unknown error'
           });
         }
       }
@@ -1076,6 +1081,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send emails to all unnotified attorneys
       const emailResults = [];
       for (const { assignment, attorney } of attorneyDetails) {
+        if (!attorney) {
+          console.error('Attorney is undefined for assignment:', assignment.id);
+          continue;
+        }
+        
         try {
           // Get case type data for better display
           const caseTypes = await storage.getAllCaseTypes();
@@ -1140,8 +1150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             email: attorney.email,
             success: true
           });
-        } catch (error) {
-          console.error(`Failed to send email to ${attorney.email}:`, error);
+        } catch (error: any) {
+          console.error(`Failed to send email to ${attorney?.email || 'unknown'}:`, error);
           
           // Store failed email in history
           await storage.createEmailHistory({
@@ -1149,15 +1159,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             subject: `New Legal Case Assignment - ${request.requestNumber}`,
             message: '',
             status: 'failed',
-            errorMessage: error.message,
+            errorMessage: error?.message || 'Unknown error',
           });
 
           emailResults.push({
-            attorneyId: attorney.id,
-            attorneyName: `${attorney.firstName} ${attorney.lastName}`,
-            email: attorney.email,
+            attorneyId: attorney?.id || 0,
+            attorneyName: `${attorney?.firstName || 'Unknown'} ${attorney?.lastName || 'Attorney'}`,
+            email: attorney?.email || 'unknown',
             success: false,
-            error: error.message
+            error: error?.message || 'Unknown error'
           });
         }
       }
@@ -1246,7 +1256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set translation status to pending if post is being published
       const postData = {
         ...result.data,
-        authorId: req.user.userId,
+        authorId: req.user?.id || 1,
         translationStatus: result.data.isPublished ? 'pending' : null
       };
 
