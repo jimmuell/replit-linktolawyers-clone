@@ -72,7 +72,7 @@ export default function QuotesPage() {
 
   // Fetch available attorneys by case type (same as admin dashboard)
   const { data: availableAttorneys, isLoading: attorneysLoading } = useQuery<any[]>({
-    queryKey: ['/api/attorneys/case-type', request?.data?.caseType],
+    queryKey: ['/api/public/attorneys/case-type', request?.data?.caseType],
     enabled: !!request?.data?.caseType,
   });
 

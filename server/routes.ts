@@ -783,6 +783,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to get attorneys by case type (for QuotesPage)
+  app.get('/api/public/attorneys/case-type/:caseType', async (req, res) => {
+    try {
+      const attorneys = await storage.getAttorneysByCaseType(req.params.caseType);
+      res.json(attorneys);
+    } catch (error) {
+      console.error('Error fetching attorneys by case type:', error);
+      res.status(500).json({ error: 'Failed to fetch attorneys' });
+    }
+  });
+
   // Get attorney assignments for a request
   app.get('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
     try {
