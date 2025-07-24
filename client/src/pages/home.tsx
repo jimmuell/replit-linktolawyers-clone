@@ -442,7 +442,7 @@ export default function Home() {
 
 
       {/* How It Works */}
-      <section id="how-it-works" className="bg-white py-16">
+      <section id="how-it-works" className="bg-gray-100 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">How LinkToLawyers Works</h2>
@@ -498,7 +498,7 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="bg-gray-100 py-16">
+      <section id="about" className="bg-white py-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: '1280px' }}>
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">About LinkToLawyers</h2>
@@ -540,7 +540,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="bg-white py-12 border-t border-gray-200">
+      <footer id="contact" className="bg-gray-100 py-12 border-t border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="md:col-span-1">
