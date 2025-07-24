@@ -112,6 +112,12 @@ export default function QuotesPage() {
       const assignedIds = assignedAttorneys.map((assignment: any) => assignment.attorney.id);
       setSelectedQuotes(assignedIds);
       setIsSaved(true); // Mark as saved since these attorneys are already assigned
+      console.log('Pre-selecting assigned attorney IDs:', assignedIds);
+    } else {
+      // Reset selections if no assigned attorneys
+      setSelectedQuotes([]);
+      setIsSaved(false);
+      console.log('No assigned attorneys, resetting selections');
     }
   }, [assignedAttorneys]);
 
