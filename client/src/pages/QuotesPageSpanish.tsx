@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Star, MapPin, Briefcase, Shield, DollarSign, Calendar, Users, Award } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Briefcase, Shield, DollarSign, Calendar, Users, Award, CheckCircle, Clock } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -86,17 +86,13 @@ export default function QuotesPageSpanish() {
     retry: false,
   });
 
-  console.log('Assigned attorneys data:', assignedAttorneys);
-  console.log('Assigned attorneys final:', assignedAttorneys);
-  console.log('Available attorneys data:', attorneys);
-  console.log('Case type for attorney lookup:', caseType);
-  console.log('Request data:', request);
+
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
     if (assignedAttorneys && Array.isArray(assignedAttorneys)) {
       const assignedIds = assignedAttorneys.map((assignment: AttorneyAssignment) => assignment.attorney.id);
-      console.log('Pre-selecting assigned attorney IDs:', assignedIds);
+
       setSelectedQuotes(assignedIds);
     }
   }, [assignedAttorneys]);
@@ -377,89 +373,146 @@ export default function QuotesPageSpanish() {
           </div>
         )}
 
-        {/* Available Attorneys */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Abogados Disponibles</h2>
-          
-          {attorneysLoading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <Card key={i} className="animate-pulse">
-                  <CardContent className="p-6">
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
-                    <div className="h-20 bg-gray-200 rounded mb-4"></div>
-                    <div className="h-8 bg-gray-200 rounded"></div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : attorneys && (attorneys as any).length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-              {(attorneys as any).map((attorney: Attorney) => (
-                <Card key={attorney.id} className={`cursor-pointer transition-all ${
-                  selectedQuotes.includes(attorney.id) ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-md'
-                }`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-gray-900">
-                          {attorney.firstName} {attorney.lastName}
-                        </h3>
-                        {attorney.isVerified && (
-                          <Shield className="w-4 h-4 text-green-600" />
-                        )}
+        {/* Available Attorneys - matching admin dashboard format exactly */}
+        {attorneysLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando abogados...</p>
+          </div>
+        ) : attorneys && (attorneys as any).length === 0 ? (
+          <div className="text-center py-8">
+            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600">No hay abogados adicionales disponibles para este tipo de caso</p>
+            <p className="text-sm text-gray-500 mt-2">
+              Ya has seleccionado todos los abogados disponibles para "{getCaseTypeDisplayName((request as any)?.data?.caseType || '')}"
+            </p>
+          </div>
+        ) : (
+          <>
+            <div>
+              <h3 className="font-medium mb-3">Abogados Adicionales ({(attorneys as any)?.length || 0})</h3>
+              <div className="space-y-6">
+                {(attorneys as any).map((attorney: Attorney) => (
+                  <Card key={attorney.id} className="border border-gray-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start space-x-4">
+                          <Checkbox
+                            id={`attorney-${attorney.id}`}
+                            checked={selectedQuotes.includes(attorney.id)}
+                            onCheckedChange={() => handleToggleQuote(attorney.id)}
+                            className="mt-1"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {attorney.firstName} {attorney.lastName}
+                              </h3>
+                              {attorney.isVerified && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Verificado
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{attorney.firmName}</p>
+                            <div className="flex items-center space-x-4 mt-1">
+                              <span className="text-sm text-gray-500">
+                                {attorney.licenseState}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {attorney.yearsOfExperience}+ años
+                              </span>
+                              {attorney.isVerified && (
+                                <div className="flex items-center space-x-1">
+                                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                                  <span className="text-sm text-gray-500">5 (30 reseñas)</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-gray-900">
+                            ${attorney.fee ? (attorney.fee / 100).toLocaleString() : '1,555'}
+                          </div>
+                          <div className="text-sm text-gray-500">${attorney.hourlyRate}/hora</div>
+                        </div>
                       </div>
-                      <Checkbox
-                        checked={selectedQuotes.includes(attorney.id)}
-                        onCheckedChange={() => handleToggleQuote(attorney.id)}
-                      />
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 mb-2">{attorney.firmName}</p>
-                    <div className="flex items-center space-x-1 text-sm text-gray-500 mb-2">
-                      <MapPin className="w-3 h-3" />
-                      <span>{attorney.licenseState}</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-sm text-gray-500 mb-2">
-                      <Calendar className="w-3 h-3" />
-                      <span>{attorney.yearsOfExperience} años de experiencia</span>
-                    </div>
-                    <div className="flex items-center space-x-1 text-sm text-gray-500 mb-4">
-                      <DollarSign className="w-3 h-3" />
-                      <span>${attorney.hourlyRate}/hora</span>
-                    </div>
-                    
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-3">{attorney.bio}</p>
-                    
-                    <div className="flex flex-wrap gap-1">
-                      {attorney.practiceAreas.slice(0, 2).map((area, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {area}
-                        </Badge>
-                      ))}
-                      {attorney.practiceAreas.length > 2 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{attorney.practiceAreas.length - 2} más
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+
+                      <p className="text-sm text-gray-600 mb-6">
+                        {attorney.bio || `Con ${attorney.yearsOfExperience} años de experiencia en derecho de inmigración, estoy comprometido a brindarte representación legal experta adaptada a tus necesidades específicas.`}
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-600">Cronograma</span>
+                          </div>
+                          <p className="text-sm text-gray-900 ml-6">2-4 semanas</p>
+
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">Especialidades</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {attorney.practiceAreas?.map((area: string, index: number) => (
+                                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
+                                  {area}
+                                </span>
+                              )) || (
+                                <>
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
+                                    Derecho de Inmigración
+                                  </span>
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
+                                    Defensa de Deportación
+                                  </span>
+                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-black text-white">
+                                    Casos de Asilo
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <DollarSign className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium text-gray-600">Opciones de Pago</span>
+                          </div>
+                          <div className="ml-6 space-y-1">
+                            <p className="text-sm text-gray-900">Tarifa fija disponible</p>
+                            <p className="text-sm text-gray-900">Plan de pagos</p>
+                            <p className="text-sm text-gray-900">Consulta gratuita</p>
+                          </div>
+
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">Próximos Pasos</span>
+                            <div className="mt-2 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">El abogado será notificado</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Clock className="w-3 h-3 text-blue-500" />
+                                <span className="text-xs text-gray-600">El abogado te contactará en 24 horas</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Se programará consulta gratuita</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          ) : (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No hay abogados disponibles</h3>
-                <p className="text-gray-600">
-                  Actualmente no hay abogados disponibles para este tipo de caso. Por favor, inténtalo de nuevo más tarde.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+          </>
+        )}
 
         {/* Connect Button */}
         {getNewlySelectedAttorneys().length > 0 && (
