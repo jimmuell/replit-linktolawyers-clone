@@ -160,6 +160,12 @@ export default function QuotesPage() {
       console.log('Assigning ALL selected attorneys:', selectedQuotes);
       console.log('Newly selected attorneys:', newlySelectedAttorneys);
       
+      // Show immediate feedback about what's happening
+      toast({
+        title: "Processing Request",
+        description: `Assigning ${newlySelectedAttorneys.length} attorney(s) and sending notifications...`
+      });
+      
       // Assign ALL selected attorneys (both existing and newly selected) to maintain existing assignments
       await assignAttorneysMutation.mutateAsync({
         requestId: request.data.id,
@@ -169,15 +175,16 @@ export default function QuotesPage() {
       // Then send notification emails to the newly assigned attorneys
       await sendEmailMutation.mutateAsync(request.data.id);
       
-      // Wait a moment for the queries to refresh
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for UI to update properly
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Clear the processing toast and show success
       toast({
-        title: "Success",
-        description: `${newlySelectedAttorneys.length} new attorney(s) have been assigned and notified.`
+        title: "Attorneys Selected Successfully",
+        description: `${newlySelectedAttorneys.length} attorney(s) have been notified and will contact you soon.`
       });
       
-      // Show confirmation dialog
+      // Show confirmation dialog after everything is complete
       setShowConfirmDialog(true);
       
     } catch (error: any) {
@@ -563,7 +570,7 @@ export default function QuotesPage() {
               onClick={handleConnectWithAttorneys}
               disabled={isAssigning}
             >
-              {isAssigning ? 'Assigning attorneys...' : `Selected attorneys (${getNewlySelectedAttorneys().length})`}
+{isAssigning ? 'Processing request...' : `Connect with ${getNewlySelectedAttorneys().length} Selected Attorney${getNewlySelectedAttorneys().length === 1 ? '' : 's'}`}
             </Button>
           </div>
         )}
@@ -572,9 +579,9 @@ export default function QuotesPage() {
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Confirmation Email Sent!</DialogTitle>
+              <DialogTitle>Attorneys Notified Successfully!</DialogTitle>
               <DialogDescription>
-                We've sent you a confirmation email with all the details about your selected attorneys.
+                Your selected attorneys have been notified and will contact you soon to discuss your case and provide their quotes.
               </DialogDescription>
             </DialogHeader>
             
