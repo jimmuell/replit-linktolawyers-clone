@@ -18,6 +18,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Spanish Quotes Page Card Layout Fix** (July 24, 2025): Fixed duplicate attorney cards and standardized card format for consistency
+  - Resolved duplicate attorney display issue where assigned attorneys appeared in both sections
+  - Added filtering logic to prevent assigned attorneys from appearing in "Available Attorneys" section
+  - Updated "Selected Attorneys" cards to match the detailed format of unselected attorney cards
+  - Selected attorneys now display in full card format with pricing, specialties, timeline, and payment options
+  - Maintained blue background styling for selected attorneys while using consistent card layout
+  - Fixed attorney count display to show correct number of available additional attorneys
+
 - **Spanish Track Request Modal to Quotes Navigation** (July 24, 2025): Modified Spanish track request modal to navigate directly to quotes page
   - Simplified TrackRequestModalSpanish component to focus only on navigation functionality
   - When user enters request number and clicks "Rastrear Solicitud", modal closes and navigates to `/quotes/:requestNumber/spanish`
