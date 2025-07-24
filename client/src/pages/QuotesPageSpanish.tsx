@@ -102,7 +102,7 @@ export default function QuotesPageSpanish() {
     mutationFn: async (data: { requestId: number; attorneyIds: number[] }) => {
       return apiRequest(`/api/public/requests/${data.requestId}/attorneys`, {
         method: 'POST',
-        body: JSON.stringify({ attorneyIds: data.attorneyIds }),
+        body: { attorneyIds: data.attorneyIds },
       });
     },
     onSuccess: () => {
@@ -132,38 +132,9 @@ export default function QuotesPageSpanish() {
     return selectedQuotes.filter(id => !assignedIds.includes(id));
   };
 
-  const assignAttorneysMutationFn = useMutation({
-    mutationFn: async (data: { requestId: number; attorneyIds: number[] }) => {
-      return apiRequest(`/api/public/requests/${data.requestId}/attorneys`, {
-        method: 'POST',
-        body: JSON.stringify({ attorneyIds: data.attorneyIds }),
-      });
-    },
-    onError: (error: any) => {
-      console.error('Assignment error:', error);
-      toast({
-        title: "Error",
-        description: error?.message || "Error al asignar abogados. Por favor, inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    }
-  });
 
-  const sendEmailMutationFn = useMutation({
-    mutationFn: async (requestId: number) => {
-      return apiRequest(`/api/public/requests/${requestId}/send-attorney-emails`, {
-        method: 'POST',
-      });
-    },
-    onError: (error: any) => {
-      console.error('Email error:', error);
-      toast({
-        title: "Error",
-        description: error?.message || "Error al enviar notificaciones por email. Por favor, inténtalo de nuevo.",
-        variant: "destructive",
-      });
-    }
-  });
+
+
 
   const handleConnectWithAttorneys = async () => {
     const newlySelectedAttorneys = getNewlySelectedAttorneys();
@@ -187,6 +158,8 @@ export default function QuotesPageSpanish() {
         requestId: (request as any).data.id,
         attorneyIds: selectedQuotes
       });
+      
+      console.log('Attorneys assigned successfully');
       
       // Step 2: Sending notifications (show for 3 seconds)
       setProcessingStep(2);
