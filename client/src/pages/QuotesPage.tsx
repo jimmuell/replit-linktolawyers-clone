@@ -123,7 +123,11 @@ export default function QuotesPage() {
         body: { attorneyIds }
       });
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      // Invalidate the assigned attorneys query to refresh the data
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/attorney-referrals/public/request', variables.requestId, 'attorneys'] 
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
     }
   });
@@ -133,6 +137,12 @@ export default function QuotesPage() {
     mutationFn: async (requestId: number) => {
       return apiRequest(`/api/public/requests/${requestId}/send-attorney-emails`, {
         method: 'POST'
+      });
+    },
+    onSuccess: (data, requestId) => {
+      // Invalidate the assigned attorneys query to refresh email status
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/attorney-referrals/public/request', requestId, 'attorneys'] 
       });
     }
   });
@@ -152,6 +162,9 @@ export default function QuotesPage() {
       
       // Then send notification emails to the newly assigned attorneys
       await sendEmailMutation.mutateAsync(request.data.id);
+      
+      // Wait a moment for the queries to refresh
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       toast({
         title: "Success",
