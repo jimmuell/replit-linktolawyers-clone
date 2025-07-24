@@ -352,20 +352,25 @@ export default function QuotesPageSpanish() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Cargando abogados...</p>
           </div>
-        ) : attorneys && (attorneys as any).length === 0 ? (
-          <div className="text-center py-8">
-            <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No hay abogados adicionales disponibles para este tipo de caso</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Ya has seleccionado todos los abogados disponibles para "{getCaseTypeDisplayName((request as any)?.data?.caseType || '')}"
-            </p>
-          </div>
-        ) : (
-          <>
-            <div>
-              <h3 className="font-medium mb-3">Abogados Adicionales ({(attorneys as any)?.length || 0})</h3>
-              <div className="space-y-6">
-                {(attorneys as any).map((attorney: Attorney) => (
+        ) : (() => {
+          // Filter out already assigned attorneys to prevent duplication
+          const assignedAttorneyIds = (assignedAttorneys as any)?.map?.((assignment: AttorneyAssignment) => assignment.attorney.id) || [];
+          const availableAttorneys = (attorneys as any)?.filter?.((attorney: Attorney) => !assignedAttorneyIds.includes(attorney.id)) || [];
+          
+          return availableAttorneys.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No hay abogados adicionales disponibles para este tipo de caso</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Ya has seleccionado todos los abogados disponibles para "{getCaseTypeDisplayName((request as any)?.data?.caseType || '')}"
+              </p>
+            </div>
+          ) : (
+            <>
+              <div>
+                <h3 className="font-medium mb-3">Abogados Adicionales ({availableAttorneys.length})</h3>
+                <div className="space-y-6">
+                  {availableAttorneys.map((attorney: Attorney) => (
                   <Card key={attorney.id} className="border border-gray-200">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
@@ -481,11 +486,12 @@ export default function QuotesPageSpanish() {
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          );
+        })()}
 
         {/* Connect Button */}
         {getNewlySelectedAttorneys().length > 0 && (
