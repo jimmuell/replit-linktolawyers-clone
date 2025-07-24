@@ -36,12 +36,12 @@ Preferred communication style: Simple, everyday language.
   - Isolated checkbox clicks to prevent double-toggling when clicking card vs checkbox
   - Enhanced usability by making the entire card clickable rather than just the small checkbox
 
-- **Help Link Navigation Fix** (July 24, 2025): Fixed scroll behavior issue where Help link navigation doesn't properly scroll to top of destination page
-  - Updated Help link in navbar (both desktop and mobile versions) to use instant scroll to top functionality
-  - Added instant positioning (scrollTo with behavior: 'instant') with 50ms timeout to Help links
+- **Navigation Link Scroll Behavior Fix** (July 24, 2025): Fixed scroll behavior issue where navigation links don't properly scroll to top of destination pages
+  - Updated Help, Free Resources, and Blog links in navbar (both desktop and mobile versions) to use instant scroll to top functionality
+  - Added instant positioning (scrollTo with behavior: 'instant') with 50ms timeout to all navigation links
   - Updated footer Help Center link to properly navigate to /help page with instant scroll
-  - Navigation now instantly positions at top of help page when clicked from any position on current page
-  - Enhanced user experience with consistent navigation behavior matching other page links
+  - Navigation now instantly positions at top of destination page when clicked from any position on current page
+  - Enhanced user experience with consistent navigation behavior across all page links
 
 - **Comprehensive Back to Home Navigation Enhancement** (July 24, 2025): Applied instant scroll to top functionality across all back to home buttons and links
   - Updated all 10 back to home elements: QuotesSuccessPage, QuotesSuccessPageSpanish, QuotesPage, QuotesPageSpanish, help.tsx, free-resources.tsx, and blog-spanish.tsx
