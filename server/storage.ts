@@ -415,7 +415,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateRequestAttorneyAssignments(requestId: number, attorneyIds: number[]): Promise<SelectRequestAttorneyAssignment[]> {
-    // First, remove all existing assignments for this request
+    // Get existing assignments to preserve email status
+    const existingAssignments = await db
+      .select()
+      .from(requestAttorneyAssignments)
+      .where(eq(requestAttorneyAssignments.requestId, requestId));
+    
+    // Create a map of existing assignments by attorney ID to preserve email status
+    const existingEmailStatus = new Map();
+    existingAssignments.forEach(assignment => {
+      if (assignment.emailSent) {
+        existingEmailStatus.set(assignment.attorneyId, {
+          emailSent: assignment.emailSent,
+          emailSentAt: assignment.emailSentAt
+        });
+      }
+    });
+
+    // Remove all existing assignments for this request
     await db.delete(requestAttorneyAssignments).where(eq(requestAttorneyAssignments.requestId, requestId));
     
     // If no attorney IDs provided, return empty array
@@ -423,13 +440,18 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
     
-    // Create new assignments
-    const assignments = attorneyIds.map((attorneyId: number) => ({
-      requestId,
-      attorneyId,
-      status: 'assigned' as const,
-      notes: null
-    }));
+    // Create new assignments, preserving email status for attorneys that were already emailed
+    const assignments = attorneyIds.map((attorneyId: number) => {
+      const emailStatus = existingEmailStatus.get(attorneyId);
+      return {
+        requestId,
+        attorneyId,
+        status: 'assigned' as const,
+        notes: null,
+        emailSent: emailStatus?.emailSent || false,
+        emailSentAt: emailStatus?.emailSentAt || null
+      };
+    });
 
     return await db
       .insert(requestAttorneyAssignments)

@@ -860,8 +860,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get assigned attorneys who haven't been emailed yet
       const assignments = await storage.getRequestAttorneyAssignments(requestId);
       const unEmailedAssignments = assignments.filter(assignment => !assignment.emailSent);
+      
+      console.log(`Found ${assignments.length} total assignments, ${unEmailedAssignments.length} need emails`);
 
       if (unEmailedAssignments.length === 0) {
+        console.log('All assigned attorneys have already been emailed - skipping email send');
         return res.json({ success: true, message: 'All assigned attorneys have already been emailed' });
       }
 
