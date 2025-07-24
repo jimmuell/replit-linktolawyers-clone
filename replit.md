@@ -18,13 +18,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **Spanish Translation Workflow Enhancement** (July 24, 2025): Implemented complete Spanish translation for attorney selection workflow with dedicated localized pages
+- **Spanish Translation Workflow Enhancement** (July 24, 2025): Completed comprehensive Spanish translation for entire attorney selection workflow with professional UX
   - Created QuotesPageSpanish and QuotesSuccessPageSpanish components with full Spanish translations
   - Updated Spanish form to redirect to dedicated Spanish quotes route (/quotes/:requestNumber/spanish)
   - Added Spanish routes for quotes workflow and success page to main App.tsx router
   - Translated all UI elements: attorney cards, processing overlay, success page, buttons, headers, descriptions, case types, and status messages
+  - Fixed JSON parsing errors by removing double JSON.stringify in API requests
+  - Updated card layout to match English version exactly with checkbox on left, comprehensive attorney info, and pricing on right
+  - Replaced grid format with vertical list format matching English page design
+  - Added detailed attorney information: bio, specialties, timeline, payment options, next steps
   - Fixed TypeScript errors and ensured proper data handling for Spanish workflow
-  - Updated grid layout to display attorney cards in row format (4 columns on large screens) instead of column format
   - Spanish workflow now mirrors English functionality with complete localization and professional UX
 
 - **Professional Processing Overlay and Success Page Implementation** (July 24, 2025): Completely redesigned attorney selection UX with professional full-screen processing overlay

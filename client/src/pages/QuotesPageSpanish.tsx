@@ -263,7 +263,7 @@ export default function QuotesPageSpanish() {
             Cotizaciones de Abogados para {(request as any).data.firstName} {(request as any).data.lastName}
           </h1>
           <p className="text-gray-600">
-            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {getCaseTypeDisplayName((request as any).data.caseType) as string}.
+            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {getCaseTypeDisplayName((request as any).data.caseType)}.
           </p>
         </div>
 
@@ -407,7 +407,7 @@ export default function QuotesPageSpanish() {
                         
                         <div className="text-right">
                           <div className="text-2xl font-bold text-gray-900">
-                            ${attorney.fee ? (attorney.fee / 100).toLocaleString() : '1,555'}
+                            ${(attorney as any).fee ? ((attorney as any).fee / 100).toLocaleString() : '1,555'}
                           </div>
                           <div className="text-sm text-gray-500">${attorney.hourlyRate}/hora</div>
                         </div>
