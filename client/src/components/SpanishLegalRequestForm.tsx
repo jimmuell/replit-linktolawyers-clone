@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
-import WorkflowTestModal from "@/components/WorkflowTestModal";
+
 import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
 import PrivacyPolicyModal from "@/components/PrivacyPolicyModal";
 
@@ -42,7 +42,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
   const [currentRequestNumber, setCurrentRequestNumber] = useState<string>('');
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
-  const [isWorkflowTestModalOpen, setIsWorkflowTestModalOpen] = useState(false);
+
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const { toast } = useToast();
@@ -53,7 +53,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
     retry: false,
   });
 
-  const caseTypes = caseTypesData?.data || [];
+  const caseTypes = (caseTypesData as any)?.data || [];
 
   // Generate request number when form opens
   const generateRequestNumber = () => {
@@ -299,7 +299,8 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                 <Button
                   type="button"
                   onClick={() => {
-                    setIsWorkflowTestModalOpen(true);
+                    // Navigate to quotes page with the submitted request number
+                    window.location.href = `/quotes/${submittedRequestNumber}`;
                   }}
                   variant="outline"
                   className="w-full"
@@ -499,11 +500,7 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
         isSpanish={true}
       />
 
-      {/* Workflow Test Modal */}
-      <WorkflowTestModal
-        isOpen={isWorkflowTestModalOpen}
-        onClose={() => setIsWorkflowTestModalOpen(false)}
-      />
+
 
       {/* Privacy Policy Modal */}
       <PrivacyPolicyModal
