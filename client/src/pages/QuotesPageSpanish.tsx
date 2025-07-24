@@ -53,7 +53,7 @@ interface AttorneyAssignment {
 }
 
 export default function QuotesPageSpanish() {
-  const [match, params] = useRoute('/quotes/:requestNumber');
+  const [match, params] = useRoute('/quotes/:requestNumber/spanish');
   const [location, setLocation] = useLocation();
   const requestNumber = params?.requestNumber;
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([]);
@@ -88,6 +88,9 @@ export default function QuotesPageSpanish() {
 
   console.log('Assigned attorneys data:', assignedAttorneys);
   console.log('Assigned attorneys final:', assignedAttorneys);
+  console.log('Available attorneys data:', attorneys);
+  console.log('Case type for attorney lookup:', caseType);
+  console.log('Request data:', request);
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
@@ -107,7 +110,7 @@ export default function QuotesPageSpanish() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/attorney-referrals/public/request/${request?.data?.id}/attorneys`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/attorney-referrals/public/request/${(request as any)?.data?.id}/attorneys`] });
     },
   });
 
@@ -168,7 +171,7 @@ export default function QuotesPageSpanish() {
 
   const handleConnectWithAttorneys = async () => {
     const newlySelectedAttorneys = getNewlySelectedAttorneys();
-    if (!request?.data || newlySelectedAttorneys.length === 0) return;
+    if (!(request as any)?.data || newlySelectedAttorneys.length === 0) return;
     
     // Show full-screen processing overlay immediately
     setShowProcessingOverlay(true);
@@ -291,7 +294,7 @@ export default function QuotesPageSpanish() {
             Cotizaciones de Abogados para {(request as any).data.firstName} {(request as any).data.lastName}
           </h1>
           <p className="text-gray-600">
-            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {getCaseTypeDisplayName((request as any).data.caseType)}.
+            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {getCaseTypeDisplayName((request as any).data.caseType) as string}.
           </p>
         </div>
 
