@@ -429,7 +429,15 @@ export default function QuotesPage() {
               <h3 className="font-medium mb-3">Additional Attorneys ({availableAttorneysWithQuotes.length})</h3>
               <div className="space-y-6">
                 {availableAttorneysWithQuotes.map((attorney: any) => (
-                  <Card key={attorney.id} className="border border-gray-200">
+                  <Card 
+                    key={attorney.id} 
+                    className={`border transition-all duration-200 cursor-pointer hover:shadow-md ${
+                      selectedQuotes.includes(attorney.id) 
+                        ? 'border-blue-500 ring-1 ring-blue-500' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => handleQuoteSelection(attorney.id)}
+                  >
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-start space-x-4">
@@ -438,6 +446,7 @@ export default function QuotesPage() {
                             checked={selectedQuotes.includes(attorney.id)}
                             onCheckedChange={() => handleQuoteSelection(attorney.id)}
                             className="mt-1"
+                            onClick={(e) => e.stopPropagation()}
                           />
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
