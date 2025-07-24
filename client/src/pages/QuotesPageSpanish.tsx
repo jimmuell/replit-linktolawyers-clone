@@ -195,6 +195,10 @@ export default function QuotesPageSpanish() {
 
   const handleBackToHome = () => {
     setLocation('/es');
+    // Instantly position at top without visible scrolling
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 50);
   };
 
   if (requestLoading) {

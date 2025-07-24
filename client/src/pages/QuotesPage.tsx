@@ -214,6 +214,10 @@ export default function QuotesPage() {
 
   const handleBackToHome = () => {
     setLocation('/');
+    // Instantly position at top without visible scrolling
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 50);
   };
 
   const handleQuoteSelection = (quoteId: number) => {

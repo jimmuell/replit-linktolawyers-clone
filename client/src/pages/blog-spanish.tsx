@@ -59,7 +59,14 @@ export default function BlogSpanish() {
                 <h2 className="text-lg font-medium text-gray-900">Blog</h2>
               </div>
               <div className="flex items-center">
-                <Link href="/es">
+                <Link 
+                  href="/es"
+                  onClick={() => {
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: 'instant' });
+                    }, 50);
+                  }}
+                >
                   <Button variant="ghost" size="sm" className="flex items-center gap-2">
                     <ArrowLeft className="w-4 h-4" />
                     Volver al Inicio
@@ -113,7 +120,14 @@ export default function BlogSpanish() {
                 <h2 className="text-lg font-medium text-gray-900">Blog</h2>
               </div>
               <div className="flex items-center">
-                <Link href="/es">
+                <Link 
+                  href="/es"
+                  onClick={() => {
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: 'instant' });
+                    }, 50);
+                  }}
+                >
                   <Button variant="ghost" size="sm" className="flex items-center gap-2">
                     <ArrowLeft className="w-4 h-4" />
                     Volver al Inicio
@@ -137,7 +151,14 @@ export default function BlogSpanish() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <Link href="/es">
+            <Link 
+              href="/es"
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'instant' });
+                }, 50);
+              }}
+            >
               <Button className="bg-black text-white hover:bg-gray-800">Volver al inicio</Button>
             </Link>
           </div>
@@ -159,7 +180,14 @@ export default function BlogSpanish() {
               <h2 className="text-lg font-medium text-gray-900">Blog</h2>
             </div>
             <div className="flex items-center">
-              <Link href="/es">
+              <Link 
+                href="/es"
+                onClick={() => {
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }, 50);
+                }}
+              >
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
                   <ArrowLeft className="w-4 h-4" />
                   Volver al Inicio

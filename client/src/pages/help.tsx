@@ -78,7 +78,15 @@ export default function Help() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-600 hover:text-black transition-colors">
+              <Link 
+                href="/" 
+                className="text-gray-600 hover:text-black transition-colors"
+                onClick={() => {
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }, 50);
+                }}
+              >
                 <ArrowLeft className="w-4 h-4 inline mr-2" />
                 Back to Home
               </Link>
@@ -100,7 +108,15 @@ export default function Help() {
           {isMenuOpen && (
             <div className="md:hidden py-4 border-t border-gray-200">
               <div className="space-y-2">
-                <Link href="/" className="block px-3 py-2 text-gray-600 hover:text-black">
+                <Link 
+                  href="/" 
+                  className="block px-3 py-2 text-gray-600 hover:text-black"
+                  onClick={() => {
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: 'instant' });
+                    }, 50);
+                  }}
+                >
                   Back to Home
                 </Link>
               </div>
