@@ -18,6 +18,18 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Homepage Content Cleanup** (July 24, 2025): Removed "Value Proposition" section from homepage
+  - Removed entire "Stop overspending for legal services..." paragraph and section
+  - Simplified homepage flow by eliminating redundant messaging about cost comparison
+  - Page now flows directly from hero section to "How It Works" section for better user experience
+
+- **Attorney Card Interactivity Enhancement** (July 24, 2025): Made attorney cards clickable with visual feedback on quotes pages
+  - Added click functionality to entire attorney card area for both English and Spanish quotes pages
+  - Implemented dynamic border styling: blue border with ring for selected cards, gray borders for unselected
+  - Added smooth transitions and hover effects with shadow for professional user experience
+  - Isolated checkbox clicks to prevent double-toggling when clicking card vs checkbox
+  - Enhanced usability by making the entire card clickable rather than just the small checkbox
+
 - **Comprehensive Back to Home Navigation Enhancement** (July 24, 2025): Applied instant scroll to top functionality across all back to home buttons and links
   - Updated all 10 back to home elements: QuotesSuccessPage, QuotesSuccessPageSpanish, QuotesPage, QuotesPageSpanish, help.tsx, free-resources.tsx, and blog-spanish.tsx
   - Each back to home button now uses instant positioning (scrollTo with behavior: 'instant') with 50ms timeout
