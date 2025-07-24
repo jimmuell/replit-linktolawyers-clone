@@ -95,6 +95,17 @@ export default function QuotesPage() {
   console.log('Assigned attorneys data:', assignedAttorneysResponse);
   console.log('Assigned attorneys final:', assignedAttorneys);
 
+  // Check if an attorney is already assigned to this request
+  const isAttorneyAssigned = (attorneyId: number) => {
+    return assignedAttorneys.some((assignment: any) => assignment.attorney.id === attorneyId);
+  };
+
+  // Check if an attorney has been emailed
+  const isAttorneyEmailed = (attorneyId: number) => {
+    const assignment = assignedAttorneys.find((assignment: any) => assignment.attorney.id === attorneyId);
+    return assignment && assignment.emailSent;
+  };
+
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
     if (Array.isArray(assignedAttorneys) && assignedAttorneys.length > 0) {
@@ -192,30 +203,21 @@ export default function QuotesPage() {
     return <div>Invalid request</div>;
   }
 
-  // Filter attorneys that have quotes/assignments for this case type
-  const availableAttorneysWithQuotes = availableAttorneys || [];
-
   // Get human-readable case type
   const getCaseTypeLabel = (caseTypeValue: string) => {
     const caseType = caseTypes?.find(ct => ct.value === caseTypeValue);
     return caseType?.label || caseTypeValue;
   };
 
-  // Check if an attorney is already assigned to this request
-  const isAttorneyAssigned = (attorneyId: number) => {
-    return assignedAttorneys.some((assignment: any) => assignment.attorney.id === attorneyId);
-  };
-
-  // Check if an attorney has been emailed
-  const isAttorneyEmailed = (attorneyId: number) => {
-    const assignment = assignedAttorneys.find((assignment: any) => assignment.attorney.id === attorneyId);
-    return assignment && assignment.emailSent;
-  };
-
   // Get only newly selected attorneys (exclude already assigned ones)
   const getNewlySelectedAttorneys = () => {
     return selectedQuotes.filter(attorneyId => !isAttorneyAssigned(attorneyId));
   };
+
+  // Filter attorneys that have quotes/assignments for this case type - exclude already assigned attorneys
+  const availableAttorneysWithQuotes = (availableAttorneys || []).filter((attorney: any) => 
+    !isAttorneyAssigned(attorney.id)
+  );
 
 
 
@@ -239,7 +241,7 @@ export default function QuotesPage() {
             </h1>
 
             <div className="text-sm text-gray-500">
-              {availableAttorneysWithQuotes.length} attorneys available
+              {availableAttorneysWithQuotes.length} additional attorneys available
             </div>
           </div>
         </div>
@@ -395,7 +397,7 @@ export default function QuotesPage() {
         ) : (
           <>
             <div>
-              <h3 className="font-medium mb-3">Available Attorneys ({availableAttorneysWithQuotes.length})</h3>
+              <h3 className="font-medium mb-3">Additional Attorneys ({availableAttorneysWithQuotes.length})</h3>
               <div className="space-y-6">
                 {availableAttorneysWithQuotes.map((attorney: any) => (
                   <Card key={attorney.id} className="border border-gray-200">
