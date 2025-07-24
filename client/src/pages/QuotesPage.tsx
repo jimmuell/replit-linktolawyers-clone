@@ -157,10 +157,13 @@ export default function QuotesPage() {
     setIsAssigning(true);
     
     try {
-      // First, assign only newly selected attorneys to the request
+      console.log('Assigning ALL selected attorneys:', selectedQuotes);
+      console.log('Newly selected attorneys:', newlySelectedAttorneys);
+      
+      // Assign ALL selected attorneys (both existing and newly selected) to maintain existing assignments
       await assignAttorneysMutation.mutateAsync({
         requestId: request.data.id,
-        attorneyIds: newlySelectedAttorneys
+        attorneyIds: selectedQuotes
       });
       
       // Then send notification emails to the newly assigned attorneys
