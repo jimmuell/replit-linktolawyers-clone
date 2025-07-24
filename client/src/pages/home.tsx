@@ -561,7 +561,19 @@ export default function Home() {
             <div>
               <h4 className="text-lg font-semibold text-gray-900 mb-4">Support</h4>
               <ul className="space-y-2 text-gray-600 text-sm">
-                <li><a href="#" className="hover:text-primary transition-colors">Help Center</a></li>
+                <li>
+                  <Link 
+                    href="/help" 
+                    className="hover:text-primary transition-colors"
+                    onClick={() => {
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'instant' });
+                      }, 50);
+                    }}
+                  >
+                    Help Center
+                  </Link>
+                </li>
                 <li><a href="#" className="hover:text-primary transition-colors">Contact Us</a></li>
                 <li><a href="mailto:support@linktolawyers.com" className="hover:text-primary transition-colors">support@linktolawyers.com</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">FAQ</a></li>

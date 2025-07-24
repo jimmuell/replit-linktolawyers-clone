@@ -57,7 +57,15 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             <Link href="/blog" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
               Blog
             </Link>
-            <Link href="/help" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
+            <Link 
+              href="/help" 
+              className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'instant' });
+                }, 50);
+              }}
+            >
               Help
             </Link>
           </div>
@@ -176,7 +184,12 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
               <Link 
                 href="/help" 
                 className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }, 50);
+                }}
               >
                 Help
               </Link>
