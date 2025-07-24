@@ -1,23 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Search } from "lucide-react";
+import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
+import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
-import { Link, useLocation } from "wouter";
-import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import girlThinkingSpanishImage from "@assets/girl-final_spanish_1752931654981.png";
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const [requestNumber, setRequestNumber] = useState("");
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
   const { user, logout } = useAuth();
 
   // Redirect authenticated users to dashboard
@@ -64,22 +61,6 @@ export default function HomeSpanish() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleTrackRequest = () => {
-    const trimmedRequestNumber = requestNumber.trim();
-    
-    if (!trimmedRequestNumber) {
-      toast({
-        title: "Número de Solicitud Requerido",
-        description: "Por favor, ingresa un número de solicitud para rastrear.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Navigate directly to Spanish quotes page
-    setLocation(`/quotes/${trimmedRequestNumber}/spanish`);
-  };
-
 
 
   return (
@@ -117,33 +98,20 @@ export default function HomeSpanish() {
                 </div>
               </div>
               
-              <div className="flex flex-col gap-4 mt-8">
+              <div className="flex flex-col sm:flex-row gap-4 mt-8">
                 <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsQuoteModalOpen(true)}
                 >
                   ¡Obtén Una Cotización Legal Gratuita!
                 </Button>
-                
-                {/* Track Request Section */}
-                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                  <Input
-                    type="text"
-                    placeholder="Ingresa tu número de solicitud (ej: LR-123456)"
-                    value={requestNumber}
-                    onChange={(e) => setRequestNumber(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleTrackRequest()}
-                    className="rounded-full px-4 py-6 text-lg border-black focus:border-black focus:ring-black"
-                  />
-                  <Button 
-                    variant="outline"
-                    className="border-black text-black hover:bg-gray-50 rounded-full px-6 py-6 text-lg"
-                    onClick={handleTrackRequest}
-                  >
-                    <Search className="w-5 h-5 mr-2" />
-                    Rastrear
-                  </Button>
-                </div>
+                <Button 
+                  variant="outline"
+                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsTrackRequestModalOpen(true)}
+                >
+                  Rastrea Tu Solicitud
+                </Button>
               </div>
             </div>
             
@@ -339,6 +307,12 @@ export default function HomeSpanish() {
       <LoginModal 
         open={isLoginModalOpen} 
         onClose={() => setIsLoginModalOpen(false)} 
+      />
+
+      {/* Track Request Modal */}
+      <TrackRequestModalSpanish 
+        isOpen={isTrackRequestModalOpen} 
+        onClose={() => setIsTrackRequestModalOpen(false)} 
       />
 
       {/* Spanish Legal Request Form */}
