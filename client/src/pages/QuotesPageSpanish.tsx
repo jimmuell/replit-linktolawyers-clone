@@ -332,7 +332,7 @@ export default function QuotesPageSpanish() {
         {assignedAttorneys && (assignedAttorneys as any).length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Abogados Asignados</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
               {(assignedAttorneys as any).map((assignment: AttorneyAssignment) => (
                 <Card key={assignment.id} className="border-blue-200 bg-blue-50">
                   <CardContent className="p-6">
@@ -382,8 +382,8 @@ export default function QuotesPageSpanish() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Abogados Disponibles</h2>
           
           {attorneysLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
                 <Card key={i} className="animate-pulse">
                   <CardContent className="p-6">
                     <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
@@ -395,7 +395,7 @@ export default function QuotesPageSpanish() {
               ))}
             </div>
           ) : attorneys && (attorneys as any).length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
               {(attorneys as any).map((attorney: Attorney) => (
                 <Card key={attorney.id} className={`cursor-pointer transition-all ${
                   selectedQuotes.includes(attorney.id) ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-md'
