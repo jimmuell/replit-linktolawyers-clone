@@ -25,6 +25,7 @@ import NotFound from "@/pages/not-found";
 import HomeSpanish from "@/pages/home-spanish";
 import AttorneyDashboard from "@/pages/attorney-dashboard";
 import QuotesPage from "@/pages/QuotesPage";
+import QuotesSuccessPage from "@/pages/QuotesSuccessPage";
 
 function Router() {
   return (
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/help" component={Help} />
       <Route path="/es/ayuda" component={HelpSpanish} />
       <Route path="/quotes/:requestNumber" component={QuotesPage} />
+      <Route path="/quotes/:requestNumber/success" component={QuotesSuccessPage} />
       <Route component={NotFound} />
     </Switch>
   );

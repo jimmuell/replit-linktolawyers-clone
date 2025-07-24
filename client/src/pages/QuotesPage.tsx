@@ -62,6 +62,8 @@ export default function QuotesPage() {
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
+  const [showProcessingOverlay, setShowProcessingOverlay] = useState(false);
+  const [processingStep, setProcessingStep] = useState(1);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -154,17 +156,18 @@ export default function QuotesPage() {
     const newlySelectedAttorneys = getNewlySelectedAttorneys();
     if (!request?.data || newlySelectedAttorneys.length === 0) return;
     
+    // Show full-screen processing overlay immediately
+    setShowProcessingOverlay(true);
+    setProcessingStep(1);
     setIsAssigning(true);
     
     try {
       console.log('Assigning ALL selected attorneys:', selectedQuotes);
       console.log('Newly selected attorneys:', newlySelectedAttorneys);
       
-      // Show immediate feedback about what's happening
-      toast({
-        title: "Processing Request",
-        description: `Assigning ${newlySelectedAttorneys.length} attorney(s) and sending notifications...`
-      });
+      // Step 1: Assigning attorneys (show for 2 seconds)
+      setProcessingStep(1);
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Assign ALL selected attorneys (both existing and newly selected) to maintain existing assignments
       await assignAttorneysMutation.mutateAsync({
@@ -172,23 +175,23 @@ export default function QuotesPage() {
         attorneyIds: selectedQuotes
       });
       
+      // Step 2: Sending notifications (show for 3 seconds)
+      setProcessingStep(2);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
       // Then send notification emails to the newly assigned attorneys
       await sendEmailMutation.mutateAsync(request.data.id);
       
-      // Wait for UI to update properly
+      // Step 3: Finalizing (show for 1 second)
+      setProcessingStep(3);
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Clear the processing toast and show success
-      toast({
-        title: "Attorneys Selected Successfully",
-        description: `${newlySelectedAttorneys.length} attorney(s) have been notified and will contact you soon.`
-      });
-      
-      // Show confirmation dialog after everything is complete
-      setShowConfirmDialog(true);
+      // Navigate to success page or show completion
+      setLocation(`/quotes/${requestNumber}/success`);
       
     } catch (error: any) {
       console.error('Error assigning attorneys:', error);
+      setShowProcessingOverlay(false);
       toast({
         title: "Error",
         description: error.message || "Failed to assign attorneys. Please try again.",
@@ -572,6 +575,43 @@ export default function QuotesPage() {
             >
 {isAssigning ? 'Processing request...' : `Connect with ${getNewlySelectedAttorneys().length} Selected Attorney${getNewlySelectedAttorneys().length === 1 ? '' : 's'}`}
             </Button>
+          </div>
+        )}
+
+        {/* Processing Overlay */}
+        {showProcessingOverlay && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 text-center">
+              <div className="mb-6">
+                {processingStep === 1 && (
+                  <>
+                    <div className="w-16 h-16 mx-auto mb-4 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Assigning Attorneys</h3>
+                    <p className="text-gray-600">We're connecting you with your selected attorneys...</p>
+                  </>
+                )}
+                {processingStep === 2 && (
+                  <>
+                    <div className="w-16 h-16 mx-auto mb-4 border-4 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Sending Notifications</h3>
+                    <p className="text-gray-600">Notifying attorneys about your case...</p>
+                  </>
+                )}
+                {processingStep === 3 && (
+                  <>
+                    <div className="w-16 h-16 mx-auto mb-4 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Finalizing Request</h3>
+                    <p className="text-gray-600">Completing your attorney selection...</p>
+                  </>
+                )}
+              </div>
+              <div className="flex space-x-2 justify-center mb-4">
+                <div className={`w-2 h-2 rounded-full ${processingStep >= 1 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${processingStep >= 2 ? 'bg-green-600' : 'bg-gray-300'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${processingStep >= 3 ? 'bg-purple-600' : 'bg-gray-300'}`}></div>
+              </div>
+              <p className="text-sm text-gray-500">Please wait while we process your request...</p>
+            </div>
           </div>
         )}
 
