@@ -18,6 +18,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Spanish Track Request Modal to Quotes Navigation** (July 24, 2025): Modified Spanish track request modal to navigate directly to quotes page
+  - Simplified TrackRequestModalSpanish component to focus only on navigation functionality
+  - When user enters request number and clicks "Rastrear Solicitud", modal closes and navigates to `/quotes/:requestNumber/spanish`
+  - Removed complex request details popup and quote management functionality from modal
+  - Added proper error handling with Spanish toast notifications for empty input
+  - Spanish quotes page displays all attorney information and selection capabilities
+  - Streamlined user flow: Track Request Modal → Enter Number → Navigate to Spanish Quotes Page
+
 - **Spanish Translation Workflow Enhancement** (July 24, 2025): Completed comprehensive Spanish translation for entire attorney selection workflow with professional UX
   - Created QuotesPageSpanish and QuotesSuccessPageSpanish components with full Spanish translations
   - Updated Spanish form to redirect to dedicated Spanish quotes route (/quotes/:requestNumber/spanish)
