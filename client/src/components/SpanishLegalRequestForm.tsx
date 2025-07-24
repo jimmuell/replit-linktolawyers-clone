@@ -299,8 +299,8 @@ export default function SpanishLegalRequestForm({ isOpen, onClose }: SpanishLega
                 <Button
                   type="button"
                   onClick={() => {
-                    // Navigate to quotes page with the submitted request number
-                    window.location.href = `/quotes/${submittedRequestNumber}`;
+                    // Navigate to Spanish quotes page with the submitted request number
+                    window.location.href = `/quotes/${submittedRequestNumber}/spanish`;
                   }}
                   variant="outline"
                   className="w-full"
