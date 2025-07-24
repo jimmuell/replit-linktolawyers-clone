@@ -18,6 +18,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Spanish Success Page Navigation Enhancement** (July 24, 2025): Added smooth scroll to top functionality when returning to homepage
+  - Updated QuotesSuccessPageSpanish "Volver al Inicio" button to scroll to top of homepage after navigation
+  - Added smooth scroll behavior with 100ms delay to ensure navigation completes first
+  - Enhanced user experience by preventing page landing in middle of homepage content
+
 - **Spanish Quotes Page Card Layout Fix** (July 24, 2025): Fixed duplicate attorney cards and standardized card format for consistency
   - Resolved duplicate attorney display issue where assigned attorneys appeared in both sections
   - Added filtering logic to prevent assigned attorneys from appearing in "Available Attorneys" section

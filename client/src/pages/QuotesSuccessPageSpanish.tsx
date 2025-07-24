@@ -10,6 +10,10 @@ export default function QuotesSuccessPageSpanish() {
 
   const handleBackToHome = () => {
     setLocation('/es');
+    // Scroll to top after navigation
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   return (
