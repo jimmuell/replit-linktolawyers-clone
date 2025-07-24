@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Star, MapPin, Briefcase, Shield, DollarSign, Calendar, Users, Award, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Briefcase, Shield, DollarSign, Calendar, Users, Award, CheckCircle, Clock, Mail } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -300,120 +300,99 @@ export default function QuotesPageSpanish() {
         {/* Selected Attorneys Section */}
         {assignedAttorneys && (assignedAttorneys as any).length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Abogados Asignados</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Abogados Seleccionados ({(assignedAttorneys as any).length})</h2>
             <div className="space-y-6">
-              {(assignedAttorneys as any).map((assignment: AttorneyAssignment) => (
-                <Card key={assignment.id} className="border-blue-200 bg-blue-50">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start space-x-4">
-                        <div className="w-6 h-6 flex items-center justify-center">
-                          <Badge variant="secondary" className="bg-blue-600 text-white text-xs px-2 py-1">
-                            Seleccionado
-                          </Badge>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              {assignment.attorney.firstName} {assignment.attorney.lastName}
-                            </h3>
-                            {assignment.attorney.isVerified && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Verificado
+              {(assignedAttorneys as any).map((assignment: AttorneyAssignment) => {
+                const attorney = assignment.attorney;
+                return (
+                  <Card key={assignment.id} className="border border-blue-200 bg-blue-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {attorney.firstName} {attorney.lastName}
+                              </h3>
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Seleccionado
                               </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-600">{assignment.attorney.firmName}</p>
-                          <div className="flex items-center space-x-4 mt-1">
-                            <span className="text-sm text-gray-500">
-                              {assignment.attorney.licenseState}
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              {assignment.attorney.yearsOfExperience}+ años
-                            </span>
-                            {assignment.attorney.isVerified && (
-                              <div className="flex items-center space-x-1">
-                                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                                <span className="text-sm text-gray-500">5 (30 reseñas)</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-900">$3,500</div>
-                        <div className="text-sm text-gray-500">$350/hora</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 text-sm text-gray-700">
-                      <p>Abogado de inmigración con experiencia especializado en casos de inmigración basados en familia, naturalización y asilo. Con licencia en {assignment.attorney.licenseState} con más de {assignment.attorney.yearsOfExperience} años de práctica.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-600">Cronograma</span>
-                        </div>
-                        <div className="ml-6 space-y-1">
-                          <p className="text-sm text-gray-900">2-4 semanas</p>
-                        </div>
-
-                        <div className="mt-4">
-                          <span className="text-sm font-medium text-gray-600">Especialidades</span>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Ley de Inmigración</span>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Inmigración Basada en Familia</span>
-                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Ciudadanía y Naturalización</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <DollarSign className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium text-gray-600">Opciones de Pago</span>
-                        </div>
-                        <div className="ml-6 space-y-1">
-                          <p className="text-sm text-gray-900">Tarifa fija disponible</p>
-                          <p className="text-sm text-gray-900">Plan de pagos</p>
-                          <p className="text-sm text-gray-900">Consulta gratuita</p>
-                        </div>
-
-                        <div className="mt-4">
-                          <span className="text-sm font-medium text-gray-600">Próximos Pasos</span>
-                          <div className="mt-2 space-y-1">
-                            <div className="flex items-center space-x-2">
-                              <CheckCircle className="w-3 h-3 text-green-500" />
-                              <span className="text-xs text-gray-600">Abogado notificado</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Clock className="w-3 h-3 text-blue-500" />
-                              <span className="text-xs text-gray-600">Te contactará en 24 horas</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <CheckCircle className="w-3 h-3 text-green-500" />
-                              <span className="text-xs text-gray-600">Consulta gratuita programada</span>
-                            </div>
-                            {assignment.emailSent && (
-                              <div className="flex items-center space-x-2">
-                                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
-                                  Email Enviado
-                                </Badge>
-                                <span className="text-xs text-gray-500">
-                                  {assignment.emailSentAt && new Date(assignment.emailSentAt).toLocaleDateString('es-ES')}
+                              {attorney.isVerified && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Verificado
                                 </span>
+                              )}
+                              {assignment.emailSent && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  <Mail className="w-3 h-3 mr-1" />
+                                  Notificado
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{attorney.firmName}</p>
+                            <div className="flex items-center space-x-4 mt-1">
+                              <span className="text-sm text-gray-500">
+                                {attorney.licenseState}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                {attorney.yearsOfExperience}+ años
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="text-lg font-semibold text-gray-900">
+                            Proporcionará cotización
+                          </div>
+                          <div className="text-sm text-gray-500">Contacto en 24hrs</div>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mb-6">
+                        {attorney.bio}
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">Especialidades</span>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {attorney.practiceAreas?.map((area: string, index: number) => (
+                                <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {area === 'Immigration Law' ? 'Ley de Inmigración' :
+                                   area === 'Corporate Law' ? 'Derecho Corporativo' :
+                                   area === 'Criminal Law' ? 'Derecho Penal' : area}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="mt-4">
+                            <span className="text-sm font-medium text-gray-600">Próximos Pasos</span>
+                            <div className="mt-2 space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">El abogado ha sido notificado</span>
                               </div>
-                            )}
+                              <div className="flex items-center space-x-2">
+                                <Clock className="w-3 h-3 text-blue-500" />
+                                <span className="text-xs text-gray-600">El abogado te contactará en 24 horas</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                                <span className="text-xs text-gray-600">Se programará consulta gratuita</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         )}
