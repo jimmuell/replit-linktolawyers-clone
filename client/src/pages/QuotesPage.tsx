@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { ArrowLeft, Star, CheckCircle, Clock, DollarSign, Users, X, Check, Mail } from 'lucide-react';
+import { ArrowLeft, Star, CheckCircle, Clock, DollarSign, Users, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -61,7 +61,6 @@ export default function QuotesPage() {
   const requestNumber = params?.requestNumber;
   const [selectedQuotes, setSelectedQuotes] = useState<number[]>([]);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -111,12 +110,10 @@ export default function QuotesPage() {
     if (Array.isArray(assignedAttorneys) && assignedAttorneys.length > 0) {
       const assignedIds = assignedAttorneys.map((assignment: any) => assignment.attorney.id);
       setSelectedQuotes(assignedIds);
-      setIsSaved(true); // Mark as saved since these attorneys are already assigned
       console.log('Pre-selecting assigned attorney IDs:', assignedIds);
     } else {
       // Reset selections if no assigned attorneys
       setSelectedQuotes([]);
-      setIsSaved(false);
       console.log('No assigned attorneys, resetting selections');
     }
   }, [assignedAttorneys]);
@@ -202,12 +199,8 @@ export default function QuotesPage() {
     setLocation('/');
   };
 
-  const handleSaveAndReturn = () => {
-    setIsSaved(true);
-    // Add a slight delay to show the checkmark before navigating
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 500);
+  const handleBackToHome = () => {
+    setLocation('/');
   };
 
   const handleQuoteSelection = (quoteId: number) => {
@@ -248,11 +241,11 @@ export default function QuotesPage() {
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 
-              onClick={handleSaveAndReturn}
+              onClick={handleBackToHome}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
             >
-              {isSaved ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-              <span>Save & Return Later</span>
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Home</span>
             </Button>
 
             <h1 className="text-xl font-semibold text-gray-900">

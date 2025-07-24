@@ -18,6 +18,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **QuotesPage "Save and Return Later" Button Update** (July 24, 2025): Changed "Save and Return Later" button to "Back to Home" and removed save functionality
+  - Removed `isSaved` state variable and related save logic from QuotesPage component
+  - Updated button to use ArrowLeft icon and "Back to Home" text with simple navigation to homepage
+  - Removed checkmark/X icon logic and timeout-based save functionality
+  - Simplified pre-selection logic to remove save state references
+  - Button now provides clean navigation back to homepage without database save operations
+  - Fixed import statements to remove unused Check and X icons
+
 - **QuotesPage Display Fix and Application Debug** (July 22, 2025): Fixed critical display issues and resolved TypeScript errors preventing application startup
   - Resolved "assignedAttorneys.some is not a function" error by properly handling API response structure with success/data format
   - Fixed TypeScript errors in server routes by adding proper error type handling and null checks for attorney data
