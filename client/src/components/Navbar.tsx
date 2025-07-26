@@ -26,7 +26,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             <h1 className="text-xl font-bold text-gray-900">LinkToLawyers</h1>
           </div>
           
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <button
               onClick={() => scrollToSection('how-it-works')}
               className={cn(
