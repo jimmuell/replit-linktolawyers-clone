@@ -79,13 +79,10 @@ export default function BlogPostPage() {
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 {blogPost.title}
               </h1>
-              <p className="text-xl text-gray-300 mb-6">
-                {blogPost.excerpt}
-              </p>
               <div className="flex items-center gap-6 text-gray-300">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  {blogPost.publishedAt && formatDate(blogPost.publishedAt)}
+                  {blogPost.publishedAt && formatDate(blogPost.publishedAt.toString())}
                 </div>
                 <div className="flex items-center gap-2">
                   <User className="w-5 h-5" />
@@ -96,6 +93,13 @@ export default function BlogPostPage() {
 
             {/* Content */}
             <div className="px-8 py-12">
+              {/* Excerpt */}
+              <div className="mb-8">
+                <p className="text-xl text-gray-600 leading-relaxed">
+                  {blogPost.excerpt}
+                </p>
+              </div>
+              
               <div className="prose prose-lg max-w-none">
                 <div className="text-gray-700 leading-relaxed">
                   {formatContent(blogPost.content)}
@@ -107,7 +111,7 @@ export default function BlogPostPage() {
             <div className="bg-gray-50 px-8 py-6 border-t">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
-                  Published on {blogPost.publishedAt && formatDate(blogPost.publishedAt)}
+                  Published on {blogPost.publishedAt && formatDate(blogPost.publishedAt.toString())}
                 </div>
                 <Button 
                   variant="outline" 
