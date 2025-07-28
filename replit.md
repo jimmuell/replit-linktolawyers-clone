@@ -26,6 +26,9 @@ Preferred communication style: Simple, everyday language.
   - Added motivational quote: "The client has selected your quote based on your expertise and proposal. This is a great opportunity to build a lasting professional relationship."
   - Enhanced both HTML and plain text email templates with quote variables: quoteAmount, timeline, quoteDescription
   - Fixed TypeScript errors by updating both public and admin email sending endpoints to use async quote data fetching
+  - Fixed baseline alignment issue for quote amount display by using matching font sizes (20px) and line heights (1.2) for both label and value
+  - Added proper 15px gap spacing between "Quote Amount:" label and green dollar amount for improved readability
+  - Removed button styling from quote amount display, keeping clean green text presentation
   - Attorneys now receive detailed quote information when assigned to cases, improving communication and engagement
 
 - **Legal Request Confirmation Email Button Enhancement** (July 28, 2025): Added direct link button to quotes page in confirmation emails
