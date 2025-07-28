@@ -18,6 +18,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Attorney Assignment Email Quote Information Enhancement** (July 28, 2025): Added comprehensive quote information section to attorney assignment notification emails
+  - Enhanced attorney assignment email template with "Your Quote Information" card displaying quote amount, timeline, and description
+  - Updated getAttorneyAssignmentVariables function to be async and fetch attorney fee schedule data for accurate quote amounts
+  - Added professional styling with orange/yellow theme for quote information section matching provided design mockup
+  - Included quote description with personalized messaging based on attorney experience and case type
+  - Added motivational quote: "The client has selected your quote based on your expertise and proposal. This is a great opportunity to build a lasting professional relationship."
+  - Enhanced both HTML and plain text email templates with quote variables: quoteAmount, timeline, quoteDescription
+  - Fixed TypeScript errors by updating both public and admin email sending endpoints to use async quote data fetching
+  - Attorneys now receive detailed quote information when assigned to cases, improving communication and engagement
+
 - **Legal Request Confirmation Email Button Enhancement** (July 28, 2025): Added direct link button to quotes page in confirmation emails
   - Added "View Your Quotes & Request Status" button to both HTML and plain text confirmation emails
   - Button links directly to quotes page using request number: /quotes/{requestNumber}

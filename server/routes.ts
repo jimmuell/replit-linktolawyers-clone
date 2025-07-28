@@ -912,8 +912,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const caseTypes = await storage.getAllCaseTypes();
           const caseTypeData = caseTypes.find(ct => ct.value === request.caseType);
           
+          // Get attorney's fee schedule for this case type (if available)
+          let feeSchedule = null;
+          try {
+            const feeSchedules = await storage.getPublicAttorneyFeeSchedules([attorney.id], request.caseType);
+            feeSchedule = feeSchedules.length > 0 ? feeSchedules[0] : null;
+          } catch (error) {
+            console.log('No fee schedule found for attorney:', attorney.id);
+          }
+          
           // Get attorney assignment email template variables
-          const templateVariables = getAttorneyAssignmentVariables(attorney, request, caseTypeData);
+          const templateVariables = await getAttorneyAssignmentVariables(attorney, request, caseTypeData, feeSchedule);
           
           // Get processed email template
           const processedTemplate = await getProcessedTemplate('notification', templateVariables);
@@ -1108,8 +1117,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const caseTypes = await storage.getAllCaseTypes();
           const caseTypeData = caseTypes.find(ct => ct.value === request.caseType);
           
+          // Get attorney's fee schedule for this case type (if available)
+          let feeSchedule = null;
+          try {
+            const feeSchedules = await storage.getPublicAttorneyFeeSchedules([attorney.id], request.caseType);
+            feeSchedule = feeSchedules.length > 0 ? feeSchedules[0] : null;
+          } catch (error) {
+            console.log('No fee schedule found for attorney:', attorney.id);
+          }
+          
           // Get attorney assignment email template variables
-          const templateVariables = getAttorneyAssignmentVariables(attorney, request, caseTypeData);
+          const templateVariables = await getAttorneyAssignmentVariables(attorney, request, caseTypeData, feeSchedule);
           
           // Get processed email template
           const processedTemplate = await getProcessedTemplate('notification', templateVariables);

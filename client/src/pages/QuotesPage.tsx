@@ -115,16 +115,27 @@ export default function QuotesPage() {
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
-    if (Array.isArray(assignedAttorneys) && assignedAttorneys.length > 0) {
-      const assignedIds = assignedAttorneys.map((assignment: any) => assignment.attorney.id);
-      setSelectedQuotes(assignedIds);
-      console.log('Pre-selecting assigned attorney IDs:', assignedIds);
-    } else {
+    if (Array.isArray(assignedAttorneysResponse) && assignedAttorneysResponse.length > 0) {
+      const assignedIds = assignedAttorneysResponse.map((assignment: any) => assignment.attorney.id);
+      setSelectedQuotes(prev => {
+        // Only update if the array has actually changed
+        if (JSON.stringify(prev.sort()) !== JSON.stringify(assignedIds.sort())) {
+          console.log('Pre-selecting assigned attorney IDs:', assignedIds);
+          return assignedIds;
+        }
+        return prev;
+      });
+    } else if (Array.isArray(assignedAttorneysResponse) && assignedAttorneysResponse.length === 0) {
       // Reset selections if no assigned attorneys
-      setSelectedQuotes([]);
-      console.log('No assigned attorneys, resetting selections');
+      setSelectedQuotes(prev => {
+        if (prev.length > 0) {
+          console.log('No assigned attorneys, resetting selections');
+          return [];
+        }
+        return prev;
+      });
     }
-  }, [assignedAttorneys]);
+  }, [assignedAttorneysResponse]);
 
   // Mutation to assign attorneys to request (using public endpoint)
   const assignAttorneysMutation = useMutation({

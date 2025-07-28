@@ -90,11 +90,20 @@ export function getLegalRequestConfirmationVariables(legalRequest: any, caseType
 /**
  * Get template variables for attorney assignment
  */
-export function getAttorneyAssignmentVariables(
+export async function getAttorneyAssignmentVariables(
   attorney: any,
   legalRequest: any,
-  caseTypeData?: any
-): TemplateVariables {
+  caseTypeData?: any,
+  feeSchedule?: any
+): Promise<TemplateVariables> {
+  // Format quote amount
+  const formatQuoteAmount = (fee: number): string => {
+    return `$${(fee / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  // Default quote description
+  const defaultQuoteDescription = `I'll provide comprehensive immigration services for your ${caseTypeData?.label || legalRequest.caseType}. My approach includes thorough document review, strategic planning, and personalized guidance throughout the process. With ${attorney.yearsOfExperience || 8} years of experience, I'm confident in delivering excellent results within your timeline.`;
+
   return {
     attorneyFirstName: attorney.firstName,
     attorneyLastName: attorney.lastName,
@@ -107,6 +116,10 @@ export function getAttorneyAssignmentVariables(
     caseDescription: legalRequest.caseDescription,
     status: legalRequest.status || 'under_review',
     submittedDate: new Date(legalRequest.createdAt).toLocaleDateString(),
-    location: legalRequest.location || 'Not specified'
+    location: legalRequest.location || 'Not specified',
+    // Quote information variables
+    quoteAmount: feeSchedule ? formatQuoteAmount(feeSchedule.fee) : '$1,250.00',
+    timeline: '14 days',
+    quoteDescription: feeSchedule?.notes || defaultQuoteDescription
   };
 }
