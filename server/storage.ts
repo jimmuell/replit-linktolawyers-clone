@@ -1,6 +1,6 @@
 import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate } from "@shared/schema";
 import { db } from "./db";
-import { eq, asc, desc, and, or, isNull, sql } from "drizzle-orm";
+import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -44,6 +44,7 @@ export interface IStorage {
   updateAttorneyFeeSchedule(id: number, updates: Partial<InsertAttorneyFeeSchedule>): Promise<AttorneyFeeSchedule>;
   deleteAttorneyFeeSchedule(id: number): Promise<void>;
   bulkCreateAttorneyFeeSchedules(feeSchedules: InsertAttorneyFeeSchedule[]): Promise<AttorneyFeeSchedule[]>;
+  getPublicAttorneyFeeSchedules(attorneyIds: number[], caseTypeValue: string): Promise<AttorneyFeeSchedule[]>;
   // Request Attorney Assignments
   createRequestAttorneyAssignment(assignment: InsertRequestAttorneyAssignment): Promise<SelectRequestAttorneyAssignment>;
   getRequestAttorneyAssignments(requestId: number): Promise<RequestAttorneyAssignmentWithAttorney[]>;
@@ -358,6 +359,35 @@ export class DatabaseStorage implements IStorage {
       .insert(attorneyFeeSchedule)
       .values(feeSchedules)
       .returning();
+  }
+
+  async getPublicAttorneyFeeSchedules(attorneyIds: number[], caseTypeValue: string): Promise<AttorneyFeeSchedule[]> {
+    // First get the case type ID
+    const [caseType] = await db
+      .select({ id: caseTypes.id })
+      .from(caseTypes)
+      .where(eq(caseTypes.value, caseTypeValue))
+      .limit(1);
+    
+    if (!caseType) {
+      return [];
+    }
+
+    // Get fee schedules for each attorney individually to avoid SQL array issues
+    const results: AttorneyFeeSchedule[] = [];
+    for (const attorneyId of attorneyIds) {
+      const feeSchedules = await db
+        .select()
+        .from(attorneyFeeSchedule)
+        .where(and(
+          eq(attorneyFeeSchedule.attorneyId, attorneyId),
+          eq(attorneyFeeSchedule.caseTypeId, caseType.id),
+          eq(attorneyFeeSchedule.isActive, true)
+        ));
+      results.push(...feeSchedules);
+    }
+    
+    return results.sort((a, b) => a.attorneyId - b.attorneyId);
   }
 
   // Request Attorney Assignments

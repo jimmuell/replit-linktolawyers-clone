@@ -819,6 +819,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to get attorney fee schedules for specific attorneys and case type
+  app.get('/api/public/attorney-fee-schedules/:attorneyIds/:caseType', async (req, res) => {
+    try {
+      const attorneyIds = req.params.attorneyIds.split(',').map(id => parseInt(id));
+      const caseType = req.params.caseType;
+      
+      const feeSchedules = await storage.getPublicAttorneyFeeSchedules(attorneyIds, caseType);
+      res.json(feeSchedules);
+    } catch (error) {
+      console.error('Error fetching attorney fee schedules:', error);
+      res.status(500).json({ error: 'Failed to fetch attorney fee schedules' });
+    }
+  });
+
   // Public endpoint to assign attorneys to a request (for QuotesPage)
   app.post('/api/public/requests/:requestId/attorneys', async (req, res) => {
     try {

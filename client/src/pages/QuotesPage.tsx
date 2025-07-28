@@ -93,6 +93,12 @@ export default function QuotesPage() {
   });
 
   const assignedAttorneys = Array.isArray(assignedAttorneysResponse) ? assignedAttorneysResponse : [];
+
+  // Fetch attorney fee schedules for assigned attorneys
+  const { data: feeSchedules } = useQuery<any[]>({
+    queryKey: ['/api/public/attorney-fee-schedules', assignedAttorneys.map((a: any) => a.attorney.id).join(','), request?.data?.caseType],
+    enabled: assignedAttorneys.length > 0 && !!request?.data?.caseType,
+  });
   console.log('Assigned attorneys data:', assignedAttorneysResponse);
   console.log('Assigned attorneys final:', assignedAttorneys);
 
@@ -243,6 +249,18 @@ export default function QuotesPage() {
     return selectedQuotes.filter(attorneyId => !isAttorneyAssigned(attorneyId));
   };
 
+  // Get attorney fee for specific case type
+  const getAttorneyFee = (attorneyId: number, caseTypeValue: string) => {
+    if (!feeSchedules || !caseTypeValue) return null;
+    
+    // Find fee schedule for this attorney
+    const feeSchedule = feeSchedules.find((fs: any) => 
+      fs.attorneyId === attorneyId
+    );
+    
+    return feeSchedule ? (feeSchedule.fee / 100) : null; // Convert from cents to dollars
+  };
+
   // Filter attorneys that have quotes/assignments for this case type - exclude already assigned attorneys
   const availableAttorneysWithQuotes = (availableAttorneys || []).filter((attorney: any) => 
     !isAttorneyAssigned(attorney.id)
@@ -356,10 +374,28 @@ export default function QuotesPage() {
                         </div>
                         
                         <div className="text-right">
-                          <div className="text-lg font-semibold text-gray-900">
-                            Will provide quote
-                          </div>
-                          <div className="text-sm text-gray-500">Contact within 24hrs</div>
+                          {(() => {
+                            const fee = getAttorneyFee(attorney.id, request?.data?.caseType || '');
+                            if (fee) {
+                              return (
+                                <>
+                                  <div className="text-lg font-semibold text-gray-900">
+                                    ${fee.toLocaleString()}
+                                  </div>
+                                  <div className="text-sm text-gray-500">Contact within 24 hours</div>
+                                </>
+                              );
+                            } else {
+                              return (
+                                <>
+                                  <div className="text-lg font-semibold text-gray-900">
+                                    Will provide quote
+                                  </div>
+                                  <div className="text-sm text-gray-500">Contact within 24 hours</div>
+                                </>
+                              );
+                            }
+                          })()}
                         </div>
                       </div>
 
