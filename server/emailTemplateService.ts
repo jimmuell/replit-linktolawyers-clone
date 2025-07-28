@@ -66,6 +66,8 @@ export async function getProcessedTemplate(
  * Get template variables for legal request confirmation
  */
 export function getLegalRequestConfirmationVariables(legalRequest: any, caseTypeData?: any): TemplateVariables {
+  const quotesUrl = `${process.env.REPLIT_DOMAINS || 'http://localhost:5000'}/quotes/${legalRequest.requestNumber}`;
+  
   return {
     requestNumber: legalRequest.requestNumber,
     firstName: legalRequest.firstName,
@@ -74,7 +76,14 @@ export function getLegalRequestConfirmationVariables(legalRequest: any, caseType
     phoneNumber: legalRequest.phoneNumber || 'Not provided',
     caseType: caseTypeData?.label || legalRequest.caseType,
     caseDescription: legalRequest.caseDescription,
-    location: legalRequest.location || 'Not specified'
+    location: legalRequest.location || 'Not specified',
+    quotesUrl: quotesUrl,
+    quotesButton: `<div style="text-align: center; margin: 30px 0;">
+      <a href="${quotesUrl}" 
+         style="background-color: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+        View Your Quotes & Request Status
+      </a>
+    </div>`
   };
 }
 

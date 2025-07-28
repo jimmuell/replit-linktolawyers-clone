@@ -18,6 +18,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **Legal Request Confirmation Email Button Enhancement** (July 28, 2025): Added direct link button to quotes page in confirmation emails
+  - Added "View Your Quotes & Request Status" button to both HTML and plain text confirmation emails
+  - Button links directly to quotes page using request number: /quotes/{requestNumber}
+  - Enhanced template variables system to support quotesUrl and quotesButton for database-stored templates
+  - Professional blue button styling with proper margins and responsive design
+  - Updated both fallback hardcoded templates and template variable system for consistency
+  - Users can now immediately access their quote status and attorney assignments from confirmation email
+
 - **Homepage Visual Design Enhancement** (July 24, 2025): Updated section backgrounds with alternating gray and white pattern
   - "How LinkToLawyers Works" section changed to gray background for visual separation
   - "About Section" changed to white background for better contrast

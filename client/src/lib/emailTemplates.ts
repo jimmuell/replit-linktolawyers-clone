@@ -115,6 +115,13 @@ export function generateConfirmationEmail(requestData: LegalRequestData, caseTyp
         </div>
       </div>
       
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${process.env.REPLIT_DOMAINS || 'http://localhost:5000'}/quotes/${requestNumber}" 
+           style="background-color: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+          View Your Quotes & Request Status
+        </a>
+      </div>
+      
       <div class="footer">
         <p>This is an automated confirmation email. Please do not reply to this message.</p>
         <p>&copy; 2025 LinkToLawyers. All rights reserved.</p>
@@ -158,6 +165,9 @@ If you have any questions or need to update your request, please contact us:
 Email: support@linkto.lawyers
 Phone: 1-800-LINK-LAW
 Hours: Monday-Friday, 9AM-6PM EST
+
+VIEW YOUR QUOTES & REQUEST STATUS:
+${process.env.REPLIT_DOMAINS || 'http://localhost:5000'}/quotes/${requestNumber}
 
 This is an automated confirmation email. Please do not reply to this message.
 
