@@ -9,6 +9,7 @@ import { getProcessedTemplate, getLegalRequestConfirmationVariables, getAttorney
 import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
 import { setSession, getSession, removeSession, requireAuth } from "./middleware/auth";
 import attorneyReferralsRouter from "./routes/attorney-referrals";
+import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
 // Generate legal request number
 function generateRequestNumber(): string {
@@ -1449,6 +1450,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching Spanish blog post by slug:', error);
       res.status(500).json({ error: 'Failed to fetch Spanish blog post' });
+    }
+  });
+
+  // ========== IMAGE UPLOAD ROUTES ==========
+  
+  // Get upload URL for blog images (admin only)
+  app.post("/api/images/upload", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error('Error getting upload URL:', error);
+      res.status(500).json({ error: 'Failed to get upload URL' });
+    }
+  });
+
+  // Set image ACL policy after upload (admin only)
+  app.put("/api/images/policy", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { imageURL } = req.body;
+      if (!imageURL) {
+        return res.status(400).json({ error: "imageURL is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        imageURL,
+        {
+          owner: req.user?.id?.toString() || "admin",
+          visibility: "public", // Blog images should be publicly accessible
+        }
+      );
+
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      console.error("Error setting image policy:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Serve uploaded images (public)
+  app.get("/images/:objectPath(*)", async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        `/objects/${req.params.objectPath}`,
+      );
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error serving image:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
     }
   });
 

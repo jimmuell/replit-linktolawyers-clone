@@ -7,6 +7,7 @@ import { Link } from 'wouter';
 import { formatDistanceToNow } from 'date-fns';
 import BlogHeader from '@/components/BlogHeader';
 import type { BlogPost } from '@shared/schema';
+import { getImageUrl, createImageErrorHandler } from '@/lib/imageUtils';
 
 export default function Blog() {
   const { data: blogPosts, isLoading, error } = useQuery<BlogPost[]>({
@@ -77,9 +78,10 @@ export default function Blog() {
                       {post.imageUrl && (
                         <div className="aspect-video overflow-hidden">
                           <img 
-                            src={post.imageUrl} 
+                            src={getImageUrl(post.imageUrl) || post.imageUrl} 
                             alt={post.imageAlt || post.title}
                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            onError={createImageErrorHandler()}
                           />
                         </div>
                       )}
@@ -131,9 +133,10 @@ export default function Blog() {
                     {post.imageUrl && (
                       <div className="aspect-video overflow-hidden">
                         <img 
-                          src={post.imageUrl} 
+                          src={getImageUrl(post.imageUrl) || post.imageUrl} 
                           alt={post.imageAlt || post.title}
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          onError={createImageErrorHandler()}
                         />
                       </div>
                     )}

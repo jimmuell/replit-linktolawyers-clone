@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Save, Eye, FileText } from 'lucide-react';
+import { ArrowLeft, Save, Eye, FileText, Upload, Trash2 } from 'lucide-react';
+import { ObjectUploader } from '@/components/ObjectUploader';
+import type { UploadResult } from '@uppy/core';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -272,54 +274,115 @@ export default function BlogPostEditor() {
                 {/* Image Section */}
                 <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
                   <h3 className="text-lg font-semibold">Featured Image</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Image URL</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="https://example.com/image.jpg"
-                              type="url"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="imageAlt"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Image Alt Text</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Descriptive text for accessibility"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  
+                  {/* Current Image Display */}
                   {form.watch('imageUrl') && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600 mb-2">Preview:</p>
-                      <img 
-                        src={form.watch('imageUrl')} 
-                        alt={form.watch('imageAlt') || 'Blog post preview'}
-                        className="max-w-xs h-40 object-cover rounded-lg border"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
+                    <div className="space-y-2">
+                      <div className="relative inline-block">
+                        <img 
+                          src={form.watch('imageUrl')} 
+                          alt={form.watch('imageAlt') || 'Featured image preview'} 
+                          className="max-w-xs h-32 object-cover rounded-lg border"
+                          onError={(e) => {
+                            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDIwMCAxMjgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMjgiIGZpbGw9IiNGM0Y0RjYiLz48dGV4dCB4PSIxMDAiIHk9IjY0IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOUI5QkEwIiBmb250LXNpemU9IjE0Ij5JbWFnZSBub3QgZm91bmQ8L3RleHQ+PC9zdmc+';
+                          }}
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2"
+                          onClick={() => {
+                            form.setValue('imageUrl', '');
+                            form.setValue('imageAlt', '');
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
                   )}
+
+                  {/* Upload Button */}
+                  <div className="space-y-4">
+                    <ObjectUploader
+                      onGetUploadParameters={async () => {
+                        const response = await fetch('/api/images/upload', {
+                          method: 'POST',
+                          headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+                          },
+                        });
+                        const data = await response.json();
+                        return {
+                          method: 'PUT' as const,
+                          url: data.uploadURL,
+                        };
+                      }}
+                      onComplete={async (result) => {
+                        if (result.successful && result.successful.length > 0) {
+                          const uploadedFile = result.successful[0];
+                          const imageURL = uploadedFile.uploadURL;
+                          
+                          try {
+                            // Set ACL policy to make image publicly accessible
+                            const policyResponse = await fetch('/api/images/policy', {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+                              },
+                              body: JSON.stringify({ imageURL }),
+                            });
+                            
+                            if (policyResponse.ok) {
+                              const policyData = await policyResponse.json();
+                              // Use the normalized object path for serving
+                              form.setValue('imageUrl', policyData.objectPath || imageURL);
+                            } else {
+                              // Fallback to original URL if policy setting fails
+                              form.setValue('imageUrl', imageURL);
+                            }
+                            
+                            toast({
+                              title: "Success",
+                              description: "Image uploaded successfully",
+                            });
+                          } catch (error) {
+                            console.error('Error setting image policy:', error);
+                            // Still set the image URL even if policy setting fails
+                            form.setValue('imageUrl', imageURL);
+                            toast({
+                              title: "Upload complete",
+                              description: "Image uploaded (policy setting failed)",
+                              variant: "destructive",
+                            });
+                          }
+                        }
+                      }}
+                      buttonClassName="w-full"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {form.watch('imageUrl') ? 'Replace Image' : 'Upload Featured Image'}
+                    </ObjectUploader>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="imageAlt"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Image Alt Text</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Descriptive text for accessibility"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 <FormField

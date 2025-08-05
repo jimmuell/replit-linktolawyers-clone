@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import BlogHeader from '@/components/BlogHeader';
 import type { BlogPost } from '@shared/schema';
+import { getImageUrl, createImageErrorHandler } from '@/lib/imageUtils';
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -73,9 +74,10 @@ export default function BlogPostPage() {
             {blogPost.imageUrl && (
               <div className="aspect-[21/9] overflow-hidden">
                 <img 
-                  src={blogPost.imageUrl} 
+                  src={getImageUrl(blogPost.imageUrl) || blogPost.imageUrl} 
                   alt={blogPost.imageAlt || blogPost.title}
                   className="w-full h-full object-cover"
+                  onError={createImageErrorHandler()}
                 />
               </div>
             )}
