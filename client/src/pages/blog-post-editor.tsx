@@ -72,7 +72,7 @@ export default function BlogPostEditor() {
         content: blogPost.content,
         excerpt: blogPost.excerpt || '',
         imageUrl: blogPost.imageUrl ?? '',
-        imageAlt: blogPost.imageAlt || '',
+        imageAlt: blogPost.imageAlt ?? '',
         isFeatured: blogPost.isFeatured ?? false,
         isPublished: blogPost.isPublished,
         publishedAt: blogPost.publishedAt ? new Date(blogPost.publishedAt) : null,
@@ -309,11 +309,14 @@ export default function BlogPostEditor() {
                       onGetUploadParameters={async () => {
                         try {
                           console.log('Getting upload parameters...');
+                          const sessionId = localStorage.getItem('sessionId');
+                          console.log('Session ID:', sessionId);
+                          
                           const response = await fetch('/api/images/upload', {
                             method: 'POST',
-                            credentials: 'include',
                             headers: {
                               'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${sessionId}`,
                             },
                           });
                           
@@ -346,11 +349,12 @@ export default function BlogPostEditor() {
                           
                           try {
                             // Set ACL policy to make image publicly accessible
+                            const sessionId = localStorage.getItem('sessionId');
                             const policyResponse = await fetch('/api/images/policy', {
                               method: 'PUT',
-                              credentials: 'include',
                               headers: {
                                 'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${sessionId}`,
                               },
                               body: JSON.stringify({ imageURL }),
                             });
