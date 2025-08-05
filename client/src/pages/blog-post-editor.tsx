@@ -24,6 +24,9 @@ const blogPostSchema = z.object({
   slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
   content: z.string().min(1, 'Content is required'),
   excerpt: z.string().min(1, 'Excerpt is required'),
+  imageUrl: z.string().url('Please enter a valid image URL').optional().or(z.literal('')),
+  imageAlt: z.string().optional(),
+  isFeatured: z.boolean().default(false),
   isPublished: z.boolean().default(false),
   publishedAt: z.date().nullable().optional(),
 });
@@ -50,6 +53,9 @@ export default function BlogPostEditor() {
       slug: '',
       content: '',
       excerpt: '',
+      imageUrl: '',
+      imageAlt: '',
+      isFeatured: false,
       isPublished: false,
       publishedAt: null,
     },
@@ -63,6 +69,9 @@ export default function BlogPostEditor() {
         slug: blogPost.slug,
         content: blogPost.content,
         excerpt: blogPost.excerpt,
+        imageUrl: blogPost.imageUrl ?? '',
+        imageAlt: blogPost.imageAlt ?? '',
+        isFeatured: blogPost.isFeatured ?? false,
         isPublished: blogPost.isPublished,
         publishedAt: blogPost.publishedAt ? new Date(blogPost.publishedAt) : null,
       });
@@ -76,6 +85,9 @@ export default function BlogPostEditor() {
         slug: data.slug,
         content: data.content,
         excerpt: data.excerpt,
+        imageUrl: data.imageUrl || null,
+        imageAlt: data.imageAlt || null,
+        isFeatured: data.isFeatured || false,
         authorId: user?.id || 0,
         isPublished: data.isPublished,
         publishedAt: data.isPublished ? new Date().toISOString() : null,
@@ -106,6 +118,9 @@ export default function BlogPostEditor() {
         slug: data.slug,
         content: data.content,
         excerpt: data.excerpt,
+        imageUrl: data.imageUrl || null,
+        imageAlt: data.imageAlt || null,
+        isFeatured: data.isFeatured || false,
         authorId: user?.id || 0,
         isPublished: data.isPublished,
         publishedAt: data.isPublished && !blogPost?.publishedAt ? new Date().toISOString() : blogPost?.publishedAt,
@@ -254,6 +269,59 @@ export default function BlogPostEditor() {
                   )}
                 />
 
+                {/* Image Section */}
+                <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                  <h3 className="text-lg font-semibold">Featured Image</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image URL</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="https://example.com/image.jpg"
+                              type="url"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="imageAlt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image Alt Text</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Descriptive text for accessibility"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  {form.watch('imageUrl') && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">Preview:</p>
+                      <img 
+                        src={form.watch('imageUrl')} 
+                        alt={form.watch('imageAlt') || 'Blog post preview'}
+                        className="max-w-xs h-40 object-cover rounded-lg border"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <FormField
                   control={form.control}
                   name="content"
@@ -291,26 +359,49 @@ export default function BlogPostEditor() {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="isPublished"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <FormLabel>Published</FormLabel>
-                        <p className="text-sm text-gray-600">
-                          {field.value ? 'This post will be visible to the public' : 'Save as draft'}
-                        </p>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="isPublished"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <FormLabel>Published</FormLabel>
+                          <p className="text-sm text-gray-600">
+                            {field.value ? 'This post will be visible to the public' : 'Save as draft'}
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="isFeatured"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <FormLabel>Featured Post</FormLabel>
+                          <p className="text-sm text-gray-600">
+                            {field.value ? 'This post will be highlighted on the blog' : 'Regular blog post'}
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <div className="flex justify-end gap-3">
                   <Button

@@ -69,12 +69,26 @@ export default function BlogPostPage() {
           </div>
         ) : blogPost ? (
           <article className="bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Featured Image */}
+            {blogPost.imageUrl && (
+              <div className="aspect-[21/9] overflow-hidden">
+                <img 
+                  src={blogPost.imageUrl} 
+                  alt={blogPost.imageAlt || blogPost.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
             {/* Header */}
             <div className="bg-black text-white px-8 py-12">
-              <div className="mb-4">
+              <div className="mb-4 flex items-center gap-2">
                 <Badge variant="secondary" className="bg-gray-100 text-gray-800">
                   Immigration Law
                 </Badge>
+                {blogPost.isFeatured && (
+                  <Badge className="bg-blue-600 text-white">Featured</Badge>
+                )}
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 {blogPost.title}

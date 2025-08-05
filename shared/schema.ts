@@ -195,6 +195,9 @@ export const blogPosts = pgTable("blog_posts", {
   slug: varchar("slug", { length: 255 }).notNull().unique(),
   content: text("content").notNull(),
   excerpt: text("excerpt"),
+  imageUrl: text("image_url"), // Featured image URL
+  imageAlt: varchar("image_alt", { length: 255 }), // Alt text for the image
+  isFeatured: boolean("is_featured").default(false), // Featured post flag
   spanishTitle: varchar("spanish_title", { length: 255 }),
   spanishContent: text("spanish_content"),
   spanishExcerpt: text("spanish_excerpt"),
@@ -297,6 +300,9 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
   slug: true,
   content: true,
   excerpt: true,
+  imageUrl: true,
+  imageAlt: true,
+  isFeatured: true,
   spanishTitle: true,
   spanishContent: true,
   spanishExcerpt: true,

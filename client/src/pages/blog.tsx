@@ -66,39 +66,109 @@ export default function Blog() {
             <p className="text-gray-600">Check back soon for the latest immigration law insights and updates.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts?.map((post) => (
-              <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                  <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors mb-2">
-                    {post.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {post.publishedAt && formatDate(post.publishedAt)}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    {post.excerpt || stripHtmlAndTruncate(post.content, 150)}
-                  </p>
-                  
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="w-full group"
-                    asChild
-                  >
-                    <Link href={`/blog/${post.slug}`}>
-                      Read More
-                      <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="space-y-8">
+            {/* Featured Posts Section */}
+            {blogPosts && blogPosts.filter(post => post.isFeatured).length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Posts</h2>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                  {blogPosts?.filter(post => post.isFeatured).map((post) => (
+                    <Card key={post.id} className="hover:shadow-xl transition-shadow duration-300 border-2 border-blue-200">
+                      {post.imageUrl && (
+                        <div className="aspect-video overflow-hidden">
+                          <img 
+                            src={post.imageUrl} 
+                            alt={post.imageAlt || post.title}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                      )}
+                      <CardHeader>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="bg-blue-600 text-white">Featured</Badge>
+                        </div>
+                        <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors mb-2">
+                          {post.title}
+                        </CardTitle>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            {post.publishedAt && formatDate(post.publishedAt.toString())}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-600 mb-6 leading-relaxed">
+                          {post.excerpt || stripHtmlAndTruncate(post.content, 150)}
+                        </p>
+                        
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          className="w-full group bg-blue-600 hover:bg-blue-700"
+                          asChild
+                        >
+                          <Link href={`/blog/${post.slug}`}>
+                            Read Featured Post
+                            <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Regular Posts Section */}
+            <div>
+              {blogPosts && blogPosts.filter(post => post.isFeatured).length > 0 && (
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Posts</h2>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {blogPosts?.filter(post => !post.isFeatured).map((post) => (
+                  <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
+                    {post.imageUrl && (
+                      <div className="aspect-video overflow-hidden">
+                        <img 
+                          src={post.imageUrl} 
+                          alt={post.imageAlt || post.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors mb-2">
+                        {post.title}
+                      </CardTitle>
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {post.publishedAt && formatDate(post.publishedAt.toString())}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-600 mb-6 leading-relaxed">
+                        {post.excerpt || stripHtmlAndTruncate(post.content, 150)}
+                      </p>
+                      
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="w-full group"
+                        asChild
+                      >
+                        <Link href={`/blog/${post.slug}`}>
+                          Read More
+                          <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
