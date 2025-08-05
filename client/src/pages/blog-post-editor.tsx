@@ -71,9 +71,9 @@ export default function BlogPostEditor() {
         slug: blogPost.slug,
         content: blogPost.content,
         excerpt: blogPost.excerpt || '',
-        imageUrl: blogPost.imageUrl || '',
+        imageUrl: blogPost.imageUrl ?? '',
         imageAlt: blogPost.imageAlt || '',
-        isFeatured: blogPost.isFeatured || false,
+        isFeatured: blogPost.isFeatured ?? false,
         isPublished: blogPost.isPublished,
         publishedAt: blogPost.publishedAt ? new Date(blogPost.publishedAt) : null,
       });
@@ -307,23 +307,37 @@ export default function BlogPostEditor() {
                   <div className="space-y-4">
                     <ObjectUploader
                       onGetUploadParameters={async () => {
-                        const response = await fetch('/api/images/upload', {
-                          method: 'POST',
-                          credentials: 'include',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                        });
-                        
-                        if (!response.ok) {
-                          throw new Error(`Upload failed: ${response.status}`);
+                        try {
+                          console.log('Getting upload parameters...');
+                          const response = await fetch('/api/images/upload', {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                          });
+                          
+                          if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('Upload request failed:', response.status, errorText);
+                            throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+                          }
+                          
+                          const data = await response.json();
+                          console.log('Upload URL received:', data.uploadURL);
+                          return {
+                            method: 'PUT' as const,
+                            url: data.uploadURL,
+                          };
+                        } catch (error) {
+                          console.error('Error getting upload parameters:', error);
+                          toast({
+                            title: "Upload Error",
+                            description: "Failed to get upload URL. Please ensure you're logged in as an admin.",
+                            variant: "destructive",
+                          });
+                          throw error;
                         }
-                        
-                        const data = await response.json();
-                        return {
-                          method: 'PUT' as const,
-                          url: data.uploadURL,
-                        };
                       }}
                       onComplete={async (result) => {
                         if (result.successful && result.successful.length > 0) {

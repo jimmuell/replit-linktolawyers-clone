@@ -59,22 +59,38 @@ export function ObjectUploader({
   children,
 }: ObjectUploaderProps) {
   const [showModal, setShowModal] = useState(false);
-  const [uppy] = useState(() =>
-    new Uppy({
+  const [uppy] = useState(() => {
+    const uppyInstance = new Uppy({
       restrictions: {
         maxNumberOfFiles,
         maxFileSize,
+        allowedFileTypes: ['image/*'],
       },
       autoProceed: false,
-    })
-      .use(AwsS3, {
-        shouldUseMultipart: false,
-        getUploadParameters: onGetUploadParameters,
-      })
-      .on("complete", (result) => {
-        onComplete?.(result);
-      })
-  );
+      debug: true,
+    });
+
+    uppyInstance.use(AwsS3, {
+      shouldUseMultipart: false,
+      getUploadParameters: onGetUploadParameters,
+    });
+
+    uppyInstance.on("complete", (result) => {
+      console.log('Upload complete:', result);
+      onComplete?.(result);
+      setShowModal(false);
+    });
+
+    uppyInstance.on("error", (error) => {
+      console.error('Uppy error:', error);
+    });
+
+    uppyInstance.on("upload-error", (file, error, response) => {
+      console.error('Upload error for file:', file?.name, error, response);
+    });
+
+    return uppyInstance;
+  });
 
   return (
     <div>
