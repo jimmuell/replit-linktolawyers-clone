@@ -99,27 +99,11 @@ export function ObjectUploader({
     // Cleanup function
     return () => {
       if (uppyRef.current) {
-        uppyRef.current.close();
+        uppyRef.current.destroy();
         uppyRef.current = null;
       }
     };
-  }, []);
-
-  // Update upload parameters when they change
-  useEffect(() => {
-    if (uppyRef.current) {
-      // Remove existing AWS S3 plugin
-      if (uppyRef.current.getPlugin('AwsS3')) {
-        uppyRef.current.removePlugin(uppyRef.current.getPlugin('AwsS3'));
-      }
-      
-      // Add new AWS S3 plugin with updated parameters
-      uppyRef.current.use(AwsS3, {
-        shouldUseMultipart: false,
-        getUploadParameters: onGetUploadParameters,
-      });
-    }
-  }, [onGetUploadParameters]);
+  }, [onGetUploadParameters, onComplete, maxNumberOfFiles, maxFileSize]);
 
   return (
     <div>
