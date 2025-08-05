@@ -70,10 +70,10 @@ export default function BlogPostEditor() {
         title: blogPost.title,
         slug: blogPost.slug,
         content: blogPost.content,
-        excerpt: blogPost.excerpt,
-        imageUrl: blogPost.imageUrl ?? '',
-        imageAlt: blogPost.imageAlt ?? '',
-        isFeatured: blogPost.isFeatured ?? false,
+        excerpt: blogPost.excerpt || '',
+        imageUrl: blogPost.imageUrl || '',
+        imageAlt: blogPost.imageAlt || '',
+        isFeatured: blogPost.isFeatured || false,
         isPublished: blogPost.isPublished,
         publishedAt: blogPost.publishedAt ? new Date(blogPost.publishedAt) : null,
       });
@@ -309,10 +309,16 @@ export default function BlogPostEditor() {
                       onGetUploadParameters={async () => {
                         const response = await fetch('/api/images/upload', {
                           method: 'POST',
+                          credentials: 'include',
                           headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+                            'Content-Type': 'application/json',
                           },
                         });
+                        
+                        if (!response.ok) {
+                          throw new Error(`Upload failed: ${response.status}`);
+                        }
+                        
                         const data = await response.json();
                         return {
                           method: 'PUT' as const,
@@ -328,9 +334,9 @@ export default function BlogPostEditor() {
                             // Set ACL policy to make image publicly accessible
                             const policyResponse = await fetch('/api/images/policy', {
                               method: 'PUT',
+                              credentials: 'include',
                               headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
                               },
                               body: JSON.stringify({ imageURL }),
                             });
