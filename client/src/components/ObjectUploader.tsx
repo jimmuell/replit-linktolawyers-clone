@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import Uppy from "@uppy/core";
 import { DashboardModal } from "@uppy/react";
@@ -59,38 +59,67 @@ export function ObjectUploader({
   children,
 }: ObjectUploaderProps) {
   const [showModal, setShowModal] = useState(false);
-  const [uppy] = useState(() => {
-    const uppyInstance = new Uppy({
-      restrictions: {
-        maxNumberOfFiles,
-        maxFileSize,
-        allowedFileTypes: ['image/*'],
-      },
-      autoProceed: false,
-      debug: true,
-    });
+  const uppyRef = useRef<Uppy | null>(null);
 
-    uppyInstance.use(AwsS3, {
-      shouldUseMultipart: false,
-      getUploadParameters: onGetUploadParameters,
-    });
+  // Initialize Uppy only once
+  useEffect(() => {
+    if (!uppyRef.current) {
+      const uppyInstance = new Uppy({
+        restrictions: {
+          maxNumberOfFiles,
+          maxFileSize,
+          allowedFileTypes: ['image/*'],
+        },
+        autoProceed: false,
+        debug: true,
+      });
 
-    uppyInstance.on("complete", (result) => {
-      console.log('Upload complete:', result);
-      onComplete?.(result);
-      setShowModal(false);
-    });
+      uppyInstance.use(AwsS3, {
+        shouldUseMultipart: false,
+        getUploadParameters: onGetUploadParameters,
+      });
 
-    uppyInstance.on("error", (error) => {
-      console.error('Uppy error:', error);
-    });
+      uppyInstance.on("complete", (result) => {
+        console.log('Upload complete:', result);
+        onComplete?.(result);
+        setShowModal(false);
+      });
 
-    uppyInstance.on("upload-error", (file, error, response) => {
-      console.error('Upload error for file:', file?.name, error, response);
-    });
+      uppyInstance.on("error", (error) => {
+        console.error('Uppy error:', error);
+      });
 
-    return uppyInstance;
-  });
+      uppyInstance.on("upload-error", (file, error, response) => {
+        console.error('Upload error for file:', file?.name, error, response);
+      });
+
+      uppyRef.current = uppyInstance;
+    }
+
+    // Cleanup function
+    return () => {
+      if (uppyRef.current) {
+        uppyRef.current.close();
+        uppyRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update upload parameters when they change
+  useEffect(() => {
+    if (uppyRef.current) {
+      // Remove existing AWS S3 plugin
+      if (uppyRef.current.getPlugin('AwsS3')) {
+        uppyRef.current.removePlugin(uppyRef.current.getPlugin('AwsS3'));
+      }
+      
+      // Add new AWS S3 plugin with updated parameters
+      uppyRef.current.use(AwsS3, {
+        shouldUseMultipart: false,
+        getUploadParameters: onGetUploadParameters,
+      });
+    }
+  }, [onGetUploadParameters]);
 
   return (
     <div>
@@ -98,12 +127,14 @@ export function ObjectUploader({
         {children}
       </Button>
 
-      <DashboardModal
-        uppy={uppy}
-        open={showModal}
-        onRequestClose={() => setShowModal(false)}
-        proudlyDisplayPoweredByUppy={false}
-      />
+      {uppyRef.current && (
+        <DashboardModal
+          uppy={uppyRef.current}
+          open={showModal}
+          onRequestClose={() => setShowModal(false)}
+          proudlyDisplayPoweredByUppy={false}
+        />
+      )}
     </div>
   );
 }
