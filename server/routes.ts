@@ -8,7 +8,7 @@ import rateLimit from "express-rate-limit";
 import multer from "multer";
 import { getProcessedTemplate, getLegalRequestConfirmationVariables, getAttorneyAssignmentVariables } from "./emailTemplateService";
 import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
-import { setSession, getSession, removeSession, requireAuth } from "./middleware/auth";
+import { setSession, getSession, removeSession, requireAuth, requireRole } from "./middleware/auth";
 import attorneyReferralsRouter from "./routes/attorney-referrals";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 
@@ -78,14 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
-  const requireRole = (role: string) => (req: any, res: any, next: any) => {
-    if (req.user?.role !== role) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-    next();
-  };
-
-  const requireAdmin = requireRole('admin');
+  const requireAdmin = requireRole(['admin']);
 
   // Register
   app.post('/api/auth/register', async (req, res) => {
@@ -192,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoints for case type management
-  app.get("/api/admin/case-types", requireAuth, requireRole('admin'), async (req, res) => {
+  app.get("/api/admin/case-types", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const caseTypes = await storage.getAllCaseTypes();
       res.json(caseTypes);
@@ -202,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/case-types", requireAuth, requireRole('admin'), async (req, res) => {
+  app.post("/api/admin/case-types", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const validatedData = insertCaseTypeSchema.parse(req.body);
       const caseType = await storage.createCaseType(validatedData);
@@ -213,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/case-types/:id", requireAuth, requireRole('admin'), async (req, res) => {
+  app.put("/api/admin/case-types/:id", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertCaseTypeSchema.partial().parse(req.body);
@@ -225,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/case-types/:id", requireAuth, requireRole('admin'), async (req, res) => {
+  app.delete("/api/admin/case-types/:id", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteCaseType(id);
@@ -485,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all legal requests (for admin)
-  app.get("/api/legal-requests", requireAuth, requireRole('admin'), async (req, res) => {
+  app.get("/api/legal-requests", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const legalRequests = await storage.getAllLegalRequests();
       res.json(legalRequests);
@@ -496,7 +489,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update legal request
-  app.put("/api/legal-requests/:id", requireAuth, requireRole('admin'), async (req, res) => {
+  app.put("/api/legal-requests/:id", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = insertLegalRequestSchema.partial().parse(req.body);
@@ -509,7 +502,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete legal request
-  app.delete("/api/legal-requests/:id", requireAuth, requireRole('admin'), async (req, res) => {
+  app.delete("/api/legal-requests/:id", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteLegalRequest(id);
@@ -520,7 +513,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/legal-requests", requireAuth, requireRole('admin'), async (req, res) => {
+  app.get("/api/admin/legal-requests", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const legalRequests = await storage.getAllLegalRequests();
       res.json({ success: true, data: legalRequests });
@@ -531,13 +524,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin only routes
-  app.get('/api/admin/users', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/admin/users', requireAuth, requireRole(['admin']), async (req, res) => {
     // This would get all users - implement as needed
     res.json({ message: 'Admin users endpoint' });
   });
 
   // SMTP Configuration routes
-  app.get('/api/smtp/settings', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/smtp/settings', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const settings = await storage.getSmtpSettings();
       if (!settings) {
@@ -552,7 +545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/smtp/settings', requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/smtp/settings', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const validatedData = insertSmtpSettingsSchema.parse(req.body);
       
@@ -578,7 +571,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Test SMTP connection
-  app.post('/api/smtp/test', requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/smtp/test', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const transporter = await createTransporter();
       await transporter.verify();
@@ -594,7 +587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send email route
-  app.post('/api/email/send', emailLimiter, requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/email/send', emailLimiter, requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const validatedData = sendEmailSchema.parse(req.body);
       const transporter = await createTransporter();
@@ -653,7 +646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get email history
-  app.get('/api/email/history', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/email/history', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const history = await storage.getAllEmailHistory();
       res.json(history);
@@ -665,7 +658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Attorney Management Routes
   // Create attorney
-  app.post('/api/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/attorneys', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const attorneyData = insertAttorneySchema.parse(req.body);
       const attorney = await storage.createAttorney(attorneyData);
@@ -677,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all attorneys
-  app.get('/api/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/attorneys', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const attorneys = await storage.getAllAttorneys();
       res.json(attorneys);
@@ -688,7 +681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get attorney by ID
-  app.get('/api/attorneys/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/attorneys/:id', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const attorney = await storage.getAttorney(parseInt(req.params.id));
       if (!attorney) {
@@ -702,7 +695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update attorney
-  app.put('/api/attorneys/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  app.put('/api/attorneys/:id', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const attorneyData = insertAttorneySchema.partial().parse(req.body);
       const attorney = await storage.updateAttorney(parseInt(req.params.id), attorneyData);
@@ -714,7 +707,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete attorney
-  app.delete('/api/attorneys/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  app.delete('/api/attorneys/:id', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       await storage.deleteAttorney(parseInt(req.params.id));
       res.json({ message: 'Attorney deleted successfully' });
@@ -726,7 +719,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Attorney Fee Schedule Routes
   // Create attorney fee schedule entry
-  app.post('/api/attorney-fee-schedule', requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/attorney-fee-schedule', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const feeScheduleData = insertAttorneyFeeScheduleSchema.parse(req.body);
       const feeSchedule = await storage.createAttorneyFeeSchedule(feeScheduleData);
@@ -738,7 +731,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all attorney fee schedules
-  app.get('/api/attorney-fee-schedule', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/attorney-fee-schedule', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const feeSchedules = await storage.getAllAttorneyFeeSchedules();
       res.json(feeSchedules);
@@ -749,7 +742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get attorney fee schedule by attorney ID
-  app.get('/api/attorney-fee-schedule/attorney/:attorneyId', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/attorney-fee-schedule/attorney/:attorneyId', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const feeSchedules = await storage.getAttorneyFeeScheduleByAttorney(parseInt(req.params.attorneyId));
       res.json(feeSchedules);
@@ -760,7 +753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get specific attorney fee schedule by attorney and case type
-  app.get('/api/attorney-fee-schedule/attorney/:attorneyId/case-type/:caseTypeId', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/attorney-fee-schedule/attorney/:attorneyId/case-type/:caseTypeId', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const feeSchedule = await storage.getAttorneyFeeScheduleByAttorneyAndCaseType(
         parseInt(req.params.attorneyId),
@@ -777,7 +770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update attorney fee schedule
-  app.put('/api/attorney-fee-schedule/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  app.put('/api/attorney-fee-schedule/:id', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const feeScheduleData = insertAttorneyFeeScheduleSchema.partial().parse(req.body);
       const feeSchedule = await storage.updateAttorneyFeeSchedule(parseInt(req.params.id), feeScheduleData);
@@ -789,7 +782,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete attorney fee schedule
-  app.delete('/api/attorney-fee-schedule/:id', requireAuth, requireRole('admin'), async (req, res) => {
+  app.delete('/api/attorney-fee-schedule/:id', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       await storage.deleteAttorneyFeeSchedule(parseInt(req.params.id));
       res.json({ message: 'Attorney fee schedule deleted successfully' });
@@ -800,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk create attorney fee schedules
-  app.post('/api/attorney-fee-schedule/bulk', requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/attorney-fee-schedule/bulk', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const feeSchedulesData = req.body.map((item: any) => insertAttorneyFeeScheduleSchema.parse(item));
       const feeSchedules = await storage.bulkCreateAttorneyFeeSchedules(feeSchedulesData);
@@ -814,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ========== REQUEST ATTORNEY ASSIGNMENT ROUTES ==========
 
   // Get attorneys by case type for assignment
-  app.get('/api/attorneys/case-type/:caseType', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/attorneys/case-type/:caseType', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const attorneys = await storage.getAttorneysByCaseType(req.params.caseType);
       res.json(attorneys);
@@ -1032,7 +1025,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get attorney assignments for a request
-  app.get('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+  app.get('/api/requests/:requestId/attorneys', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const assignments = await storage.getRequestAttorneyAssignments(parseInt(req.params.requestId));
       res.json(assignments);
@@ -1043,7 +1036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Assign attorneys to a request
-  app.post('/api/requests/:requestId/attorneys', requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/requests/:requestId/attorneys', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const requestId = parseInt(req.params.requestId);
       const { attorneyIds } = req.body;
@@ -1062,7 +1055,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update attorney assignment status
-  app.put('/api/assignments/:assignmentId', requireAuth, requireRole('admin'), async (req, res) => {
+  app.put('/api/assignments/:assignmentId', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const assignmentData = insertRequestAttorneyAssignmentSchema.partial().parse(req.body);
       const assignment = await storage.updateRequestAttorneyAssignment(parseInt(req.params.assignmentId), assignmentData);
@@ -1074,7 +1067,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Remove attorney assignment
-  app.delete('/api/assignments/:assignmentId', requireAuth, requireRole('admin'), async (req, res) => {
+  app.delete('/api/assignments/:assignmentId', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       await storage.deleteRequestAttorneyAssignment(parseInt(req.params.assignmentId));
       res.json({ message: 'Attorney assignment removed successfully' });
@@ -1085,7 +1078,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send email to assigned attorneys for a request
-  app.post('/api/requests/:requestId/send-attorney-emails', requireAuth, requireRole('admin'), async (req, res) => {
+  app.post('/api/requests/:requestId/send-attorney-emails', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const requestId = parseInt(req.params.requestId);
       
