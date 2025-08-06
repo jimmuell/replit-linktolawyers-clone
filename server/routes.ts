@@ -1470,29 +1470,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== IMAGE UPLOAD ROUTES ==========
   
-  // Simple image upload endpoint (multipart form)
+  // Enhanced image upload endpoint with comprehensive validation and optimization
   app.post("/api/upload-image", upload.single('image'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: 'No image file provided' });
       }
 
+      // Enhanced server-side validation
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ 
+          error: `Invalid file type: ${req.file.mimetype}. Allowed types: ${allowedTypes.join(', ')}` 
+        });
+      }
+
+      if (req.file.size > maxSize) {
+        return res.status(400).json({ 
+          error: `File too large: ${Math.round(req.file.size / 1024 / 1024 * 100) / 100}MB. Maximum size is 10MB` 
+        });
+      }
+
+      // Get alt text from form data for SEO and accessibility
+      const altText = req.body.altText?.trim() || '';
+
       const objectStorageService = new ObjectStorageService();
+      
+      // Generate organized filename with timestamp and random suffix for uniqueness
+      const timestamp = Date.now();
+      const randomSuffix = Math.random().toString(36).substring(2, 8);
+      const sanitizedName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase() || 'jpg';
       
       // Get upload URL
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
       
-      // Upload the file to object storage
+      // Upload the file to object storage with enhanced metadata
       const uploadResponse = await fetch(uploadURL, {
         method: 'PUT',
         body: req.file.buffer,
         headers: {
           'Content-Type': req.file.mimetype,
+          'Content-Length': req.file.size.toString(),
+          // Add custom metadata for better organization
+          'x-goog-meta-original-name': sanitizedName,
+          'x-goog-meta-upload-timestamp': timestamp.toString(),
+          ...(altText && { 'x-goog-meta-alt-text': altText }),
         },
       });
 
       if (!uploadResponse.ok) {
-        throw new Error(`Upload failed: ${uploadResponse.status}`);
+        const errorText = await uploadResponse.text().catch(() => 'Unknown error');
+        console.error('Object storage upload failed:', {
+          status: uploadResponse.status,
+          statusText: uploadResponse.statusText,
+          error: errorText,
+          fileSize: req.file.size,
+          fileName: req.file.originalname
+        });
+        throw new Error(`Upload to storage failed: ${uploadResponse.status} - ${uploadResponse.statusText}`);
       }
 
       // Set ACL policy to make image publicly accessible
@@ -1507,10 +1545,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Return a path that points to our image serving endpoint
       const imageUrl = `/images${objectPath.replace('/objects', '')}`;
       
-      res.json({ imageUrl });
+      // Log successful upload for monitoring and analytics
+      console.log(`Image uploaded successfully: ${sanitizedName}`, {
+        size: `${Math.round(req.file.size / 1024 * 100) / 100}KB`,
+        type: req.file.mimetype,
+        hasAltText: Boolean(altText),
+        path: objectPath
+      });
+      
+      res.json({ 
+        imageUrl,
+        metadata: {
+          originalName: req.file.originalname,
+          size: req.file.size,
+          type: req.file.mimetype,
+          altText: altText || null,
+          dimensions: null // Could be enhanced with image analysis
+        }
+      });
     } catch (error) {
       console.error('Upload error:', error);
-      res.status(500).json({ error: 'Failed to upload image' });
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to upload image. Please try again.';
+      if (error instanceof Error) {
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error during upload. Please check your connection and try again.';
+        } else if (error.message.includes('storage')) {
+          errorMessage = 'Storage service error. Please try again in a moment.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      res.status(500).json({ error: errorMessage });
     }
   });
   
