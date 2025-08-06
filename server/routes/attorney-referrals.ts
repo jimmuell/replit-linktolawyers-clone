@@ -27,7 +27,36 @@ router.get("/available", requireAuth, async (req, res) => {
   try {
     const { caseType, location, status, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
     
-    let query = db
+    // Build where conditions
+    const whereConditions = [isNull(referralAssignments.id)]; // Only unassigned requests
+    
+    if (caseType && typeof caseType === 'string' && caseType !== 'all') {
+      whereConditions.push(eq(legalRequests.caseType, caseType));
+    }
+    if (location && typeof location === 'string' && location !== 'all') {
+      whereConditions.push(eq(legalRequests.location, location));
+    }
+    if (status && typeof status === 'string' && status !== 'all') {
+      whereConditions.push(eq(legalRequests.status, status));
+    }
+
+    // Apply sorting
+    let orderByClause;
+    if (sortBy === 'firstName') {
+      orderByClause = sortOrder === 'asc' ? asc(legalRequests.firstName) : desc(legalRequests.firstName);
+    } else if (sortBy === 'lastName') {
+      orderByClause = sortOrder === 'asc' ? asc(legalRequests.lastName) : desc(legalRequests.lastName);
+    } else if (sortBy === 'caseType') {
+      orderByClause = sortOrder === 'asc' ? asc(legalRequests.caseType) : desc(legalRequests.caseType);
+    } else if (sortBy === 'location') {
+      orderByClause = sortOrder === 'asc' ? asc(legalRequests.location) : desc(legalRequests.location);
+    } else if (sortBy === 'status') {
+      orderByClause = sortOrder === 'asc' ? asc(legalRequests.status) : desc(legalRequests.status);
+    } else {
+      orderByClause = sortOrder === 'asc' ? asc(legalRequests.createdAt) : desc(legalRequests.createdAt);
+    }
+
+    const query = db
       .select({
         id: legalRequests.id,
         requestNumber: legalRequests.requestNumber,
@@ -44,26 +73,8 @@ router.get("/available", requireAuth, async (req, res) => {
       })
       .from(legalRequests)
       .leftJoin(referralAssignments, eq(legalRequests.id, referralAssignments.requestId))
-      .where(isNull(referralAssignments.id)); // Only unassigned requests
-
-    // Apply filters
-    if (caseType && typeof caseType === 'string' && caseType !== 'all') {
-      query = query.where(eq(legalRequests.caseType, caseType));
-    }
-    if (location && typeof location === 'string' && location !== 'all') {
-      query = query.where(eq(legalRequests.location, location));
-    }
-    if (status && typeof status === 'string' && status !== 'all') {
-      query = query.where(eq(legalRequests.status, status));
-    }
-
-    // Apply sorting
-    const sortField = legalRequests[sortBy as keyof typeof legalRequests] || legalRequests.createdAt;
-    if (sortOrder === 'asc') {
-      query = query.orderBy(asc(sortField));
-    } else {
-      query = query.orderBy(desc(sortField));
-    }
+      .where(and(...whereConditions))
+      .orderBy(orderByClause);
 
     const availableReferrals = await query.execute();
 
