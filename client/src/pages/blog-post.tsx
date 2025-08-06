@@ -104,56 +104,64 @@ export default function BlogPostPage() {
             </Button>
           </div>
         ) : blogPost ? (
-          <article className="bg-white rounded-lg shadow-lg overflow-hidden">
-            {/* Featured Image with SEO optimization */}
+          <article className="bg-white overflow-hidden">
+            {/* Hero Section with Featured Image */}
             {blogPost.imageUrl && (
-              <div className="aspect-[21/9] overflow-hidden">
-                <OptimizedImage
-                  src={getImageUrl(blogPost.imageUrl) || blogPost.imageUrl}
-                  alt={blogPost.imageAlt || blogPost.title}
-                  className="w-full h-full object-cover"
-                  priority={true}
-                  loading="eager"
-                />
+              <div className="relative">
+                <div className="aspect-[21/9] overflow-hidden">
+                  <OptimizedImage
+                    src={getImageUrl(blogPost.imageUrl) || blogPost.imageUrl}
+                    alt={blogPost.imageAlt || blogPost.title}
+                    className="w-full h-full object-cover"
+                    priority={true}
+                    loading="eager"
+                  />
+                </div>
               </div>
             )}
 
-            {/* Header */}
-            <div className="bg-black text-white px-8 py-12">
-              <div className="mb-4 flex items-center gap-2">
-                <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+            {/* Header Section */}
+            <div className="max-w-4xl mx-auto px-6 py-12">
+              <div className="mb-6 flex items-center gap-2">
+                {blogPost.isFeatured && (
+                  <Badge className="bg-yellow-500 text-white font-medium px-3 py-1">
+                    Featured
+                  </Badge>
+                )}
+                <Badge variant="secondary" className="bg-gray-100 text-gray-700 font-medium">
                   Immigration Law
                 </Badge>
-                {blogPost.isFeatured && (
-                  <Badge className="bg-blue-600 text-white">Featured</Badge>
-                )}
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+              
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
                 {blogPost.title}
               </h1>
-              <div className="flex items-center gap-6 text-gray-300">
+              
+              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                {blogPost.excerpt}
+              </p>
+              
+              <div className="flex items-center gap-6 text-gray-500 border-b border-gray-200 pb-8">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  {blogPost.publishedAt && formatDate(blogPost.publishedAt.toString())}
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <span className="font-medium">LinkToLawyers Team</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  LinkToLawyers Team
+                  <Calendar className="w-4 h-4" />
+                  {blogPost.publishedAt && formatDate(blogPost.publishedAt.toString())}
+                </div>
+                <div className="text-sm">
+                  Updated: {blogPost.updatedAt && formatDate(blogPost.updatedAt.toString())}
                 </div>
               </div>
             </div>
 
             {/* Content */}
-            <div className="px-8 py-12">
-              {/* Excerpt */}
-              <div className="mb-8">
-                <p className="text-xl text-gray-600 leading-relaxed">
-                  {blogPost.excerpt}
-                </p>
-              </div>
-              
-              <div className="prose prose-lg max-w-none">
-                <div className="text-gray-700 leading-relaxed">
+            <div className="max-w-4xl mx-auto px-6 py-12">
+              <div className="prose prose-lg prose-gray max-w-none">
+                <div className="text-gray-800 leading-relaxed text-lg">
                   {formatContent(blogPost.content)}
                 </div>
               </div>

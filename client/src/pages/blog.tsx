@@ -35,14 +35,15 @@ export default function Blog() {
       <BlogHeader title="Blog" showBackButton={true} />
       
       {/* Hero Section */}
-      <div className="bg-black text-white">
+      <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              LinkToLawyers Blog
+            <p className="text-sm text-gray-500 mb-2 uppercase tracking-wider">Latest Stories</p>
+            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+              Discover Our Blog
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto">
-              Stay informed with the latest immigration news, legal insights, and expert guidance
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Insights, tutorials, and stories from our team. Stay updated with the latest trends and best practices in immigration law.
             </p>
           </div>
         </div>
@@ -72,103 +73,109 @@ export default function Blog() {
             {/* Featured Posts Section */}
             {blogPosts && blogPosts.filter(post => post.isFeatured).length > 0 && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Posts</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                  {blogPosts?.filter(post => post.isFeatured).map((post) => (
-                    <Card key={post.id} className="hover:shadow-xl transition-shadow duration-300 border-2 border-blue-200">
-                      {post.imageUrl && (
-                        <div className="aspect-video overflow-hidden">
-                          <OptimizedImage
-                            src={getImageUrl(post.imageUrl) || post.imageUrl}
-                            alt={post.imageAlt || post.title}
-                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                            loading="lazy"
-                          />
-                        </div>
-                      )}
-                      <CardHeader>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className="bg-blue-600 text-white">Featured</Badge>
-                        </div>
-                        <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors mb-2">
-                          {post.title}
-                        </CardTitle>
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            {post.publishedAt && formatDate(post.publishedAt.toString())}
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Featured</h2>
+                  <span className="inline-block bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full font-medium">
+                    Editor's Pick
+                  </span>
+                </div>
+                <div className="max-w-4xl mx-auto">
+                  {blogPosts?.filter(post => post.isFeatured).slice(0, 1).map((post) => (
+                    <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300 overflow-hidden border-0 shadow-sm">
+                      <Link href={`/blog/${post.slug}`} className="block">
+                        {post.imageUrl && (
+                          <div className="relative aspect-[2/1] overflow-hidden">
+                            <OptimizedImage
+                              src={getImageUrl(post.imageUrl) || post.imageUrl}
+                              alt={post.imageAlt || post.title}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                            <div className="absolute top-4 left-4">
+                              <Badge className="bg-yellow-500 text-white font-medium px-3 py-1">
+                                Featured
+                              </Badge>
+                            </div>
+                          </div>
+                        )}
+                        <div className="p-8">
+                          <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900 hover:text-gray-700 transition-colors mb-4 leading-tight">
+                            {post.title}
+                          </CardTitle>
+                          <p className="text-gray-600 mb-6 text-lg leading-relaxed">
+                            {post.excerpt || stripHtmlAndTruncate(post.content, 150)}
+                          </p>
+                          
+                          <div className="flex items-center gap-6 text-sm text-gray-500">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                                <User className="w-3 h-3" />
+                              </div>
+                              <span>LinkToLawyers Team</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-4 h-4" />
+                              {post.publishedAt && formatDate(post.publishedAt.toString())}
+                            </div>
                           </div>
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 mb-6 leading-relaxed">
-                          {post.excerpt || stripHtmlAndTruncate(post.content, 150)}
-                        </p>
-                        
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          className="w-full group bg-blue-600 hover:bg-blue-700"
-                          asChild
-                        >
-                          <Link href={`/blog/${post.slug}`}>
-                            Read Featured Post
-                            <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                          </Link>
-                        </Button>
-                      </CardContent>
+                      </Link>
                     </Card>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Regular Posts Section */}
+            {/* All Posts Section */}
             <div>
-              {blogPosts && blogPosts.filter(post => post.isFeatured).length > 0 && (
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Posts</h2>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">All Posts</h2>
+                <p className="text-gray-600">
+                  {blogPosts?.length || 0} post{blogPosts?.length !== 1 ? 's' : ''} published
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {blogPosts?.filter(post => !post.isFeatured).map((post) => (
-                  <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
-                    {post.imageUrl && (
-                      <div className="aspect-video overflow-hidden">
-                        <OptimizedImage
-                          src={getImageUrl(post.imageUrl) || post.imageUrl}
-                          alt={post.imageAlt || post.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                        />
-                      </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle className="text-xl font-bold text-gray-900 hover:text-black transition-colors mb-2">
-                        {post.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {post.publishedAt && formatDate(post.publishedAt.toString())}
+                  <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300 overflow-hidden border-0 shadow-sm">
+                    <Link href={`/blog/${post.slug}`} className="block">
+                      {post.imageUrl && (
+                        <div className="relative aspect-video overflow-hidden">
+                          <OptimizedImage
+                            src={getImageUrl(post.imageUrl) || post.imageUrl}
+                            alt={post.imageAlt || post.title}
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                          <div className="absolute top-4 left-4">
+                            <Badge className="bg-green-600 text-white font-medium px-2 py-1 text-xs">
+                              published
+                            </Badge>
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <CardTitle className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors mb-3 leading-tight">
+                          {post.title}
+                        </CardTitle>
+                        <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                          {post.excerpt || stripHtmlAndTruncate(post.content, 120)}
+                        </p>
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
+                              <User className="w-2.5 h-2.5" />
+                            </div>
+                            <span>LinkToLawyers</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {post.publishedAt && formatDate(post.publishedAt.toString())}
+                          </div>
                         </div>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-6 leading-relaxed">
-                        {post.excerpt || stripHtmlAndTruncate(post.content, 150)}
-                      </p>
-                      
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="w-full group"
-                        asChild
-                      >
-                        <Link href={`/blog/${post.slug}`}>
-                          Read More
-                          <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                      </Button>
-                    </CardContent>
+                    </Link>
                   </Card>
                 ))}
               </div>
