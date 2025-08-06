@@ -249,10 +249,10 @@ export function ImageUploader({
           handleClose();
         }
       }}>
-        <DialogContent className="sm:max-w-lg" aria-describedby="upload-dialog-description">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Upload Image</DialogTitle>
-            <DialogDescription id="upload-dialog-description">
+            <DialogDescription>
               Select an image file to upload. {requireAltText && 'Alt text is required for accessibility.'}
             </DialogDescription>
           </DialogHeader>

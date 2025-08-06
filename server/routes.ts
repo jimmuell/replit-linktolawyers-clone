@@ -1507,17 +1507,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get upload URL
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
       
-      // Upload the file to object storage with enhanced metadata
+      // Upload the file to object storage (signed URLs don't allow custom headers)
       const uploadResponse = await fetch(uploadURL, {
         method: 'PUT',
         body: req.file.buffer,
         headers: {
           'Content-Type': req.file.mimetype,
-          'Content-Length': req.file.size.toString(),
-          // Add custom metadata for better organization
-          'x-goog-meta-original-name': sanitizedName,
-          'x-goog-meta-upload-timestamp': timestamp.toString(),
-          ...(altText && { 'x-goog-meta-alt-text': altText }),
         },
       });
 
@@ -1550,7 +1545,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         size: `${Math.round(req.file.size / 1024 * 100) / 100}KB`,
         type: req.file.mimetype,
         hasAltText: Boolean(altText),
-        path: objectPath
+        path: objectPath,
+        altText: altText || 'No alt text provided'
       });
       
       res.json({ 
