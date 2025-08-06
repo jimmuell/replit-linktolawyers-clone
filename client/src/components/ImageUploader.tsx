@@ -277,11 +277,9 @@ export function ImageUploader({
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {acceptedFormats.map(f => f.split('/')[1].toUpperCase()).join(', ')} up to {maxSizeInMB}MB
                 </p>
-                {acceptedFormats.includes('image/webp') && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                    WebP format recommended for best performance
-                  </p>
-                )}
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                  WebP format recommended for best performance and SEO
+                </p>
               </div>
             ) : (
               <div className="space-y-4">

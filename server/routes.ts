@@ -1470,6 +1470,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== IMAGE UPLOAD ROUTES ==========
   
+  // Image serving with proper caching headers for performance
+  app.get("/images/:imagePath(*)", async (req, res) => {
+    try {
+      const imagePath = `/objects/${req.params.imagePath}`;
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectEntityFile(imagePath);
+      
+      // Set aggressive caching for images
+      res.set({
+        'Cache-Control': 'public, max-age=31536000, immutable', // 1 year
+        'ETag': `"${Date.now()}"`, // Simple ETag based on timestamp
+        'Vary': 'Accept-Encoding'
+      });
+
+      // Check if client has cached version
+      if (req.headers['if-none-match'] === res.get('ETag')) {
+        return res.sendStatus(304);
+      }
+
+      await objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error('Image serving error:', error);
+      res.status(404).json({ error: 'Image not found' });
+    }
+  });
+  
   // Enhanced image upload endpoint with comprehensive validation and optimization
   app.post("/api/upload-image", upload.single('image'), async (req, res) => {
     try {
