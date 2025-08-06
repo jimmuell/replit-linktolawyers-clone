@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 import { formatDistanceToNow } from 'date-fns';
 import BlogHeader from '@/components/BlogHeader';
+import { OptimizedImage } from '@/components/OptimizedImage';
 import type { BlogPost } from '@shared/schema';
-import { getImageUrl, createImageErrorHandler } from '@/lib/imageUtils';
+import { getImageUrl } from '@/lib/imageUtils';
 
 export default function Blog() {
   const { data: blogPosts, isLoading, error } = useQuery<BlogPost[]>({
@@ -77,11 +78,11 @@ export default function Blog() {
                     <Card key={post.id} className="hover:shadow-xl transition-shadow duration-300 border-2 border-blue-200">
                       {post.imageUrl && (
                         <div className="aspect-video overflow-hidden">
-                          <img 
-                            src={getImageUrl(post.imageUrl) || post.imageUrl} 
+                          <OptimizedImage
+                            src={getImageUrl(post.imageUrl) || post.imageUrl}
                             alt={post.imageAlt || post.title}
                             className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                            onError={createImageErrorHandler()}
+                            loading="lazy"
                           />
                         </div>
                       )}
@@ -132,11 +133,11 @@ export default function Blog() {
                   <Card key={post.id} className="hover:shadow-lg transition-shadow duration-300">
                     {post.imageUrl && (
                       <div className="aspect-video overflow-hidden">
-                        <img 
-                          src={getImageUrl(post.imageUrl) || post.imageUrl} 
+                        <OptimizedImage
+                          src={getImageUrl(post.imageUrl) || post.imageUrl}
                           alt={post.imageAlt || post.title}
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                          onError={createImageErrorHandler()}
+                          loading="lazy"
                         />
                       </div>
                     )}
