@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Save, Eye, FileText, Upload, Trash2 } from 'lucide-react';
-import { ObjectUploader } from '@/components/ObjectUploader';
-import type { UploadResult } from '@uppy/core';
+import { ImageUploader } from '@/components/ImageUploader';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -305,90 +305,19 @@ export default function BlogPostEditor() {
 
                   {/* Upload Button */}
                   <div className="space-y-4">
-                    <ObjectUploader
-                      onGetUploadParameters={async () => {
-                        try {
-                          console.log('Getting upload parameters...');
-                          const sessionId = localStorage.getItem('sessionId');
-                          console.log('Session ID:', sessionId);
-                          
-                          const response = await fetch('/api/images/upload', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': `Bearer ${sessionId}`,
-                            },
-                          });
-                          
-                          if (!response.ok) {
-                            const errorText = await response.text();
-                            console.error('Upload request failed:', response.status, errorText);
-                            throw new Error(`Upload failed: ${response.status} - ${errorText}`);
-                          }
-                          
-                          const data = await response.json();
-                          console.log('Upload URL received:', data.uploadURL);
-                          return {
-                            method: 'PUT' as const,
-                            url: data.uploadURL,
-                          };
-                        } catch (error) {
-                          console.error('Error getting upload parameters:', error);
-                          toast({
-                            title: "Upload Error",
-                            description: "Failed to get upload URL. Please ensure you're logged in as an admin.",
-                            variant: "destructive",
-                          });
-                          throw error;
-                        }
-                      }}
-                      onComplete={async (result) => {
-                        if (result.successful && result.successful.length > 0) {
-                          const uploadedFile = result.successful[0];
-                          const imageURL = uploadedFile.uploadURL;
-                          
-                          try {
-                            // Set ACL policy to make image publicly accessible
-                            const sessionId = localStorage.getItem('sessionId');
-                            const policyResponse = await fetch('/api/images/policy', {
-                              method: 'PUT',
-                              headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${sessionId}`,
-                              },
-                              body: JSON.stringify({ imageURL }),
-                            });
-                            
-                            if (policyResponse.ok) {
-                              const policyData = await policyResponse.json();
-                              // Use the normalized object path for serving
-                              form.setValue('imageUrl', policyData.objectPath || imageURL);
-                            } else {
-                              // Fallback to original URL if policy setting fails
-                              form.setValue('imageUrl', imageURL);
-                            }
-                            
-                            toast({
-                              title: "Success",
-                              description: "Image uploaded successfully",
-                            });
-                          } catch (error) {
-                            console.error('Error setting image policy:', error);
-                            // Still set the image URL even if policy setting fails
-                            form.setValue('imageUrl', imageURL);
-                            toast({
-                              title: "Upload complete",
-                              description: "Image uploaded (policy setting failed)",
-                              variant: "destructive",
-                            });
-                          }
-                        }
+                    <ImageUploader
+                      onComplete={(imageUrl) => {
+                        form.setValue('imageUrl', imageUrl);
+                        toast({
+                          title: "Success",
+                          description: "Image uploaded successfully",
+                        });
                       }}
                       buttonClassName="w-full"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       {form.watch('imageUrl') ? 'Replace Image' : 'Upload Featured Image'}
-                    </ObjectUploader>
+                    </ImageUploader>
                   </div>
 
                   <FormField
