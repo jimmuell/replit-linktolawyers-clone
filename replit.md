@@ -51,7 +51,7 @@ Preferred communication style: Simple, everyday language.
 10. **Attorney Workflow**: End-to-end attorney management including onboarding, referral assignments, quote management (submission, editing, acceptance/decline), and case state tracking. Automated email notifications for assignments and confirmations.
 11. **Localization**: Comprehensive Spanish translation system for public-facing content, forms, and blog posts, leveraging background translation services for database-stored content.
 12. **Content Management**: Blog system with full-page editor and public display.
-13. **Cloud Storage**: Production-ready image storage using Replit Object Storage with proper ACL policies for blog images. Includes upload component, image serving endpoints, and URL normalization utilities.
+13. **Cloud Storage**: Production-ready image storage using Replit Object Storage with proper ACL policies for blog images. Includes SimpleImageUploader component with drag-and-drop functionality, multipart upload handling via multer, image serving endpoints, and URL normalization utilities. Updated from complex Uppy-based system to a more reliable direct upload approach.
 
 ## External Dependencies
 ### Core Dependencies

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Save, Eye, FileText, Upload, Trash2 } from 'lucide-react';
-import { ImageUploader } from '@/components/ImageUploader';
+import { SimpleImageUploader } from '@/components/SimpleImageUploader';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -305,7 +305,7 @@ export default function BlogPostEditor() {
 
                   {/* Upload Button */}
                   <div className="space-y-4">
-                    <ImageUploader
+                    <SimpleImageUploader
                       onComplete={(imageUrl) => {
                         form.setValue('imageUrl', imageUrl);
                         toast({
@@ -317,7 +317,7 @@ export default function BlogPostEditor() {
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       {form.watch('imageUrl') ? 'Replace Image' : 'Upload Featured Image'}
-                    </ImageUploader>
+                    </SimpleImageUploader>
                   </div>
 
                   <FormField

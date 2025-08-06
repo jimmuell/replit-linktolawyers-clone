@@ -5,11 +5,26 @@ import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequest
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
+import multer from "multer";
 import { getProcessedTemplate, getLegalRequestConfirmationVariables, getAttorneyAssignmentVariables } from "./emailTemplateService";
 import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
 import { setSession, getSession, removeSession, requireAuth } from "./middleware/auth";
 import attorneyReferralsRouter from "./routes/attorney-referrals";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+
+// Multer configuration for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'));
+    }
+    cb(null, true);
+  },
+});
 
 // Generate legal request number
 function generateRequestNumber(): string {
@@ -1454,6 +1469,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ========== IMAGE UPLOAD ROUTES ==========
+  
+  // Simple image upload endpoint (multipart form)
+  app.post("/api/upload-image", upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No image file provided' });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      
+      // Get upload URL
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      
+      // Upload the file to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: req.file.buffer,
+        headers: {
+          'Content-Type': req.file.mimetype,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed: ${uploadResponse.status}`);
+      }
+
+      // Set ACL policy to make image publicly accessible
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        uploadURL,
+        {
+          owner: "admin",
+          visibility: "public", // Blog images should be publicly accessible
+        }
+      );
+
+      // Return a path that points to our image serving endpoint
+      const imageUrl = `/images${objectPath.replace('/objects', '')}`;
+      
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ error: 'Failed to upload image' });
+    }
+  });
   
   // Get upload URL for blog images (admin only)
   app.post("/api/images/upload", requireAuth, requireAdmin, async (req, res) => {
