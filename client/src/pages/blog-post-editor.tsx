@@ -26,7 +26,7 @@ const blogPostSchema = z.object({
   slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
   content: z.string().min(1, 'Content is required'),
   excerpt: z.string().min(1, 'Excerpt is required'),
-  imageUrl: z.string().url('Please enter a valid image URL').optional().or(z.literal('')),
+  imageUrl: z.string().optional().or(z.literal('')),
   imageAlt: z.string().optional(),
   isFeatured: z.boolean().default(false),
   isPublished: z.boolean().default(false),
@@ -311,6 +311,8 @@ export default function BlogPostEditor() {
                         if (altText) {
                           form.setValue('imageAlt', altText);
                         }
+                        // Trigger validation to ensure form state is updated
+                        form.trigger();
                         toast({
                           title: "Success",
                           description: "Image uploaded successfully",
@@ -445,7 +447,7 @@ export default function BlogPostEditor() {
                   )}
                   <Button
                     type="submit"
-                    disabled={createMutation.isPending || updateMutation.isPending}
+                    disabled={createMutation.isPending || updateMutation.isPending || !form.formState.isValid}
                     className="bg-blue-600 hover:bg-blue-700"
                   >
                     <Save className="w-4 h-4 mr-2" />

@@ -26,9 +26,6 @@ declare global {
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   const sessionId = req.headers.authorization?.replace('Bearer ', '');
-  console.log('requireAuth - sessionId:', sessionId);
-  console.log('requireAuth - sessions has sessionId:', sessions.has(sessionId || ''));
-  console.log('requireAuth - sessions size:', sessions.size);
   
   if (!sessionId || !sessions.has(sessionId)) {
     return res.status(401).json({ error: 'Unauthorized' });
