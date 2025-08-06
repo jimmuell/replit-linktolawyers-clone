@@ -74,7 +74,7 @@ export default function BlogPostEditor() {
         imageUrl: blogPost.imageUrl ?? '',
         imageAlt: blogPost.imageAlt ?? '',
         isFeatured: blogPost.isFeatured ?? false,
-        isPublished: blogPost.isPublished,
+        isPublished: blogPost.isPublished ?? false,
         publishedAt: blogPost.publishedAt ? new Date(blogPost.publishedAt) : null,
       });
     }
