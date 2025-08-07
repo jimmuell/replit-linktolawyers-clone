@@ -99,8 +99,8 @@ export default function QuotesPage() {
     queryKey: ['/api/public/attorney-fee-schedules', assignedAttorneys.map((a: any) => a.attorney.id).join(','), request?.data?.caseType],
     enabled: assignedAttorneys.length > 0 && !!request?.data?.caseType,
   });
-  console.log('Assigned attorneys data:', assignedAttorneysResponse);
-  console.log('Assigned attorneys final:', assignedAttorneys);
+  // Debug: console.log('Assigned attorneys data:', assignedAttorneysResponse);
+  // Debug: console.log('Assigned attorneys final:', assignedAttorneys);
 
   // Check if an attorney is already assigned to this request
   const isAttorneyAssigned = (attorneyId: number) => {
@@ -120,7 +120,7 @@ export default function QuotesPage() {
       setSelectedQuotes(prev => {
         // Only update if the array has actually changed
         if (JSON.stringify(prev.sort()) !== JSON.stringify(assignedIds.sort())) {
-          console.log('Pre-selecting assigned attorney IDs:', assignedIds);
+          // Debug: console.log('Pre-selecting assigned attorney IDs:', assignedIds);
           return assignedIds;
         }
         return prev;
@@ -129,7 +129,7 @@ export default function QuotesPage() {
       // Reset selections if no assigned attorneys
       setSelectedQuotes(prev => {
         if (prev.length > 0) {
-          console.log('No assigned attorneys, resetting selections');
+          // Debug: console.log('No assigned attorneys, resetting selections');
           return [];
         }
         return prev;
@@ -179,8 +179,8 @@ export default function QuotesPage() {
     setIsAssigning(true);
     
     try {
-      console.log('Assigning ALL selected attorneys:', selectedQuotes);
-      console.log('Newly selected attorneys:', newlySelectedAttorneys);
+      // Debug: console.log('Assigning ALL selected attorneys:', selectedQuotes);
+      // Debug: console.log('Newly selected attorneys:', newlySelectedAttorneys);
       
       // Step 1: Assigning attorneys (show for 2 seconds)
       setProcessingStep(1);
@@ -221,7 +221,7 @@ export default function QuotesPage() {
 
   const handleConfirmRequest = () => {
     const newlySelected = getNewlySelectedAttorneys();
-    console.log('Quote request confirmed for newly selected attorneys:', newlySelected);
+    // Debug: console.log('Quote request confirmed for newly selected attorneys:', newlySelected);
     setShowConfirmDialog(false);
     // Reset selections after confirmation
     setSelectedQuotes([]);

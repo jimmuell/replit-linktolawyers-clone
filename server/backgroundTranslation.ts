@@ -17,7 +17,7 @@ async function translateToSpanish(englishTitle: string, englishContent: string, 
   spanishExcerpt?: string;
 }> {
   try {
-    console.log('Starting translation for:', englishTitle);
+    // Debug: console.log('Starting translation for:', englishTitle);
 
     // Create a comprehensive prompt for legal content translation
     const prompt = `You are a professional legal translator specializing in immigration law. Translate the following blog post content from English to Spanish, maintaining professional legal terminology and ensuring accuracy for Spanish-speaking clients seeking immigration legal services.
@@ -78,7 +78,7 @@ Please respond with a JSON object in this exact format:
       }
     }
     
-    console.log('Translation completed successfully for:', englishTitle);
+    // Debug: console.log('Translation completed successfully for:', englishTitle);
     return translation;
 
   } catch (error) {
@@ -92,7 +92,7 @@ Please respond with a JSON object in this exact format:
  */
 async function translateBlogPost(post: BlogPost): Promise<void> {
   try {
-    console.log(`Translating blog post: ${post.title} (ID: ${post.id})`);
+    // Debug: console.log(`Translating blog post: ${post.title} (ID: ${post.id})`);
 
     // Mark as in progress
     await storage.updateBlogPostTranslation(post.id, {
@@ -117,7 +117,7 @@ async function translateBlogPost(post: BlogPost): Promise<void> {
       translationStatus: 'completed'
     });
 
-    console.log(`Successfully translated blog post: ${post.title}`);
+    // Debug: console.log(`Successfully translated blog post: ${post.title}`);
 
   } catch (error) {
     console.error(`Failed to translate blog post ${post.id}:`, error);
@@ -137,7 +137,7 @@ async function translateBlogPost(post: BlogPost): Promise<void> {
  */
 export async function processTranslationQueue(): Promise<void> {
   if (isTranslationRunning) {
-    console.log('Translation process already running, skipping...');
+    // Debug: console.log('Translation process already running, skipping...');
     return;
   }
 

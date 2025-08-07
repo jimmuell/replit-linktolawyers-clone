@@ -2,7 +2,7 @@ import { storage } from "./storage";
 import type { InsertCaseType } from "@shared/schema";
 
 export async function seedCaseTypes() {
-  console.log("Seeding case types...");
+  // Debug: console.log("Seeding case types...");
   
   try {
     const caseTypesData: InsertCaseType[] = [
@@ -125,16 +125,16 @@ export async function seedCaseTypes() {
         
         if (!existingCaseType) {
           await storage.createCaseType(caseTypeData);
-          console.log(`Created case type: ${caseTypeData.label}`);
+          // Debug: console.log(`Created case type: ${caseTypeData.label}`);
         } else {
-          console.log(`Case type already exists: ${caseTypeData.label}`);
+          // Debug: console.log(`Case type already exists: ${caseTypeData.label}`);
         }
       } catch (error) {
         console.error(`Error seeding case type ${caseTypeData.label}:`, error);
       }
     }
     
-    console.log("Case types seeding complete!");
+    // Debug: console.log("Case types seeding complete!");
   } catch (error) {
     console.error("Error in seedCaseTypes:", error);
     throw error;

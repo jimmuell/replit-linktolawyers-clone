@@ -145,7 +145,7 @@ router.post("/assign/:requestId", requireAuth, async (req, res) => {
     const userId = req.user!.id;
     const { notes } = req.body;
     
-    console.log('ASSIGN ENDPOINT: Looking up attorney for user ID:', userId);
+    // Debug: console.log('ASSIGN ENDPOINT: Looking up attorney for user ID:', userId);
     
     // Get the attorney ID from the attorneys table using the user ID
     const attorney = await db
@@ -159,7 +159,7 @@ router.post("/assign/:requestId", requireAuth, async (req, res) => {
     }
     
     const attorneyId = attorney[0].id;
-    console.log('ASSIGN ENDPOINT: Using attorney ID:', attorneyId);
+    // Debug: console.log('ASSIGN ENDPOINT: Using attorney ID:', attorneyId);
 
     // Check if this attorney is already assigned to this request
     const existingAssignment = await db

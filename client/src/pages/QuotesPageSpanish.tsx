@@ -146,8 +146,8 @@ export default function QuotesPageSpanish() {
     setIsAssigning(true);
     
     try {
-      console.log('Assigning ALL selected attorneys:', selectedQuotes);
-      console.log('Newly selected attorneys:', newlySelectedAttorneys);
+      // Debug: console.log('Assigning ALL selected attorneys:', selectedQuotes);
+      // Debug: console.log('Newly selected attorneys:', newlySelectedAttorneys);
       
       // Step 1: Assigning attorneys (show for 2 seconds)
       setProcessingStep(1);
@@ -159,7 +159,7 @@ export default function QuotesPageSpanish() {
         attorneyIds: selectedQuotes
       });
       
-      console.log('Attorneys assigned successfully');
+      // Debug: console.log('Attorneys assigned successfully');
       
       // Step 2: Sending notifications (show for 3 seconds)
       setProcessingStep(2);
@@ -267,7 +267,7 @@ export default function QuotesPageSpanish() {
             Cotizaciones de Abogados para {(request as any).data.firstName} {(request as any).data.lastName}
           </h1>
           <p className="text-gray-600">
-            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {getCaseTypeDisplayName((request as any).data.caseType)}.
+            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {String(getCaseTypeDisplayName((request as any)?.data?.caseType) || '')}.
           </p>
         </div>
 
