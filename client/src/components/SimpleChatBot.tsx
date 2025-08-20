@@ -51,23 +51,43 @@ const SimpleChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  console.log("SimpleChatBot rendering - isOpen:", isOpen);
+  console.log("SimpleChatBot element should appear now");
+
   return (
-    <div 
-      style={{
+    <>
+      {/* Visible debug indicator */}
+      <div style={{
         position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        width: '400px',
-        height: '500px',
-        backgroundColor: 'white',
-        border: '2px solid #ccc',
-        borderRadius: '10px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-        zIndex: 10000,
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
+        top: '10px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'red',
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: '5px',
+        zIndex: 99999,
+        fontWeight: 'bold'
+      }}>
+        CHATBOT IS ACTIVE - SHOULD BE VISIBLE
+      </div>
+      
+      <div 
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: '400px',
+          height: '500px',
+          backgroundColor: 'red',
+          border: '5px solid blue',
+          borderRadius: '10px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          zIndex: 10000,
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
       {/* Header */}
       <div 
         style={{
@@ -280,6 +300,7 @@ const SimpleChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
         </p>
       </div>
     </div>
+    </>
   );
 };
 
