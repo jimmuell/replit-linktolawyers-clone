@@ -34,6 +34,84 @@ function generateRequestNumber(): string {
   return `lr-${randomNumber}`;
 }
 
+// Function to create a legal request from chat conversation data
+async function createLegalRequestFromConversation(conversationId: string, summaryContent: string) {
+  try {
+    // Get conversation to find the title which should contain the user's name
+    const conversation = await storage.getConversation(conversationId);
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
+
+    // Get all messages from the conversation to extract user information
+    const messages = await storage.getMessagesByConversationId(conversationId);
+    
+    // Find the initial intake message to extract user details
+    const intakeMessage = messages.find(msg => 
+      msg.role === 'user' && 
+      msg.content.includes('Hello, my name is') && 
+      msg.content.includes('I need help with')
+    );
+
+    if (!intakeMessage) {
+      console.log('No intake message found - skipping legal request creation');
+      return;
+    }
+
+    // Extract information from the intake message
+    const nameMatch = intakeMessage.content.match(/my name is ([^and]+)/i);
+    const emailMatch = intakeMessage.content.match(/my email is ([^\s.]+)/i);
+    const phoneMatch = intakeMessage.content.match(/my phone number is ([^\s.]+)/i);
+    const locationMatch = intakeMessage.content.match(/I am located in ([^.]+)/i);
+    const caseTypeMatch = intakeMessage.content.match(/I need help with ([^.]+)/i);
+
+    if (!nameMatch || !emailMatch || !caseTypeMatch) {
+      console.log('Missing required information from intake message');
+      return;
+    }
+
+    // Parse the name (assume "First Last" format)
+    const fullName = nameMatch[1].trim();
+    const nameParts = fullName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    const email = emailMatch[1].trim();
+    const phoneNumber = phoneMatch ? phoneMatch[1].trim() : undefined;
+    const location = locationMatch ? locationMatch[1].trim() : undefined;
+    const caseType = caseTypeMatch[1].trim();
+
+    // Use the summary content as the case description
+    const caseDescription = summaryContent;
+
+    // Generate request number
+    const requestNumber = generateRequestNumber();
+
+    // Create the legal request
+    const legalRequestData = {
+      requestNumber,
+      firstName,
+      lastName,
+      email,
+      phoneNumber,
+      caseType,
+      caseDescription,
+      location,
+      agreeToTerms: true, // Assume they agree by using the chat system
+      status: 'under_review'
+    };
+
+    const legalRequest = await storage.createLegalRequest(legalRequestData);
+    console.log(`✅ Legal request created automatically: ${requestNumber} for ${fullName}`);
+
+    return legalRequest;
+
+  } catch (error) {
+    console.error('Error creating legal request from conversation:', error);
+    throw error;
+  }
+}
+
 // Email rate limiting
 const emailLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -2236,6 +2314,16 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
 
         // Update conversation timestamp
         await storage.updateConversation(conversationId, { updatedAt: new Date() });
+
+        // Check if this response contains an "Attorney Intake Summary" to trigger legal request creation
+        if (fullResponse.includes("Attorney Intake Summary") || fullResponse.includes("Case Summary:")) {
+          try {
+            await createLegalRequestFromConversation(conversationId, fullResponse);
+          } catch (error) {
+            console.error('Error creating legal request from conversation:', error);
+            // Don't fail the chat response if legal request creation fails
+          }
+        }
       }
 
     } catch (error: any) {
