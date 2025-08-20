@@ -2387,6 +2387,248 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
     }
   });
 
+  // Send email from chat conversation
+  app.post("/api/chat/send-email", async (req, res) => {
+    try {
+      const { conversationId, intakeMessage } = req.body;
+
+      if (!conversationId || !intakeMessage) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Extract user information from intake message
+      const nameMatch = intakeMessage.match(/my name is ([^and]+)/i);
+      const emailMatch = intakeMessage.match(/my email is ([^\s.]+)/i);
+      const phoneMatch = intakeMessage.match(/my phone number is ([^\s.]+)/i);
+      const locationMatch = intakeMessage.match(/I am located in ([^.]+)/i);
+      const caseTypeMatch = intakeMessage.match(/I need help with ([^.]+)/i);
+
+      if (!nameMatch || !emailMatch) {
+        return res.status(400).json({ error: "Unable to extract user information from conversation" });
+      }
+
+      const customerName = nameMatch[1].trim();
+      const customerEmail = emailMatch[1].trim();
+      const phoneNumber = phoneMatch ? phoneMatch[1].trim() : '';
+      const location = locationMatch ? locationMatch[1].trim() : '';
+      const caseType = caseTypeMatch ? caseTypeMatch[1].trim() : '';
+
+      // Look for recent legal request for this email
+      const allLegalRequests = await storage.getAllLegalRequests();
+      const recentLegalRequest = allLegalRequests.find(lr => 
+        lr.email === customerEmail && 
+        new Date(lr.createdAt).getTime() > Date.now() - (10 * 60 * 1000) // last 10 minutes
+      );
+
+      // Generate tracking link if legal request exists
+      let trackingLink = '';
+      let requestNumber = '';
+      if (recentLegalRequest) {
+        requestNumber = recentLegalRequest.requestNumber;
+        trackingLink = `https://linktolawyers.com/quotes/${requestNumber}`;
+      }
+
+      // Create email HTML using the provided template structure
+      const emailHtml = `
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>We've received your request</title>
+  <style>
+    .bg-gray-100 { background-color: #f3f4f6; }
+    .bg-white { background-color: #ffffff; }
+    .bg-blue-50 { background-color: #eff6ff; }
+    .bg-blue-600 { background-color: #2563eb; }
+    .text-white { color: #ffffff; }
+    .text-gray-800 { color: #1f2937; }
+    .text-gray-600 { color: #4b5563; }
+    .text-gray-500 { color: #6b7280; }
+    .text-blue-600 { color: #2563eb; }
+    .text-blue-700 { color: #1d4ed8; }
+    .text-green-700 { color: #15803d; }
+    .font-sans { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif; }
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .rounded-8 { border-radius: 8px; }
+    .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .no-underline { text-decoration: none; }
+    .text-center { text-align: center; }
+    .py-40 { padding-top: 40px; padding-bottom: 40px; }
+    .p-40 { padding: 40px; }
+    .p-24 { padding: 24px; }
+    .px-32 { padding-left: 32px; padding-right: 32px; }
+    .py-12 { padding-top: 12px; padding-bottom: 12px; }
+    .mb-24 { margin-bottom: 24px; }
+    .mb-32 { margin-bottom: 32px; }
+    .mb-16 { margin-bottom: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+    .my-32 { margin-top: 32px; margin-bottom: 32px; }
+    .ml-16 { margin-left: 16px; }
+    .max-w-600 { max-width: 600px; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .text-24 { font-size: 24px; }
+    .text-16 { font-size: 16px; }
+    .text-14 { font-size: 14px; }
+    .text-12 { font-size: 12px; }
+    .leading-24 { line-height: 24px; }
+    .border-gray-200 { border-color: #e5e7eb; }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans py-40">
+  <div class="bg-white rounded-8 shadow-sm max-w-600 mx-auto p-40">
+    
+    <!-- Header -->
+    <div>
+      <h1 class="text-24 font-bold text-gray-800 mb-24 text-center">
+        We've Sent Your Request – What to Expect Next
+      </h1>
+    </div>
+
+    ${trackingLink ? `
+    <!-- View Request Button -->
+    <div class="text-center mb-32">
+      <a href="${trackingLink}" class="bg-blue-600 text-white px-32 py-12 rounded-8 text-16 font-semibold no-underline" style="display: inline-block; color: #ffffff; text-decoration: none;">
+        View Your Request (${requestNumber})
+      </a>
+    </div>
+    ` : ''}
+
+    <!-- Main Content -->
+    <div>
+      <p class="text-16 text-gray-800 mb-16 leading-24">
+        Hi ${customerName},
+      </p>
+
+      <p class="text-16 text-gray-800 mb-24 leading-24">
+        Thanks for using our AI Immigration Assistant! We've documented your case information and are connecting you with qualified law firms.
+      </p>
+
+      ${requestNumber ? `
+      <p class="text-16 text-gray-800 mb-24 leading-24">
+        Your request has been assigned number <strong>${requestNumber}</strong> for tracking purposes.
+      </p>
+      ` : ''}
+
+      <p class="text-16 text-gray-800 mb-24 leading-24">
+        We've shared your information with qualified law firms who specialize in ${caseType || 'immigration matters'}, and they'll be reaching out to you directly.
+      </p>
+    </div>
+
+    <!-- Case Information Summary -->
+    <div class="bg-blue-50 p-24 rounded-8 mb-24">
+      <p class="text-16 text-gray-800 mb-16 leading-24 font-semibold">
+        Your Case Information Summary:
+      </p>
+      
+      <p class="text-16 text-gray-800 mb-8 leading-24 ml-16">
+        • Name: ${customerName}
+      </p>
+      
+      <p class="text-16 text-gray-800 mb-8 leading-24 ml-16">
+        • Email: ${customerEmail}
+      </p>
+      
+      ${phoneNumber ? `
+      <p class="text-16 text-gray-800 mb-8 leading-24 ml-16">
+        • Phone: ${phoneNumber}
+      </p>
+      ` : ''}
+      
+      ${location ? `
+      <p class="text-16 text-gray-800 mb-8 leading-24 ml-16">
+        • Location: ${location}
+      </p>
+      ` : ''}
+      
+      <p class="text-16 text-gray-800 mb-16 leading-24 ml-16">
+        • Case Type: ${caseType || 'Immigration'}
+      </p>
+    </div>
+
+    <!-- Platform Guidelines -->
+    <div>
+      <p class="text-16 text-gray-800 mb-24 leading-24">
+        As part of our platform guidelines, firms are expected to provide either a good-faith price estimate or follow-up questions to help tailor a quote for you.
+      </p>
+
+      <p class="text-16 text-gray-800 mb-16 leading-24 font-semibold text-green-700">
+        Your privacy matters:
+      </p>
+      <p class="text-16 text-gray-800 mb-24 leading-24">
+        All information you provide is treated as confidential. You're welcome to withhold personal details until you're ready to move forward.
+      </p>
+
+      <p class="text-16 text-gray-800 mb-16 leading-24 font-semibold text-blue-700">
+        You're in control:
+      </p>
+      <p class="text-16 text-gray-800 mb-24 leading-24">
+        It's entirely your decision whether to respond to any particular law firm. Research the firm and make sure you feel confident before proceeding.
+      </p>
+    </div>
+
+    <!-- Closing -->
+    <div>
+      <p class="text-16 text-gray-800 mb-32 leading-24">
+        Thanks again for using LinkToLawyers — we're here to make finding legal help more transparent and accessible.
+      </p>
+
+      <p class="text-16 text-gray-800 mb-8 leading-24">
+        Best regards,
+      </p>
+      <p class="text-16 text-gray-800 mb-32 leading-24 font-semibold">
+        LinkToLawyers Team
+      </p>
+    </div>
+
+    <hr class="border-gray-200 my-32" style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;">
+
+    <!-- Footer -->
+    <div>
+      <p class="text-14 text-gray-600 text-center mb-8" style="margin: 0; margin-bottom: 8px;">
+        <a href="https://linktolawyers.com" class="text-blue-600 no-underline">
+          linktolawyers.com
+        </a>
+      </p>
+      <p class="text-14 text-gray-600 text-center mb-16" style="margin: 0; margin-bottom: 16px;">
+        <a href="mailto:info@linktolawyers.com" class="text-blue-600 no-underline">
+          info@linktolawyers.com
+        </a>
+      </p>
+      <p class="text-12 text-gray-500 text-center" style="margin: 0;">
+        © 2025 LinkToLawyers. All rights reserved.
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      // Send email using Resend
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      const emailResult = await resend.emails.send({
+        from: 'LinkToLawyers <noreply@send.linktolawyers.com>',
+        to: customerEmail,
+        subject: `Your Legal Request Confirmation${requestNumber ? ` - ${requestNumber}` : ''}`,
+        html: emailHtml,
+      });
+
+      console.log(`📧 Chat confirmation email sent to ${customerEmail}${requestNumber ? ` for ${requestNumber}` : ''}`);
+
+      res.json({ 
+        success: true, 
+        recipientEmail: customerEmail,
+        requestNumber: requestNumber,
+        emailId: emailResult.data?.id
+      });
+
+    } catch (error) {
+      console.error('Error sending chat email:', error);
+      res.status(500).json({ error: "Failed to send email" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

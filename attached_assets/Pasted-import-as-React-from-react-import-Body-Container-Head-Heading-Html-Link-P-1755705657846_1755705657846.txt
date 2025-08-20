@@ -1,0 +1,150 @@
+import * as React from 'react';
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Preview,
+  Section,
+  Text,
+  Tailwind,
+  Hr,
+  Button,
+} from '@react-email/components';
+
+const LinkToLawyersRequestEmail = (props) => {
+  const { customerName = "{{customerName}}" } = props;
+
+  return (
+    <Html lang="en" dir="ltr">
+      <Tailwind>
+        <Head />
+        <Preview>We've received your request and are connecting you with qualified law firms</Preview>
+        <Body className="bg-gray-100 font-sans py-[40px]">
+          <Container className="bg-white rounded-[8px] shadow-sm max-w-[600px] mx-auto p-[40px]">
+            {/* Header */}
+            <Section>
+              <Heading className="text-[24px] font-bold text-gray-900 mb-[24px] text-center">
+                We've Sent Your Request – What to Expect Next
+              </Heading>
+            </Section>
+
+            {/* View Request Button */}
+            <Section className="text-center mb-[32px]">
+              <Button
+                href="#"
+                className="bg-blue-600 text-white px-[32px] py-[12px] rounded-[8px] text-[16px] font-semibold no-underline box-border"
+              >
+                View Your Request
+              </Button>
+            </Section>
+
+            {/* Main Content */}
+            <Section>
+              <Text className="text-[16px] text-gray-800 mb-[16px] leading-[24px]">
+                Hi {customerName},
+              </Text>
+
+              <Text className="text-[16px] text-gray-800 mb-[24px] leading-[24px]">
+                Thanks for submitting your request through LinkToLawyers — we're already working on it!
+              </Text>
+
+              <Text className="text-[16px] text-gray-800 mb-[24px] leading-[24px]">
+                We've shared your information with a few qualified law firms, and they'll be reaching out to you directly.
+              </Text>
+            </Section>
+
+            {/* Platform Guidelines */}
+            <Section className="bg-blue-50 p-[24px] rounded-[8px] mb-[24px]">
+              <Text className="text-[16px] text-gray-800 mb-[16px] leading-[24px] font-semibold">
+                As part of our platform guidelines, firms are expected to provide:
+              </Text>
+              
+              <Text className="text-[16px] text-gray-800 mb-[8px] leading-[24px] ml-[16px]">
+                • A good-faith ballpark price estimate for your legal matter,
+              </Text>
+              
+              <Text className="text-[16px] text-gray-800 mb-[16px] leading-[24px] ml-[16px]">
+                <strong>or</strong>
+              </Text>
+              
+              <Text className="text-[16px] text-gray-800 mb-[16px] leading-[24px] ml-[16px]">
+                • A few quick follow-up questions to help them tailor a quote for you.
+              </Text>
+
+              <Text className="text-[16px] text-gray-800 leading-[24px]">
+                You may receive a price estimate in the first message, or shortly after — once the firm has the basic information they need, they've agreed to provide one.
+              </Text>
+            </Section>
+
+            {/* Important Notes */}
+            <Section>
+              <Text className="text-[16px] text-gray-800 mb-[24px] leading-[24px]">
+                Please don't hesitate to ask for a price if it's not included up front — you deserve clarity before committing to any consultation.
+              </Text>
+
+              <Text className="text-[16px] text-gray-800 mb-[16px] leading-[24px] font-semibold text-green-700">
+                Your privacy matters:
+              </Text>
+              <Text className="text-[16px] text-gray-800 mb-[24px] leading-[24px]">
+                All information you provide is treated as confidential. You're welcome to withhold personal or identifying details until you're ready to move forward with a consultation.
+              </Text>
+
+              <Text className="text-[16px] text-gray-800 mb-[16px] leading-[24px] font-semibold text-blue-700">
+                You're in control:
+              </Text>
+              <Text className="text-[16px] text-gray-800 mb-[24px] leading-[24px]">
+                It's entirely your decision whether to respond to any particular law firm. We encourage you to research the firm once they contact you and make sure you feel confident before proceeding.
+              </Text>
+
+              <Text className="text-[16px] text-gray-800 mb-[24px] leading-[24px]">
+                <strong>Please note:</strong> All quotes are informal and subject to change after a full consultation, but they should still give you a useful idea of what firms typically charge for similar services.
+              </Text>
+            </Section>
+
+            {/* Closing */}
+            <Section>
+              <Text className="text-[16px] text-gray-800 mb-[32px] leading-[24px]">
+                Thanks again for using LinkToLawyers — we're here to make finding legal help more transparent and accessible.
+              </Text>
+
+              <Text className="text-[16px] text-gray-800 mb-[8px] leading-[24px]">
+                Best regards,
+              </Text>
+              <Text className="text-[16px] text-gray-800 mb-[32px] leading-[24px] font-semibold">
+                LinkToLawyers Team
+              </Text>
+            </Section>
+
+            <Hr className="border-gray-200 my-[32px]" />
+
+            {/* Footer */}
+            <Section>
+              <Text className="text-[14px] text-gray-600 text-center mb-[8px] m-0">
+                <Link href="https://linktolawyers.com" className="text-blue-600 no-underline">
+                  linktolawyers.com
+                </Link>
+              </Text>
+              <Text className="text-[14px] text-gray-600 text-center mb-[16px] m-0">
+                <Link href="mailto:info@linktolawyers.com" className="text-blue-600 no-underline">
+                  info@linktolawyers.com
+                </Link>
+              </Text>
+              <Text className="text-[12px] text-gray-500 text-center m-0">
+                © 2025 LinkToLawyers. All rights reserved.
+              </Text>
+            </Section>
+          </Container>
+        </Body>
+      </Tailwind>
+    </Html>
+  );
+};
+
+LinkToLawyersRequestEmail.PreviewProps = {
+  customerName: "{{customerName}}",
+};
+
+export default LinkToLawyersRequestEmail;
