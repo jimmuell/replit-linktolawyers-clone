@@ -1991,6 +1991,52 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
     }
   });
 
+  // Intake data submission endpoint
+  app.post("/api/chat/intake", async (req, res) => {
+    try {
+      const { fullName, email, caseTypes } = req.body;
+      
+      if (!fullName || !email || !caseTypes || caseTypes.length === 0) {
+        return res.status(400).json({ error: "Missing required intake information" });
+      }
+
+      // Create a new conversation
+      const conversation = await storage.createConversation({ title: `${fullName} - Immigration Intake` });
+      
+      // Get active prompt for system context
+      const activePrompt = await storage.getActiveChatbotPrompt();
+      const baseSystemPrompt = activePrompt?.prompt || "You are a helpful legal assistant chatbot for LinkToLawyers.";
+      
+      // Create intake message with the user's information
+      const caseTypeText = caseTypes.map((type: string) => {
+        switch(type) {
+          case 'family': return 'Family Immigration';
+          case 'asylum': return 'Asylum';
+          case 'naturalization': return 'Naturalization / Citizenship';
+          default: return type;
+        }
+      }).join(', ');
+
+      const intakeMessage = `Hello, my name is ${fullName} and my email is ${email}. I need help with ${caseTypeText}.`;
+      
+      // Save user message
+      await storage.createMessage({
+        conversationId: conversation.id,
+        content: intakeMessage,
+        role: "user"
+      });
+
+      res.json({ 
+        conversationId: conversation.id,
+        message: "Intake information processed successfully"
+      });
+
+    } catch (error) {
+      console.error('Error processing intake:', error);
+      res.status(500).json({ error: "Failed to process intake information" });
+    }
+  });
+
   // Streaming chat completion
   app.post("/api/chat/stream", async (req, res) => {
     try {

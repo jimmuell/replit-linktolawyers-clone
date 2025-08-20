@@ -7,18 +7,32 @@ import { cn } from "@/lib/utils";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
+import { IntakeModal } from "@/components/IntakeModal";
 
 interface NavbarProps {
   activeSection: string;
   scrollToSection: (section: string) => void;
   setIsLoginModalOpen: (open: boolean) => void;
   hideUserDropdown?: boolean;
+  onStartIntake?: (data: { fullName: string; email: string; caseTypes: string[] }) => void;
 }
 
-export default function Navbar({ activeSection, scrollToSection, setIsLoginModalOpen, hideUserDropdown = false }: NavbarProps) {
+export default function Navbar({ activeSection, scrollToSection, setIsLoginModalOpen, hideUserDropdown = false, onStartIntake }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
 
   const { user, logout } = useAuth();
+
+  const handleIntakeSubmit = (data: { fullName: string; email: string; caseTypes: string[] }) => {
+    setIsIntakeModalOpen(false);
+    if (onStartIntake) {
+      onStartIntake(data);
+    } else {
+      // Default behavior: navigate to chat with intake data
+      const intakeData = encodeURIComponent(JSON.stringify(data));
+      window.location.href = `/chat?intake=${intakeData}`;
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50 backdrop-blur-sm border-b border-gray-200">
@@ -75,17 +89,12 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             >
               Blog
             </Link>
-            <Link
-              href="/chat"
+            <button
+              onClick={() => setIsIntakeModalOpen(true)}
               className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-              onClick={() => {
-                setTimeout(() => {
-                  window.scrollTo({ top: 0, behavior: 'instant' });
-                }, 50);
-              }}
             >
               Bot
-            </Link>
+            </button>
             <Link 
               href="/help" 
               className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
@@ -232,18 +241,15 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
               >
                 Help
               </Link>
-              <Link 
-                href="/chat"
-                className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              <button 
                 onClick={() => {
+                  setIsIntakeModalOpen(true);
                   setIsMenuOpen(false);
-                  setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: 'instant' });
-                  }, 50);
                 }}
+                className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
               >
                 Bot
-              </Link>
+              </button>
               
               {/* Divider */}
               <div className="border-t border-gray-200 my-3"></div>
@@ -295,7 +301,13 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
           </div>
         )}
       </nav>
-
+      
+      {/* Intake Modal */}
+      <IntakeModal 
+        isOpen={isIntakeModalOpen}
+        onClose={() => setIsIntakeModalOpen(false)}
+        onSubmit={handleIntakeSubmit}
+      />
     </header>
   );
 }

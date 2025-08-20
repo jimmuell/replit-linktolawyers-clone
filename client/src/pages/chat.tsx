@@ -44,12 +44,53 @@ const ChatPage: React.FC = () => {
     scrollToBottom();
   }, [messages, streamingMessage]);
 
-  // Auto-create conversation and add greeting when page loads
+  // Auto-create conversation and handle intake data when page loads
   useEffect(() => {
     const initializeChat = async () => {
       if (!conversationId && activePrompt !== undefined) {
         try {
-          const newConversationId = await createNewConversation();
+          // Check for intake data in URL parameters
+          const urlParams = new URLSearchParams(window.location.search);
+          const intakeParam = urlParams.get('intake');
+          
+          let newConversationId: string;
+          
+          if (intakeParam) {
+            // Process intake data
+            try {
+              const intakeData = JSON.parse(decodeURIComponent(intakeParam));
+              
+              // Submit intake data to backend
+              const response = await fetch('/api/chat/intake', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(intakeData)
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                newConversationId = result.conversationId;
+                setConversationId(newConversationId);
+                
+                // Clear URL parameters
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Refresh messages to show the intake message
+                queryClient.invalidateQueries({ 
+                  queryKey: ["/api/conversations", newConversationId, "messages"] 
+                });
+                
+                return; // Exit early since intake handled everything
+              }
+            } catch (error) {
+              console.error('Error processing intake data:', error);
+              // Fall back to normal conversation creation
+            }
+          }
+          
+          // Normal conversation creation (no intake data)
+          newConversationId = await createNewConversation();
           setConversationId(newConversationId);
           
           // Add automatic greeting message from assistant using active prompt greeting or fallback
