@@ -74,6 +74,17 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
               Blog
             </Link>
             <Link 
+              href="/bot" 
+              className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'instant' });
+                }, 50);
+              }}
+            >
+              Bot
+            </Link>
+            <Link 
               href="/help" 
               className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
               onClick={() => {
@@ -218,6 +229,18 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 }}
               >
                 Help
+              </Link>
+              <Link 
+                href="/bot" 
+                className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }, 50);
+                }}
+              >
+                Bot
               </Link>
               
               {/* Divider */}
