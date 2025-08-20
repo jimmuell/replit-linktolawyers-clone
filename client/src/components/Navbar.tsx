@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu, X, ChevronDown, Settings } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import SimpleChatBot from "@/components/SimpleChatBot";
+import ChatModal from "@/components/ChatModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 
@@ -287,7 +287,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
           </div>
         )}
       </nav>
-      <SimpleChatBot isOpen={isChatBotOpen} onClose={() => setIsChatBotOpen(false)} />
+      <ChatModal isOpen={isChatBotOpen} onClose={() => setIsChatBotOpen(false)} />
     </header>
   );
 }
