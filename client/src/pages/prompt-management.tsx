@@ -65,49 +65,53 @@ export default function PromptManagement() {
   });
 
   const createPromptMutation = useMutation({
-    mutationFn: (data: PromptFormData) => apiRequest('/api/chatbot-prompts', 'POST', data),
+    mutationFn: (data: PromptFormData) => apiRequest('/api/chatbot-prompts', { method: 'POST', body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chatbot-prompts'] });
       toast({ title: 'Success', description: 'Prompt created successfully' });
       handleCloseDialog();
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to create prompt', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Create prompt error:', error);
+      toast({ title: 'Error', description: `Failed to create prompt: ${error.message}`, variant: 'destructive' });
     },
   });
 
   const updatePromptMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: PromptFormData }) =>
-      apiRequest(`/api/chatbot-prompts/${id}`, 'PUT', data),
+      apiRequest(`/api/chatbot-prompts/${id}`, { method: 'PUT', body: data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chatbot-prompts'] });
       toast({ title: 'Success', description: 'Prompt updated successfully' });
       handleCloseDialog();
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to update prompt', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Update prompt error:', error);
+      toast({ title: 'Error', description: `Failed to update prompt: ${error.message}`, variant: 'destructive' });
     },
   });
 
   const deletePromptMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/chatbot-prompts/${id}`, 'DELETE'),
+    mutationFn: (id: number) => apiRequest(`/api/chatbot-prompts/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chatbot-prompts'] });
       toast({ title: 'Success', description: 'Prompt deleted successfully' });
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to delete prompt', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Delete prompt error:', error);
+      toast({ title: 'Error', description: `Failed to delete prompt: ${error.message}`, variant: 'destructive' });
     },
   });
 
   const activatePromptMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/chatbot-prompts/${id}/activate`, 'PUT'),
+    mutationFn: (id: number) => apiRequest(`/api/chatbot-prompts/${id}/activate`, { method: 'PUT' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chatbot-prompts'] });
       toast({ title: 'Success', description: 'Prompt activated successfully' });
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to activate prompt', variant: 'destructive' });
+    onError: (error: any) => {
+      console.error('Activate prompt error:', error);
+      toast({ title: 'Error', description: `Failed to activate prompt: ${error.message}`, variant: 'destructive' });
     },
   });
 
