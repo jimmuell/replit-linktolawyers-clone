@@ -115,7 +115,7 @@ const SimpleChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
               Welcome to Legal Assistant!
             </p>
             <p style={{ fontSize: '14px', margin: 0 }}>
-              Ask me about immigration law or our services.
+              Ask me about immigration law, visa processes, or our legal services.
             </p>
           </div>
         )}
