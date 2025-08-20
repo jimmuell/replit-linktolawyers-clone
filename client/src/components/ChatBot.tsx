@@ -110,7 +110,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md h-[600px] flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b border-border bg-gradient-to-r from-primary to-primary/90 text-white rounded-t-lg">
+        <DialogHeader className="px-6 py-4 border-b border-border bg-primary text-white rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Avatar className="w-8 h-8 bg-white">
