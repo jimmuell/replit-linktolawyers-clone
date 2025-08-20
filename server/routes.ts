@@ -2604,33 +2604,17 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
 </body>
 </html>`;
 
-      // Send email using Resend
-      const resend = new Resend(process.env.RESEND_API_KEY);
-      
+      // Send email using the existing sendEmail function that handles SMTP settings
       console.log(`📧 Sending chat confirmation email to ${customerEmail}${requestNumber ? ` for ${requestNumber}` : ''}...`);
-      console.log(`From: LinkToLawyers <noreply@send.linktolawyers.com>`);
-      console.log(`To: ${customerEmail}`);
-      console.log(`Subject: Your Legal Request Confirmation${requestNumber ? ` - ${requestNumber}` : ''}`);
-      console.log(`API Key exists: ${!!process.env.RESEND_API_KEY}`);
-      console.log(`API Key starts with: ${process.env.RESEND_API_KEY?.substring(0, 10)}...`);
       
-      const emailResult = await resend.emails.send({
-        from: 'LinkToLawyers <noreply@send.linktolawyers.com>',
-        to: customerEmail,
-        subject: `Your Legal Request Confirmation${requestNumber ? ` - ${requestNumber}` : ''}`,
-        html: emailHtml,
-      });
-
-      console.log(`✅ Resend API response:`, {
-        id: emailResult.data?.id || 'no-id',
-        status: emailResult.error ? 'error' : 'success',
-        error: emailResult.error || null
-      });
-
-      if (emailResult.error) {
-        console.error('❌ Resend API error:', emailResult.error);
-        throw new Error(`Email sending failed: ${emailResult.error.message || JSON.stringify(emailResult.error)}`);
-      }
+      const emailSubject = `Your Legal Request Confirmation${requestNumber ? ` - ${requestNumber}` : ''}`;
+      
+      const result = await sendEmail(
+        customerEmail,
+        emailSubject,
+        emailHtml,
+        '' // text version - could be added later
+      );
 
       console.log(`📧 Chat confirmation email sent successfully to ${customerEmail}${requestNumber ? ` for ${requestNumber}` : ''}`);
 
@@ -2638,7 +2622,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         success: true, 
         recipientEmail: customerEmail,
         requestNumber: requestNumber,
-        emailId: emailResult.data?.id
+        emailId: result.messageId
       });
 
     } catch (error) {
