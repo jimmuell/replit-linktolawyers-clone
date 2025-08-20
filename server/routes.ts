@@ -2425,7 +2425,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       let requestNumber = '';
       if (recentLegalRequest) {
         requestNumber = recentLegalRequest.requestNumber;
-        trackingLink = `https://linktolawyers.com/quotes/${requestNumber}`;
+        trackingLink = `https://link-to-lawyers-clone-JamesMueller.replit.app/quotes/${requestNumber}`;
       }
 
       // Create email HTML using the provided template structure
@@ -2587,8 +2587,8 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
     <!-- Footer -->
     <div>
       <p class="text-14 text-gray-600 text-center mb-8" style="margin: 0; margin-bottom: 8px;">
-        <a href="https://linktolawyers.com" class="text-blue-600 no-underline">
-          linktolawyers.com
+        <a href="https://link-to-lawyers-clone-JamesMueller.replit.app" class="text-blue-600 no-underline">
+          link-to-lawyers-clone-JamesMueller.replit.app
         </a>
       </p>
       <p class="text-14 text-gray-600 text-center mb-16" style="margin: 0; margin-bottom: 16px;">
