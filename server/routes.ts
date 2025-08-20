@@ -75,6 +75,13 @@ async function sendEmail(to: string, subject: string, html: string, text?: strin
   // Use Resend API if configured for Resend
   if (settings.smtpHost === 'smtp.resend.com' && process.env.RESEND_API_KEY) {
     try {
+      console.log('📧 Sending email via Resend API...');
+      console.log('From:', `${settings.fromName} <${settings.fromEmail}>`);
+      console.log('To:', to);
+      console.log('Subject:', subject);
+      console.log('API Key exists:', !!process.env.RESEND_API_KEY);
+      console.log('API Key starts with:', process.env.RESEND_API_KEY?.substring(0, 10) + '...');
+      
       const data = await resend.emails.send({
         from: `${settings.fromName} <${settings.fromEmail}>`,
         to: [to],
@@ -82,9 +89,25 @@ async function sendEmail(to: string, subject: string, html: string, text?: strin
         html,
         text,
       });
+      
+      console.log('✅ Resend API response:', {
+        id: data.data?.id,
+        status: data.error ? 'error' : 'success',
+        error: data.error
+      });
+      
+      if (data.error) {
+        throw new Error(`Resend API error: ${JSON.stringify(data.error)}`);
+      }
+      
       return { messageId: data.data?.id || 'resend-success', success: true };
     } catch (error: any) {
-      console.error('Resend API error:', error);
+      console.error('❌ Resend API error:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.substring(0, 500)
+      });
       throw new Error(`Failed to send email via Resend: ${error.message}`);
     }
   }
