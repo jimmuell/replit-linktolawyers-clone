@@ -123,6 +123,7 @@ export default function PromptManagement() {
     form.reset({
       name: '',
       prompt: '',
+      initialGreeting: '',
       description: '',
       isActive: false,
     });

@@ -47,7 +47,7 @@ const ChatPage: React.FC = () => {
   // Auto-create conversation and add greeting when page loads
   useEffect(() => {
     const initializeChat = async () => {
-      if (!conversationId) {
+      if (!conversationId && activePrompt !== undefined) {
         try {
           const newConversationId = await createNewConversation();
           setConversationId(newConversationId);
@@ -79,7 +79,7 @@ const ChatPage: React.FC = () => {
     };
 
     initializeChat();
-  }, []); // Only run on mount
+  }, [activePrompt, conversationId]); // Re-run when activePrompt or conversationId changes
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
