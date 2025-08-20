@@ -433,3 +433,24 @@ export type AttorneyNote = typeof attorneyNotes.$inferSelect;
 export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
 export type EmailTemplate = typeof emailTemplates.$inferSelect;
 export type SendEmail = z.infer<typeof sendEmailSchema>;
+
+// Chatbot Prompts
+export const chatbotPrompts = pgTable("chatbot_prompts", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  prompt: text("prompt").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertChatbotPromptSchema = createInsertSchema(chatbotPrompts).pick({
+  name: true,
+  prompt: true,
+  description: true,
+  isActive: true,
+});
+
+export type ChatbotPrompt = typeof chatbotPrompts.$inferSelect;
+export type InsertChatbotPrompt = z.infer<typeof insertChatbotPromptSchema>;

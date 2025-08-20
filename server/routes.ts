@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, type User } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import rateLimit from "express-rate-limit";
@@ -1769,6 +1769,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting email template:', error);
       res.status(500).json({ error: 'Failed to delete email template' });
+    }
+  });
+
+  // Chatbot Prompts Management Routes
+  // Get all chatbot prompts (admin only)
+  app.get('/api/chatbot-prompts', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const prompts = await storage.getAllChatbotPrompts();
+      res.json(prompts);
+    } catch (error) {
+      console.error('Error fetching chatbot prompts:', error);
+      res.status(500).json({ error: 'Failed to fetch chatbot prompts' });
+    }
+  });
+
+  // Get active chatbot prompt (public endpoint for chatbot)
+  app.get('/api/chatbot-prompts/active', async (req, res) => {
+    try {
+      const activePrompt = await storage.getActiveChatbotPrompt();
+      if (!activePrompt) {
+        return res.status(404).json({ error: 'No active prompt found' });
+      }
+      res.json(activePrompt);
+    } catch (error) {
+      console.error('Error fetching active chatbot prompt:', error);
+      res.status(500).json({ error: 'Failed to fetch active prompt' });
+    }
+  });
+
+  // Create new chatbot prompt (admin only)
+  app.post('/api/chatbot-prompts', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = insertChatbotPromptSchema.parse(req.body);
+      
+      // If this prompt is being set as active, deactivate all others first
+      if (validatedData.isActive) {
+        await storage.deactivateAllChatbotPrompts();
+      }
+      
+      const prompt = await storage.createChatbotPrompt(validatedData);
+      res.json(prompt);
+    } catch (error) {
+      console.error('Error creating chatbot prompt:', error);
+      res.status(500).json({ error: 'Failed to create chatbot prompt' });
+    }
+  });
+
+  // Update chatbot prompt (admin only)
+  app.put('/api/chatbot-prompts/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertChatbotPromptSchema.partial().parse(req.body);
+      
+      // If this prompt is being set as active, deactivate all others first
+      if (validatedData.isActive) {
+        await storage.deactivateAllChatbotPrompts();
+      }
+      
+      const prompt = await storage.updateChatbotPrompt(id, validatedData);
+      res.json(prompt);
+    } catch (error) {
+      console.error('Error updating chatbot prompt:', error);
+      res.status(500).json({ error: 'Failed to update chatbot prompt' });
+    }
+  });
+
+  // Activate a specific chatbot prompt (admin only)
+  app.put('/api/chatbot-prompts/:id/activate', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Deactivate all prompts first
+      await storage.deactivateAllChatbotPrompts();
+      
+      // Activate the specified prompt
+      const prompt = await storage.updateChatbotPrompt(id, { isActive: true });
+      res.json(prompt);
+    } catch (error) {
+      console.error('Error activating chatbot prompt:', error);
+      res.status(500).json({ error: 'Failed to activate chatbot prompt' });
+    }
+  });
+
+  // Delete chatbot prompt (admin only)
+  app.delete('/api/chatbot-prompts/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteChatbotPrompt(id);
+      res.json({ message: 'Chatbot prompt deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting chatbot prompt:', error);
+      res.status(500).json({ error: 'Failed to delete chatbot prompt' });
     }
   });
 

@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 
@@ -78,6 +78,13 @@ export interface IStorage {
   getEmailTemplatesByType(templateType: string): Promise<EmailTemplate[]>;
   updateEmailTemplate(id: number, updates: Partial<InsertEmailTemplate>): Promise<EmailTemplate>;
   deleteEmailTemplate(id: number): Promise<void>;
+  // Chatbot Prompts
+  getAllChatbotPrompts(): Promise<ChatbotPrompt[]>;
+  getActiveChatbotPrompt(): Promise<ChatbotPrompt | undefined>;
+  createChatbotPrompt(prompt: InsertChatbotPrompt): Promise<ChatbotPrompt>;
+  updateChatbotPrompt(id: number, updates: Partial<InsertChatbotPrompt>): Promise<ChatbotPrompt>;
+  deleteChatbotPrompt(id: number): Promise<void>;
+  deactivateAllChatbotPrompts(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -662,6 +669,50 @@ export class DatabaseStorage implements IStorage {
 
   async deleteEmailTemplate(id: number): Promise<void> {
     await db.delete(emailTemplates).where(eq(emailTemplates.id, id));
+  }
+
+  // Chatbot Prompts operations
+  async getAllChatbotPrompts(): Promise<ChatbotPrompt[]> {
+    return await db
+      .select()
+      .from(chatbotPrompts)
+      .orderBy(desc(chatbotPrompts.createdAt));
+  }
+
+  async getActiveChatbotPrompt(): Promise<ChatbotPrompt | undefined> {
+    const [activePrompt] = await db
+      .select()
+      .from(chatbotPrompts)
+      .where(eq(chatbotPrompts.isActive, true));
+    return activePrompt || undefined;
+  }
+
+  async createChatbotPrompt(insertChatbotPrompt: InsertChatbotPrompt): Promise<ChatbotPrompt> {
+    const [prompt] = await db
+      .insert(chatbotPrompts)
+      .values(insertChatbotPrompt)
+      .returning();
+    return prompt;
+  }
+
+  async updateChatbotPrompt(id: number, updates: Partial<InsertChatbotPrompt>): Promise<ChatbotPrompt> {
+    const [prompt] = await db
+      .update(chatbotPrompts)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(chatbotPrompts.id, id))
+      .returning();
+    return prompt;
+  }
+
+  async deleteChatbotPrompt(id: number): Promise<void> {
+    await db.delete(chatbotPrompts).where(eq(chatbotPrompts.id, id));
+  }
+
+  async deactivateAllChatbotPrompts(): Promise<void> {
+    await db
+      .update(chatbotPrompts)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(chatbotPrompts.isActive, true));
   }
 }
 

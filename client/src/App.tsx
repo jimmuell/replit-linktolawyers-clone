@@ -28,6 +28,7 @@ import QuotesPage from "@/pages/QuotesPage";
 import QuotesSuccessPage from "@/pages/QuotesSuccessPage";
 import QuotesPageSpanish from "@/pages/QuotesPageSpanish";
 import QuotesSuccessPageSpanish from "@/pages/QuotesSuccessPageSpanish";
+import PromptManagement from "@/pages/prompt-management";
 
 function Router() {
   return (
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/es/blog" component={BlogSpanish} />
       <Route path="/es/blog/:slug" component={BlogPostSpanish} />
       <Route path="/email-templates" component={EmailTemplatesPage} />
+      <Route path="/prompt-management" component={PromptManagement} />
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/es/recursos-gratuitos" component={FreeResourcesSpanish} />
       <Route path="/help" component={Help} />

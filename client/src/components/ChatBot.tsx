@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,18 +20,30 @@ interface ChatBotProps {
 }
 
 export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: 'Hello! I\'m your legal assistant. I can help you understand immigration law, guide you through our services, or answer questions about your legal needs. How can I help you today?',
-      sender: 'bot',
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch the active chatbot prompt
+  const { data: activePrompt, isLoading: isLoadingPrompt } = useQuery<{ prompt: string; name: string }>({
+    queryKey: ['/api/chatbot-prompts/active'],
+    enabled: isOpen,
+  });
+
+  // Initialize messages when component opens or prompt loads
+  useEffect(() => {
+    if (isOpen && activePrompt && messages.length === 0) {
+      const welcomeMessage: Message = {
+        id: '1',
+        content: 'Hello! I\'m your legal assistant. I can help you understand immigration law, guide you through our services, or answer questions about your legal needs. How can I help you today?',
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      setMessages([welcomeMessage]);
+    }
+  }, [isOpen, activePrompt, messages.length]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -77,27 +90,34 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
   const getBotResponse = (userInput: string): string => {
     const input = userInput.toLowerCase();
     
-    if (input.includes('immigration') || input.includes('visa') || input.includes('green card')) {
-      return 'I can help with various immigration matters including family-based visas, employment visas, naturalization, and more. Would you like me to connect you with qualified immigration attorneys in your area?';
+    // If we have an active prompt, use it as context for responses
+    if (activePrompt) {
+      // Simple rule-based responses that work with the prompt context
+      if (input.includes('immigration') || input.includes('visa') || input.includes('green card')) {
+        return 'I can help with various immigration matters including family-based visas, employment visas, naturalization, and more. Would you like me to connect you with qualified immigration attorneys in your area?';
+      }
+      
+      if (input.includes('cost') || input.includes('price') || input.includes('fee')) {
+        return 'Legal fees vary depending on your case type and complexity. Our platform allows you to compare quotes from multiple attorneys to find the best fit for your budget. Would you like to submit a request to get quotes?';
+      }
+      
+      if (input.includes('attorney') || input.includes('lawyer')) {
+        return 'Our network includes verified immigration attorneys across the United States. I can help you find attorneys based on your location and case type. What type of legal assistance do you need?';
+      }
+      
+      if (input.includes('how it works') || input.includes('process')) {
+        return 'Here\'s how it works: 1) Submit your legal request with case details, 2) We match you with qualified attorneys, 3) Receive and compare quotes, 4) Choose the attorney that\'s right for you. The process typically takes 24-48 hours.';
+      }
+      
+      if (input.includes('hello') || input.includes('hi') || input.includes('help')) {
+        return 'Hello! I\'m here to help with your legal questions. I can assist with information about immigration services, connecting with attorneys, understanding our process, or answering general legal questions. What would you like to know?';
+      }
+      
+      return 'Thank you for your question. I\'d be happy to help you find the right attorney for your specific situation. You can submit a detailed request on our platform, and we\'ll connect you with qualified legal professionals. Is there anything specific about your case you\'d like to discuss?';
     }
     
-    if (input.includes('cost') || input.includes('price') || input.includes('fee')) {
-      return 'Legal fees vary depending on your case type and complexity. Our platform allows you to compare quotes from multiple attorneys to find the best fit for your budget. Would you like to submit a request to get quotes?';
-    }
-    
-    if (input.includes('attorney') || input.includes('lawyer')) {
-      return 'Our network includes verified immigration attorneys across the United States. I can help you find attorneys based on your location and case type. What type of legal assistance do you need?';
-    }
-    
-    if (input.includes('how it works') || input.includes('process')) {
-      return 'Here\'s how it works: 1) Submit your legal request with case details, 2) We match you with qualified attorneys, 3) Receive and compare quotes, 4) Choose the attorney that\'s right for you. The process typically takes 24-48 hours.';
-    }
-    
-    if (input.includes('hello') || input.includes('hi') || input.includes('help')) {
-      return 'Hello! I\'m here to help with your legal questions. I can assist with information about immigration services, connecting with attorneys, understanding our process, or answering general legal questions. What would you like to know?';
-    }
-    
-    return 'Thank you for your question. I\'d be happy to help you find the right attorney for your specific situation. You can submit a detailed request on our platform, and we\'ll connect you with qualified legal professionals. Is there anything specific about your case you\'d like to discuss?';
+    // Fallback if no active prompt is available
+    return 'I\'m here to help with your legal questions. Please feel free to ask about our services or legal assistance needs.';
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
