@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2 } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2, Loader2 } from 'lucide-react';
 import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -100,6 +101,8 @@ const ChatPage: React.FC = () => {
   };
 
   const handleClearChat = async () => {
+    setIsClearing(true);
+    
     // Clear the current conversation and create a new one with greeting
     setConversationId(null);
     
@@ -125,6 +128,8 @@ const ChatPage: React.FC = () => {
       });
     } catch (error) {
       console.error("Failed to clear and reset chat:", error);
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -165,11 +170,16 @@ const ChatPage: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => handleClearChat()}
-                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={handleClearChat}
+                disabled={isClearing}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 disabled:opacity-50"
               >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Clear
+                {isClearing ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4 mr-1" />
+                )}
+                {isClearing ? "Clearing..." : "Clear"}
               </Button>
             </div>
           </div>
