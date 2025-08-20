@@ -2056,7 +2056,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
   // Intake data submission endpoint
   app.post("/api/chat/intake", async (req, res) => {
     try {
-      const { fullName, email, caseTypes } = req.body;
+      const { fullName, email, caseTypes, phoneNumber, city, state } = req.body;
       
       if (!fullName || !email || !caseTypes || caseTypes.length === 0) {
         return res.status(400).json({ error: "Missing required intake information" });
@@ -2079,7 +2079,22 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         }
       }).join(', ');
 
-      const intakeMessage = `Hello, my name is ${fullName} and my email is ${email}. I need help with ${caseTypeText}.`;
+      // Build intake message with optional fields
+      let intakeMessage = `Hello, my name is ${fullName} and my email is ${email}`;
+      
+      if (phoneNumber) {
+        intakeMessage += ` and my phone number is ${phoneNumber}`;
+      }
+      
+      if (city && state) {
+        intakeMessage += `. I am located in ${city}, ${state}`;
+      } else if (city) {
+        intakeMessage += `. I am located in ${city}`;
+      } else if (state) {
+        intakeMessage += `. I am located in ${state}`;
+      }
+      
+      intakeMessage += `. I need help with ${caseTypeText}.`;
       
       // Save user message
       await storage.createMessage({
@@ -2100,6 +2115,8 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         The user has just completed an intake form with the following information:
         - Name: ${fullName}
         - Email: ${email}
+        ${phoneNumber ? `- Phone: ${phoneNumber}` : ''}
+        ${city || state ? `- Location: ${[city, state].filter(Boolean).join(', ')}` : ''}
         - Case Type(s): ${caseTypeText}
 
         IMPORTANT: The user has already provided their case type as "${caseTypeText}". Do NOT ask them to choose a case type again.

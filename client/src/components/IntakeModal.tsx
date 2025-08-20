@@ -10,6 +10,9 @@ interface IntakeFormData {
   fullName: string;
   email: string;
   caseTypes: string[];
+  phoneNumber?: string;
+  city?: string;
+  state?: string;
 }
 
 interface IntakeModalProps {
@@ -22,7 +25,10 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
   const [formData, setFormData] = useState<IntakeFormData>({
     fullName: '',
     email: '',
-    caseTypes: []
+    caseTypes: [],
+    phoneNumber: '',
+    city: '',
+    state: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -72,7 +78,10 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
       setFormData({
         fullName: '',
         email: '',
-        caseTypes: []
+        caseTypes: [],
+        phoneNumber: '',
+        city: '',
+        state: ''
       });
       setErrors({});
     }
@@ -84,7 +93,10 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
     setFormData({
       fullName: '',
       email: '',
-      caseTypes: []
+      caseTypes: [],
+      phoneNumber: '',
+      city: '',
+      state: ''
     });
     setErrors({});
   };
@@ -96,10 +108,10 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
           <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
             <ClipboardList className="w-8 h-8 text-yellow-600" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-gray-900">
-            Start Your Immigration Intake
+          <DialogTitle className="text-xl font-bold text-gray-900 text-center">
+            Start Your Immigration Assistant Chat
           </DialogTitle>
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-600 mt-2 text-center text-sm">
             Please provide your basic information to get started
           </p>
         </DialogHeader>
@@ -139,6 +151,47 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
             {errors.email && (
               <p className="text-red-500 text-sm">{errors.email}</p>
             )}
+          </div>
+
+          {/* Phone Number */}
+          <div className="space-y-2">
+            <Label htmlFor="phoneNumber" className="text-gray-700 font-medium">
+              Phone Number <span className="text-gray-500">(optional)</span>
+            </Label>
+            <Input
+              id="phoneNumber"
+              type="tel"
+              placeholder="Enter your phone number"
+              value={formData.phoneNumber || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+            />
+          </div>
+
+          {/* Location */}
+          <div className="space-y-2">
+            <Label className="text-gray-700 font-medium">
+              Location
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Input
+                  id="city"
+                  type="text"
+                  placeholder="City"
+                  value={formData.city || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Input
+                  id="state"
+                  type="text"
+                  placeholder="State"
+                  value={formData.state || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Case Type */}
