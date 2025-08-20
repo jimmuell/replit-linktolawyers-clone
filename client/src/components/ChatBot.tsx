@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -110,11 +110,11 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md h-[600px] flex flex-col p-0">
-        <DialogHeader className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
+        <DialogHeader className="px-6 py-4 border-b border-border bg-gradient-to-r from-primary to-primary/90 text-white rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Avatar className="w-8 h-8 bg-white">
-                <AvatarFallback className="text-blue-600">
+                <AvatarFallback className="text-primary">
                   <Bot className="w-4 h-4" />
                 </AvatarFallback>
               </Avatar>
@@ -129,7 +129,9 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
               <X className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-blue-100 text-sm">Online • Ready to help with legal questions</p>
+          <DialogDescription className="text-primary-foreground/80 text-sm">
+            Online • Ready to help with legal questions
+          </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="flex-1 px-4 py-4">
@@ -145,15 +147,15 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
                   }`}
                 >
                   <Avatar className="w-6 h-6 flex-shrink-0">
-                    <AvatarFallback className={message.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100'}>
+                    <AvatarFallback className={message.sender === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}>
                       {message.sender === 'user' ? <User className="w-3 h-3" /> : <Bot className="w-3 h-3" />}
                     </AvatarFallback>
                   </Avatar>
                   <div
                     className={`rounded-2xl px-4 py-2 text-sm ${
                       message.sender === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {message.content}
@@ -166,15 +168,15 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
               <div className="flex justify-start">
                 <div className="flex items-start space-x-2 max-w-[80%]">
                   <Avatar className="w-6 h-6 flex-shrink-0">
-                    <AvatarFallback className="bg-gray-100">
+                    <AvatarFallback className="bg-muted">
                       <Bot className="w-3 h-3" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="rounded-2xl px-4 py-2 bg-gray-100">
+                  <div className="rounded-2xl px-4 py-2 bg-muted">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -184,7 +186,7 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
           </div>
         </ScrollArea>
 
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-border p-4">
           <div className="flex space-x-2">
             <Input
               ref={inputRef}
@@ -198,12 +200,12 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isTyping}
-              className="bg-blue-600 hover:bg-blue-700 rounded-full px-4"
+              className="rounded-full px-4"
             >
               <Send className="w-4 h-4" />
             </Button>
           </div>
-          <p className="text-xs text-gray-500 mt-2 text-center">
+          <p className="text-xs text-muted-foreground mt-2 text-center">
             This is a demo bot. For real legal advice, please consult with qualified attorneys.
           </p>
         </div>
