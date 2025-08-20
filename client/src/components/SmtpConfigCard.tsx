@@ -18,6 +18,7 @@ interface SmtpSettings {
   smtpHost: string;
   smtpPort: number;
   username: string;
+  password: string;
   fromEmail: string;
   fromName: string;
   useSsl: boolean;
@@ -36,21 +37,21 @@ interface EmailHistory {
 
 export default function SmtpConfigCard() {
   const [formData, setFormData] = useState<Partial<SmtpSettings>>({
-    configurationName: 'SMTP2GO',
-    smtpHost: 'mail.smtp2go.com',
-    smtpPort: 2525,
-    username: '',
+    configurationName: 'Resend',
+    smtpHost: 'smtp.resend.com',
+    smtpPort: 587,
+    username: 'resend',
     password: '',
     fromEmail: '',
     fromName: 'LinkToLawyers',
-    useSsl: false,
+    useSsl: true,
     isActive: true,
   });
   
   const [emailTest, setEmailTest] = useState({
     to: '',
     subject: 'Test Email from LinkToLawyers',
-    message: 'This is a test email to verify SMTP2GO configuration is working correctly.',
+    message: 'This is a test email to verify Resend configuration is working correctly.',
   });
   
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
@@ -95,7 +96,7 @@ export default function SmtpConfigCard() {
     onSuccess: () => {
       toast({
         title: "Settings saved",
-        description: "SMTP2GO configuration has been saved successfully.",
+        description: "Resend configuration has been saved successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/smtp/settings'] });
     },
@@ -113,12 +114,12 @@ export default function SmtpConfigCard() {
     mutationFn: async () => {
       return apiRequest(`/api/smtp/test`, { method: 'POST' });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setConnectionStatus('success');
-      setConnectionMessage(data.message);
+      setConnectionMessage(data?.message || 'Connection successful');
       toast({
         title: "Connection successful",
-        description: "SMTP2GO connection is working correctly.",
+        description: "Resend connection is working correctly.",
       });
     },
     onError: (error: any) => {
@@ -126,7 +127,7 @@ export default function SmtpConfigCard() {
       setConnectionMessage(error.message);
       toast({
         title: "Connection failed",
-        description: error.message || "Failed to connect to SMTP2GO",
+        description: error.message || "Failed to connect to Resend",
         variant: "destructive",
       });
     },

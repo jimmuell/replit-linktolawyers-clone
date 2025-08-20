@@ -82,7 +82,9 @@ export default function SmtpStatusCard() {
             <span className="text-xs text-gray-500">Host</span>
           </div>
           <div className="text-lg font-semibold text-gray-900">
-            {settings?.smtpHost ? 'SMTP2GO' : 'N/A'}
+            {settings?.smtpHost === 'smtp.resend.com' ? 'Resend' : 
+             settings?.smtpHost === 'mail.smtp2go.com' ? 'SMTP2GO' : 
+             settings?.smtpHost || 'N/A'}
           </div>
         </div>
         <div className="text-center">
