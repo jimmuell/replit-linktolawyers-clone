@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Bot, User, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2 } from 'lucide-react';
 import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
 import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState("");
@@ -88,6 +89,22 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const handleExportPDF = () => {
+    // TODO: Implement PDF export functionality
+    console.log("Export PDF clicked");
+  };
+
+  const handleSendEmail = () => {
+    // TODO: Implement send email functionality
+    console.log("Send Email clicked");
+  };
+
+  const handleClearChat = () => {
+    // Clear the current conversation and create a new one
+    setConversationId(null);
+    // This will trigger the useEffect to create a new conversation with greeting
+  };
+
   return (
     <div className="h-screen bg-gray-50 flex flex-col">
       {/* Sticky Header */}
@@ -103,8 +120,34 @@ const ChatPage: React.FC = () => {
                 <h1 className="text-xl font-semibold text-gray-900">Legal Assistant</h1>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              Powered by AI
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleExportPDF()}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <FileText className="w-4 h-4 mr-1" />
+                Export PDF
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleSendEmail()}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <Mail className="w-4 h-4 mr-1" />
+                Send Email
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleClearChat()}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Clear
+              </Button>
             </div>
           </div>
         </div>
@@ -115,35 +158,7 @@ const ChatPage: React.FC = () => {
         <div className="h-full max-w-4xl mx-auto flex flex-col">
           {/* Messages Area - Scrollable */}
           <div className="flex-1 px-4 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-          {messages.length === 0 && !isLoading && (
-            <div className="text-center py-20">
-              <Bot className="w-16 h-16 mx-auto mb-6 text-gray-400" />
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                Welcome to Legal Assistant!
-              </h2>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto">
-                I'm here to help you with immigration law questions, visa processes, 
-                and information about our legal services. Ask me anything!
-              </p>
-              <div className="grid md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                <div className="bg-white p-4 rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer"
-                     onClick={() => setMessage("What types of immigration cases do you handle?")}>
-                  <h3 className="font-medium text-gray-800 mb-2">Immigration Cases</h3>
-                  <p className="text-sm text-gray-600">Learn about our case types</p>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer"
-                     onClick={() => setMessage("How does the attorney matching process work?")}>
-                  <h3 className="font-medium text-gray-800 mb-2">Attorney Matching</h3>
-                  <p className="text-sm text-gray-600">Understand our process</p>
-                </div>
-                <div className="bg-white p-4 rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer"
-                     onClick={() => setMessage("What are your fees and pricing structure?")}>
-                  <h3 className="font-medium text-gray-800 mb-2">Pricing Info</h3>
-                  <p className="text-sm text-gray-600">Get pricing details</p>
-                </div>
-              </div>
-            </div>
-          )}
+
 
           {/* Message History */}
           <div className="space-y-6">
