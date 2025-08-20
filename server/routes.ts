@@ -59,11 +59,11 @@ async function createLegalRequestFromConversation(conversationId: string, summar
     }
 
     // Extract information from the intake message
-    const nameMatch = intakeMessage.content.match(/my name is ([^and]+)/i);
-    const emailMatch = intakeMessage.content.match(/my email is ([^\s.]+)/i);
-    const phoneMatch = intakeMessage.content.match(/my phone number is ([^\s.]+)/i);
-    const locationMatch = intakeMessage.content.match(/I am located in ([^.]+)/i);
-    const caseTypeMatch = intakeMessage.content.match(/I need help with ([^.]+)/i);
+    const nameMatch = intakeMessage.content.match(/my name is ([^,and]+)/i);
+    const emailMatch = intakeMessage.content.match(/my email is ([^\s,]+)/i);
+    const phoneMatch = intakeMessage.content.match(/my phone number is ([^\s,]+)/i);
+    const locationMatch = intakeMessage.content.match(/I am located in ([^,]+)/i);
+    const caseTypeMatch = intakeMessage.content.match(/I need help with ([^,]+)/i);
 
     if (!nameMatch || !emailMatch || !caseTypeMatch) {
       console.log('Missing required information from intake message');
@@ -2397,11 +2397,11 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       }
 
       // Extract user information from intake message
-      const nameMatch = intakeMessage.match(/my name is ([^and]+)/i);
-      const emailMatch = intakeMessage.match(/my email is ([^\s.]+)/i);
-      const phoneMatch = intakeMessage.match(/my phone number is ([^\s.]+)/i);
-      const locationMatch = intakeMessage.match(/I am located in ([^.]+)/i);
-      const caseTypeMatch = intakeMessage.match(/I need help with ([^.]+)/i);
+      const nameMatch = intakeMessage.match(/my name is ([^,and]+)/i);
+      const emailMatch = intakeMessage.match(/my email is ([^\s,]+)/i);
+      const phoneMatch = intakeMessage.match(/my phone number is ([^\s,]+)/i);
+      const locationMatch = intakeMessage.match(/I am located in ([^,]+)/i);
+      const caseTypeMatch = intakeMessage.match(/I need help with ([^,]+)/i);
 
       if (!nameMatch || !emailMatch) {
         return res.status(400).json({ error: "Unable to extract user information from conversation" });
