@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2, Loader2 } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2, Loader2, CheckCircle } from 'lucide-react';
 import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
 
 const ChatPage: React.FC = () => {
@@ -11,8 +12,10 @@ const ChatPage: React.FC = () => {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
+  const [hasCheckedLegalRequest, setHasCheckedLegalRequest] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Fetch active prompt for initial greeting
   const { data: activePrompt } = useQuery<{
@@ -45,6 +48,48 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamingMessage]);
+
+  // Check for legal request creation after messages update
+  useEffect(() => {
+    const checkForLegalRequest = async () => {
+      if (!conversationId || hasCheckedLegalRequest) return;
+      
+      // Wait a moment after messages load to check for legal request
+      if (messages && messages.length > 2) {
+        // Look for an assistant message containing "Attorney Intake Summary"
+        const summaryMessage = messages.find(msg => 
+          msg.role === 'assistant' && 
+          (msg.content.includes('Attorney Intake Summary') || msg.content.includes('Case Summary:'))
+        );
+        
+        if (summaryMessage) {
+          try {
+            const response = await fetch(`/api/conversations/${conversationId}/legal-request`, {
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              if (result.hasLegalRequest) {
+                toast({
+                  title: "Legal Request Created! 📋",
+                  description: `Your case has been documented as ${result.requestNumber}. You'll receive an email confirmation shortly.`,
+                  duration: 8000,
+                });
+                setHasCheckedLegalRequest(true);
+              }
+            }
+          } catch (error) {
+            console.error('Error checking legal request:', error);
+          }
+        }
+      }
+    };
+
+    // Delay check to ensure legal request creation has completed
+    const timeoutId = setTimeout(checkForLegalRequest, 2000);
+    return () => clearTimeout(timeoutId);
+  }, [messages, conversationId, hasCheckedLegalRequest, toast]);
 
   // Auto-create conversation and handle intake data when page loads
   useEffect(() => {

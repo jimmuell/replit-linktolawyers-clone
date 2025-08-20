@@ -2318,7 +2318,12 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         // Check if this response contains an "Attorney Intake Summary" to trigger legal request creation
         if (fullResponse.includes("Attorney Intake Summary") || fullResponse.includes("Case Summary:")) {
           try {
-            await createLegalRequestFromConversation(conversationId, fullResponse);
+            const legalRequest = await createLegalRequestFromConversation(conversationId, fullResponse);
+            if (legalRequest) {
+              // Legal request created successfully - the frontend can show the toast
+              // by checking the latest legal request for this conversation context
+              console.log(`📋 Legal request notification: ${legalRequest.requestNumber} ready for client notification`);
+            }
           } catch (error) {
             console.error('Error creating legal request from conversation:', error);
             // Don't fail the chat response if legal request creation fails
@@ -2329,6 +2334,56 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
     } catch (error: any) {
       console.error("Streaming chat error:", error);
       res.status(500).json({ error: "Failed to get streaming AI response" });
+    }
+  });
+
+  // Check if legal request was created from conversation
+  app.get("/api/conversations/:conversationId/legal-request", async (req, res) => {
+    try {
+      const { conversationId } = req.params;
+      
+      // Get conversation messages to find the intake message
+      const messages = await storage.getMessagesByConversationId(conversationId);
+      
+      // Find the initial intake message to extract user email
+      const intakeMessage = messages.find(msg => 
+        msg.role === 'user' && 
+        msg.content.includes('Hello, my name is') && 
+        msg.content.includes('I need help with')
+      );
+
+      if (!intakeMessage) {
+        return res.json({ hasLegalRequest: false });
+      }
+
+      // Extract email from the intake message
+      const emailMatch = intakeMessage.content.match(/my email is ([^\s.]+)/i);
+      if (!emailMatch) {
+        return res.json({ hasLegalRequest: false });
+      }
+
+      const email = emailMatch[1].trim();
+
+      // Get all legal requests to find ones for this email created recently (last 5 minutes)
+      const allLegalRequests = await storage.getAllLegalRequests();
+      const recentLegalRequest = allLegalRequests.find(lr => 
+        lr.email === email && 
+        new Date(lr.createdAt).getTime() > Date.now() - (5 * 60 * 1000) // last 5 minutes
+      );
+
+      if (recentLegalRequest) {
+        res.json({ 
+          hasLegalRequest: true, 
+          requestNumber: recentLegalRequest.requestNumber,
+          clientName: `${recentLegalRequest.firstName} ${recentLegalRequest.lastName}`
+        });
+      } else {
+        res.json({ hasLegalRequest: false });
+      }
+
+    } catch (error) {
+      console.error('Error checking legal request status:', error);
+      res.status(500).json({ error: "Failed to check legal request status" });
     }
   });
 
