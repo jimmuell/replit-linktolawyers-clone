@@ -235,7 +235,7 @@ export default function SmtpConfigCard() {
                   type="email"
                   value={formData.fromEmail || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, fromEmail: e.target.value }))}
-                  placeholder="noreply@linktolawyers.com"
+                  placeholder="noreply@send.linktolawyers.com"
                 />
                 <p className="text-xs text-gray-500">Must be a verified domain in Resend</p>
               </div>
@@ -320,7 +320,7 @@ export default function SmtpConfigCard() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">From:</span>
                   <span className="text-sm font-medium">
-                    LinkToLawyers &lt;{settings?.fromEmail || 'noreply@linktolawyers.com'}&gt;
+                    LinkToLawyers &lt;{settings?.fromEmail || 'noreply@send.linktolawyers.com'}&gt;
                   </span>
                 </div>
                 
