@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu, X, ChevronDown, Settings } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import ChatModal from "@/components/ChatModal";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
 
@@ -17,7 +17,7 @@ interface NavbarProps {
 
 export default function Navbar({ activeSection, scrollToSection, setIsLoginModalOpen, hideUserDropdown = false }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isChatBotOpen, setIsChatBotOpen] = useState(false);
+
   const { user, logout } = useAuth();
 
   return (
@@ -75,12 +75,17 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             >
               Blog
             </Link>
-            <button
-              onClick={() => setIsChatBotOpen(true)}
+            <Link
+              href="/chat"
               className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              onClick={() => {
+                setTimeout(() => {
+                  window.scrollTo({ top: 0, behavior: 'instant' });
+                }, 50);
+              }}
             >
               Bot
-            </button>
+            </Link>
             <Link 
               href="/help" 
               className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
@@ -227,15 +232,18 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
               >
                 Help
               </Link>
-              <button 
+              <Link 
+                href="/chat"
                 className="block w-full text-left py-2 px-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
                 onClick={() => {
                   setIsMenuOpen(false);
-                  setIsChatBotOpen(true);
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                  }, 50);
                 }}
               >
                 Bot
-              </button>
+              </Link>
               
               {/* Divider */}
               <div className="border-t border-gray-200 my-3"></div>
@@ -287,7 +295,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
           </div>
         )}
       </nav>
-      <ChatModal isOpen={isChatBotOpen} onClose={() => setIsChatBotOpen(false)} />
+
     </header>
   );
 }
