@@ -74,50 +74,63 @@ export default function ChatBot({ isOpen, onClose }: ChatBotProps) {
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate bot response with a delay
-    setTimeout(() => {
+    try {
+      // Get AI response from OpenAI
+      const response = await getBotResponse(userMessage.content);
+      
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: getBotResponse(userMessage.content),
+        content: response,
         sender: 'bot',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error('Error getting bot response:', error);
+      const errorResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        content: 'I apologize, but I\'m having trouble responding right now. Please try again in a moment, or feel free to submit a detailed request through our platform for attorney assistance.',
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+    }
   };
 
-  const getBotResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase();
-    
-    // If we have an active prompt, use it as context for responses
-    if (activePrompt) {
-      // Simple rule-based responses that work with the prompt context
-      if (input.includes('immigration') || input.includes('visa') || input.includes('green card')) {
-        return 'I can help with various immigration matters including family-based visas, employment visas, naturalization, and more. Would you like me to connect you with qualified immigration attorneys in your area?';
-      }
-      
-      if (input.includes('cost') || input.includes('price') || input.includes('fee')) {
-        return 'Legal fees vary depending on your case type and complexity. Our platform allows you to compare quotes from multiple attorneys to find the best fit for your budget. Would you like to submit a request to get quotes?';
-      }
-      
-      if (input.includes('attorney') || input.includes('lawyer')) {
-        return 'Our network includes verified immigration attorneys across the United States. I can help you find attorneys based on your location and case type. What type of legal assistance do you need?';
-      }
-      
-      if (input.includes('how it works') || input.includes('process')) {
-        return 'Here\'s how it works: 1) Submit your legal request with case details, 2) We match you with qualified attorneys, 3) Receive and compare quotes, 4) Choose the attorney that\'s right for you. The process typically takes 24-48 hours.';
-      }
-      
-      if (input.includes('hello') || input.includes('hi') || input.includes('help')) {
-        return 'Hello! I\'m here to help with your legal questions. I can assist with information about immigration services, connecting with attorneys, understanding our process, or answering general legal questions. What would you like to know?';
-      }
-      
-      return 'Thank you for your question. I\'d be happy to help you find the right attorney for your specific situation. You can submit a detailed request on our platform, and we\'ll connect you with qualified legal professionals. Is there anything specific about your case you\'d like to discuss?';
+  const getBotResponse = async (userInput: string): Promise<string> => {
+    try {
+      // Create the conversation context
+      const conversationHistory = messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      }));
+
+      // Add the current user message
+      conversationHistory.push({
+        role: 'user',
+        content: userInput
+      });
+
+      // Use the active prompt as system message, or fallback
+      const systemPrompt = activePrompt?.prompt || 
+        'You are a helpful legal assistant chatbot for LinkToLawyers. Help users understand immigration law, guide them through services, and answer questions about legal needs. Be professional and helpful.';
+
+      // Call the backend API to get OpenAI response
+      const result = await apiRequest('/api/chatbot/response', { 
+        method: 'POST', 
+        body: { 
+          messages: conversationHistory,
+          systemPrompt: systemPrompt
+        }
+      });
+
+      return result.response || 'I apologize, but I\'m having trouble responding right now. Please try again.';
+    } catch (error) {
+      console.error('Error calling chatbot API:', error);
+      throw error;
     }
-    
-    // Fallback if no active prompt is available
-    return 'I\'m here to help with your legal questions. Please feel free to ask about our services or legal assistance needs.';
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

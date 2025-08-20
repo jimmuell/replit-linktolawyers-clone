@@ -1864,6 +1864,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chatbot OpenAI Response Endpoint
+  app.post('/api/chatbot/response', async (req, res) => {
+    try {
+      const { messages, systemPrompt } = req.body;
+      
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ error: 'Messages array is required' });
+      }
+
+      // Import OpenAI at the top if not already done
+      const { default: OpenAI } = await import('openai');
+      
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      // Prepare messages for OpenAI
+      const openaiMessages = [
+        {
+          role: 'system',
+          content: systemPrompt || 'You are a helpful legal assistant chatbot.'
+        },
+        ...messages.map((msg: any) => ({
+          role: msg.role,
+          content: msg.content
+        }))
+      ];
+
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o', // Using the latest model
+        messages: openaiMessages,
+        max_tokens: 500,
+        temperature: 0.7,
+      });
+
+      const response = completion.choices[0]?.message?.content || 
+        'I apologize, but I\'m unable to provide a response right now. Please try again.';
+
+      res.json({ response });
+    } catch (error: any) {
+      console.error('OpenAI API error:', error);
+      
+      if (error?.error?.type === 'insufficient_quota') {
+        res.status(429).json({ 
+          error: 'API quota exceeded. Please check your OpenAI account.' 
+        });
+      } else if (error?.status === 401) {
+        res.status(401).json({ 
+          error: 'Invalid OpenAI API key. Please check your configuration.' 
+        });
+      } else {
+        res.status(500).json({ 
+          error: 'Failed to get response from AI service. Please try again.' 
+        });
+      }
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
