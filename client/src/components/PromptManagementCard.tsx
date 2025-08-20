@@ -1,79 +1,80 @@
-import { MessageSquare, Settings, Edit, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { MessageSquare, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import AdminCard from './AdminCard';
 
 export default function PromptManagementCard() {
-  const handleManagePrompts = () => {
-    // Navigate to prompt management page when implemented
-    window.location.href = '/prompt-management';
+  // Mock data for prompt management status - this would come from API in real implementation
+  const promptData = {
+    systemPromptsActive: true,
+    responseTemplatesCount: 3,
+    lastUpdated: 'Yesterday'
   };
 
-  return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-              <MessageSquare className="w-4 h-4 text-purple-600" />
-            </div>
-            <CardTitle className="text-lg">Prompt Management</CardTitle>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleManagePrompts}
-            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                <Edit className="w-3 h-3 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">System Prompts</p>
-                <p className="text-xs text-gray-500">Configure chatbot behavior</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                Active
-              </span>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
-                <MessageSquare className="w-3 h-3 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Response Templates</p>
-                <p className="text-xs text-gray-500">Manage default responses</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                3 Templates
-              </span>
-            </div>
-          </div>
-        </div>
+  const getStatusInfo = () => {
+    if (promptData.systemPromptsActive) {
+      return {
+        status: 'active',
+        icon: CheckCircle,
+        title: 'Active',
+        description: 'System prompts configured',
+        color: 'text-green-600',
+        badgeVariant: 'default' as const,
+      };
+    } else {
+      return {
+        status: 'inactive',
+        icon: AlertCircle,
+        title: 'Inactive',
+        description: 'Prompts need configuration',
+        color: 'text-yellow-600',
+        badgeVariant: 'secondary' as const,
+      };
+    }
+  };
 
-        <Button 
-          onClick={handleManagePrompts} 
-          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-          size="sm"
-        >
-          <span>Manage Prompts</span>
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
-      </CardContent>
-    </Card>
+  const statusInfo = getStatusInfo();
+
+  return (
+    <AdminCard
+      title="Prompt Management"
+      description="Chatbot prompts and response templates"
+      icon={MessageSquare}
+      iconColor="text-purple-600"
+      route="/prompt-management"
+      isLoading={false}
+      error={null}
+      actionText="Configure"
+    >
+      <div className="grid grid-cols-3 gap-6 mb-4">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <statusInfo.icon className={`w-4 h-4 ${statusInfo.color}`} />
+            <span className="text-xs text-gray-500">Status</span>
+          </div>
+          <div className="text-lg font-semibold text-gray-900">{statusInfo.title}</div>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Settings className="w-4 h-4 text-gray-400" />
+            <span className="text-xs text-gray-500">Templates</span>
+          </div>
+          <div className="text-lg font-semibold text-gray-900">{promptData.responseTemplatesCount}</div>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <MessageSquare className="w-4 h-4 text-gray-400" />
+            <span className="text-xs text-gray-500">Updated</span>
+          </div>
+          <div className="text-lg font-semibold text-gray-900">{promptData.lastUpdated}</div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="text-sm font-medium text-gray-900">Configuration:</div>
+        <div className="text-sm text-gray-600">
+          System prompts active for legal assistance
+        </div>
+      </div>
+    </AdminCard>
   );
 }
