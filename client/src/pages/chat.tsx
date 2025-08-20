@@ -53,13 +53,13 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+    <div className="h-screen bg-gray-50 flex flex-col">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" className="text-gray-600 hover:text-gray-800">
+              <Link href="/" className="text-gray-600 hover:text-gray-800 transition-colors">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <div className="flex items-center gap-2">
@@ -74,10 +74,11 @@ const ChatPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Chat Container */}
-      <div className="flex-1 max-w-4xl mx-auto w-full flex flex-col">
-        {/* Messages Area */}
-        <div className="flex-1 px-4 py-6 overflow-y-auto">
+      {/* Scrollable Chat Container */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full max-w-4xl mx-auto flex flex-col">
+          {/* Messages Area - Scrollable */}
+          <div className="flex-1 px-4 py-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
           {messages.length === 0 && !isLoading && (
             <div className="text-center py-20">
               <Bot className="w-16 h-16 mx-auto mb-6 text-gray-400" />
@@ -162,42 +163,46 @@ const ChatPage: React.FC = () => {
             )}
           </div>
 
-          <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
+          </div>
         </div>
+      </div>
 
-        {/* Input Area */}
-        <div className="border-t border-gray-200 bg-white px-4 py-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex gap-3 items-end">
-              <div className="flex-1">
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask about immigration law, our services, or any legal questions..."
-                  className="w-full min-h-12 max-h-32 resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  disabled={isTyping}
-                  rows={1}
-                />
-              </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!message.trim() || isTyping}
-                className="h-12 w-12 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center"
-              >
-                <Send className="w-5 h-5" />
-              </button>
+      {/* Sticky Footer - Input Area */}
+      <div className="sticky bottom-0 z-10 border-t border-gray-200 bg-white shadow-lg">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex gap-3 items-end">
+            <div className="flex-1">
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Ask about immigration law, our services, or any legal questions..."
+                className="w-full min-h-12 max-h-32 resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                disabled={isTyping}
+                rows={1}
+              />
             </div>
-            <div className="flex items-center justify-between mt-2">
-              <p className="text-xs text-gray-500">
-                Press Enter to send, Shift+Enter for new line
+            <button
+              onClick={handleSendMessage}
+              disabled={!message.trim() || isTyping}
+              className="h-12 w-12 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center shadow-sm"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-gray-500">
+              Press Enter to send, Shift+Enter for new line
+            </p>
+            {isTyping && (
+              <p className="text-xs text-blue-600 flex items-center gap-1">
+                <span className="inline-block w-2 h-2 bg-blue-600 rounded-full animate-bounce"></span>
+                <span className="inline-block w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
+                <span className="inline-block w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                AI is typing...
               </p>
-              {isTyping && (
-                <p className="text-xs text-blue-600">
-                  AI is typing...
-                </p>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
