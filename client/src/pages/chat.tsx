@@ -100,9 +100,9 @@ const ChatPage: React.FC = () => {
   };
 
   const handleClearChat = () => {
-    // Clear the current conversation and create a new one
+    // Clear the current conversation and reload page to show greeting
     setConversationId(null);
-    // This will trigger the useEffect to create a new conversation with greeting
+    window.location.reload();
   };
 
   return (
