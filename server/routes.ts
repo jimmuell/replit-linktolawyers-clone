@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import OpenAI from "openai";
 import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -2026,10 +2027,62 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         role: "user"
       });
 
-      res.json({ 
-        conversationId: conversation.id,
-        message: "Intake information processed successfully"
-      });
+      // Generate AI response with intake context
+      try {
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        // Enhanced system prompt with intake context
+        const systemPrompt = `${baseSystemPrompt}
+
+        The user has just completed an intake form with the following information:
+        - Name: ${fullName}
+        - Email: ${email}
+        - Case Type(s): ${caseTypeText}
+
+        Please provide a personalized, helpful response that:
+        1. Acknowledges their information professionally
+        2. Addresses their specific case type needs
+        3. Explains how you can assist them
+        4. Asks relevant follow-up questions about their situation
+
+        Be warm, professional, and knowledgeable about immigration law.`;
+
+        const completion = await openai.chat.completions.create({
+          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: intakeMessage }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        });
+
+        const aiResponse = completion.choices[0]?.message?.content;
+
+        if (aiResponse) {
+          // Save AI response
+          await storage.createMessage({
+            conversationId: conversation.id,
+            content: aiResponse,
+            role: "assistant"
+          });
+        }
+
+        res.json({ 
+          conversationId: conversation.id,
+          message: "Intake information processed successfully"
+        });
+
+      } catch (aiError) {
+        console.error('Error generating AI response:', aiError);
+        // Still return success even if AI response fails - user message was saved
+        res.json({ 
+          conversationId: conversation.id,
+          message: "Intake information processed successfully"
+        });
+      }
 
     } catch (error) {
       console.error('Error processing intake:', error);

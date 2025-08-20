@@ -184,7 +184,7 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
               type="submit"
               className="bg-gray-900 hover:bg-gray-800 text-white px-8"
             >
-              Begin Intake
+              Start Chat
             </Button>
           </div>
         </form>
