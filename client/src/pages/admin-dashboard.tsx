@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEffect } from 'react';
 import AdminNavbar from '@/components/AdminNavbar';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
+import PromptManagementCard from '@/components/PromptManagementCard';
 import RequestManagementCard from '@/components/RequestManagementCard';
 import AttorneyOnboardingCard from '@/components/AttorneyOnboardingCard';
 import AttorneyFeeScheduleCard from '@/components/AttorneyFeeScheduleCard';
@@ -44,6 +45,7 @@ export default function AdminDashboard() {
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 auto-rows-fr">
           <SmtpStatusCard />
+          <PromptManagementCard />
           <RequestManagementCard />
           <AttorneyOnboardingCard />
           <AttorneyFeeScheduleCard />
