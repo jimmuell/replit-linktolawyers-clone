@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2, Loader2 } from 'lucide-react';
 import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 
 const ChatPage: React.FC = () => {
@@ -11,6 +11,21 @@ const ChatPage: React.FC = () => {
   const [isClearing, setIsClearing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+
+  // Fetch active prompt for initial greeting
+  const { data: activePrompt } = useQuery<{
+    id: number;
+    name: string;
+    prompt: string;
+    initialGreeting?: string;
+    description?: string;
+    isActive: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>({
+    queryKey: ['/api/chatbot-prompts/active'],
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
   const {
     messages,
@@ -37,14 +52,17 @@ const ChatPage: React.FC = () => {
           const newConversationId = await createNewConversation();
           setConversationId(newConversationId);
           
-          // Add automatic greeting message from assistant
+          // Add automatic greeting message from assistant using active prompt greeting or fallback
           setTimeout(async () => {
+            const greetingContent = activePrompt?.initialGreeting || 
+              "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?";
+            
             await fetch(`/api/conversations/${newConversationId}/messages`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
               body: JSON.stringify({ 
-                content: "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?", 
+                content: greetingContent, 
                 role: "assistant" 
               })
             });
@@ -111,13 +129,16 @@ const ChatPage: React.FC = () => {
       const newConversationId = await createNewConversation();
       setConversationId(newConversationId);
       
-      // Add automatic greeting message from assistant
+      // Add automatic greeting message from assistant using active prompt greeting or fallback
+      const greetingContent = activePrompt?.initialGreeting || 
+        "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?";
+      
       await fetch(`/api/conversations/${newConversationId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ 
-          content: "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?", 
+          content: greetingContent, 
           role: "assistant" 
         })
       });

@@ -440,6 +440,7 @@ export const chatbotPrompts = pgTable("chatbot_prompts", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   prompt: text("prompt").notNull(),
+  initialGreeting: text("initial_greeting"),
   description: text("description"),
   isActive: boolean("is_active").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -449,6 +450,7 @@ export const chatbotPrompts = pgTable("chatbot_prompts", {
 export const insertChatbotPromptSchema = createInsertSchema(chatbotPrompts).pick({
   name: true,
   prompt: true,
+  initialGreeting: true,
   description: true,
   isActive: true,
 });

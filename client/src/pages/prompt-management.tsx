@@ -21,6 +21,7 @@ interface ChatbotPrompt {
   id: number;
   name: string;
   prompt: string;
+  initialGreeting?: string;
   description?: string;
   isActive: boolean;
   createdAt: string;
@@ -30,6 +31,7 @@ interface ChatbotPrompt {
 const promptFormSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   prompt: z.string().min(10, 'Prompt must be at least 10 characters'),
+  initialGreeting: z.string().optional(),
   description: z.string().optional(),
   isActive: z.boolean(),
 });
@@ -48,6 +50,7 @@ export default function PromptManagement() {
     defaultValues: {
       name: '',
       prompt: '',
+      initialGreeting: '',
       description: '',
       isActive: false,
     },
@@ -131,6 +134,7 @@ export default function PromptManagement() {
     form.reset({
       name: prompt.name,
       prompt: prompt.prompt,
+      initialGreeting: prompt.initialGreeting || '',
       description: prompt.description || '',
       isActive: prompt.isActive,
     });
@@ -267,8 +271,17 @@ export default function PromptManagement() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <p className="text-sm text-gray-700">{prompt.prompt}</p>
+                    <div className="space-y-3">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-sm font-medium text-gray-900 mb-1">System Prompt:</p>
+                        <p className="text-sm text-gray-700">{prompt.prompt}</p>
+                      </div>
+                      {prompt.initialGreeting && (
+                        <div className="bg-blue-50 rounded-lg p-3">
+                          <p className="text-sm font-medium text-blue-900 mb-1">Initial Greeting:</p>
+                          <p className="text-sm text-blue-700">{prompt.initialGreeting}</p>
+                        </div>
+                      )}
                     </div>
                     <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
                       <span>Created: {new Date(prompt.createdAt).toLocaleDateString()}</span>
@@ -324,10 +337,31 @@ export default function PromptManagement() {
 
                 <FormField
                   control={form.control}
+                  name="initialGreeting"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Initial Greeting (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law..."
+                          className="min-h-[100px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <p className="text-sm text-gray-500">
+                        This message will automatically appear when users start a new chat conversation.
+                      </p>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
                   name="prompt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Prompt Content</FormLabel>
+                      <FormLabel>System Prompt Content</FormLabel>
                       <FormControl>
                         <Textarea
                           placeholder="You are a helpful legal assistant chatbot..."
@@ -336,6 +370,9 @@ export default function PromptManagement() {
                         />
                       </FormControl>
                       <FormMessage />
+                      <p className="text-sm text-gray-500">
+                        This is the system prompt that defines how the AI assistant should behave and respond.
+                      </p>
                     </FormItem>
                   )}
                 />
