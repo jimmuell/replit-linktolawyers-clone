@@ -2,11 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, Bot, User, ArrowLeft } from 'lucide-react';
 import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
+import { useQueryClient } from "@tanstack/react-query";
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
   const {
     messages,
@@ -24,6 +26,40 @@ const ChatPage: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, streamingMessage]);
+
+  // Auto-create conversation and add greeting when page loads
+  useEffect(() => {
+    const initializeChat = async () => {
+      if (!conversationId) {
+        try {
+          const newConversationId = await createNewConversation();
+          setConversationId(newConversationId);
+          
+          // Add automatic greeting message from assistant
+          setTimeout(async () => {
+            await fetch(`/api/conversations/${newConversationId}/messages`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              credentials: "include",
+              body: JSON.stringify({ 
+                content: "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?", 
+                role: "assistant" 
+              })
+            });
+            
+            // Refresh messages to show the greeting
+            queryClient.invalidateQueries({ 
+              queryKey: ["/api/conversations", newConversationId, "messages"] 
+            });
+          }, 500);
+        } catch (error) {
+          console.error("Failed to initialize chat:", error);
+        }
+      }
+    };
+
+    initializeChat();
+  }, []); // Only run on mount
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
