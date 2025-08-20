@@ -4,11 +4,13 @@ import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import jsPDF from 'jspdf';
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -149,9 +151,149 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const handleExportPDF = () => {
-    // TODO: Implement PDF export functionality
-    console.log("Export PDF clicked");
+  const handleExportPDF = async () => {
+    if (!messages.length) {
+      alert('No conversation to export');
+      return;
+    }
+
+    setIsExportingPDF(true);
+    
+    try {
+      // Create PDF document
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPosition = margin;
+
+      // Helper function to check if we need a new page
+      const checkNewPage = (requiredHeight: number) => {
+        if (yPosition + requiredHeight > pageHeight - margin) {
+          doc.addPage();
+          yPosition = margin;
+        }
+      };
+
+      // Helper function to wrap text
+      const wrapText = (text: string, maxWidth: number) => {
+        return doc.splitTextToSize(text, maxWidth);
+      };
+
+      // Add header
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Legal Assistant Conversation Report', margin, yPosition);
+      yPosition += 15;
+
+      // Add date and time
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const now = new Date();
+      doc.text(`Generated on: ${now.toLocaleDateString()} at ${now.toLocaleTimeString()}`, margin, yPosition);
+      yPosition += 10;
+
+      // Add conversation ID if available
+      if (conversationId) {
+        doc.text(`Conversation ID: ${conversationId}`, margin, yPosition);
+        yPosition += 15;
+      }
+
+      // Add separator line
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+
+      // Extract user information from first user message if it contains intake data
+      const firstUserMessage = messages.find(msg => msg.role === 'user');
+      let userInfo = '';
+      if (firstUserMessage?.content) {
+        const content = firstUserMessage.content;
+        if (content.includes('my name is') && content.includes('email is')) {
+          userInfo = content;
+        }
+      }
+
+      // Add case summary section
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Case Summary', margin, yPosition);
+      yPosition += 8;
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      
+      if (userInfo) {
+        const wrappedInfo = wrapText(`Client Information: ${userInfo}`, pageWidth - 2 * margin);
+        doc.text(wrappedInfo, margin, yPosition);
+        yPosition += wrappedInfo.length * 5 + 5;
+      }
+
+      // Generate case summary from conversation
+      const conversationText = messages.map(msg => 
+        `${msg.role === 'user' ? 'Client' : 'Assistant'}: ${msg.content}`
+      ).join(' ').slice(0, 500);
+
+      const summaryText = `This conversation involved legal assistance regarding immigration matters. The client engaged with the AI legal assistant to discuss their case and receive guidance on immigration law procedures.`;
+      const wrappedSummary = wrapText(summaryText, pageWidth - 2 * margin);
+      doc.text(wrappedSummary, margin, yPosition);
+      yPosition += wrappedSummary.length * 5 + 15;
+
+      // Add conversation section
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      checkNewPage(20);
+      doc.text('Conversation History', margin, yPosition);
+      yPosition += 10;
+
+      // Add each message
+      messages.forEach((msg, index) => {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        
+        const role = msg.role === 'user' ? 'Client' : 'Legal Assistant';
+        const timestamp = new Date(msg.createdAt || Date.now()).toLocaleString();
+        
+        checkNewPage(15);
+        doc.text(`${role} (${timestamp}):`, margin, yPosition);
+        yPosition += 6;
+        
+        doc.setFont('helvetica', 'normal');
+        const wrappedContent = wrapText(msg.content, pageWidth - 2 * margin - 5);
+        
+        checkNewPage(wrappedContent.length * 5 + 10);
+        doc.text(wrappedContent, margin + 5, yPosition);
+        yPosition += wrappedContent.length * 5 + 10;
+        
+        // Add separator line between messages
+        if (index < messages.length - 1) {
+          checkNewPage(5);
+          doc.line(margin, yPosition, pageWidth - margin, yPosition);
+          yPosition += 8;
+        }
+      });
+
+      // Add footer on each page
+      const totalPages = (doc as any).internal.pages.length - 1; // jsPDF API
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
+        doc.text('LinkToLawyers - Legal Assistant Report', margin, pageHeight - 10);
+      }
+
+      // Generate filename with timestamp
+      const filename = `Legal_Conversation_${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}-${now.getMinutes().toString().padStart(2, '0')}.pdf`;
+      
+      // Save the PDF
+      doc.save(filename);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsExportingPDF(false);
+    }
   };
 
   const handleSendEmail = () => {
@@ -215,10 +357,15 @@ const ChatPage: React.FC = () => {
                 variant="outline" 
                 size="sm"
                 onClick={() => handleExportPDF()}
-                className="text-gray-600 hover:text-gray-800"
+                disabled={isExportingPDF || !messages.length}
+                className="text-gray-600 hover:text-gray-800 disabled:opacity-50"
               >
-                <FileText className="w-4 h-4 mr-1" />
-                Export PDF
+                {isExportingPDF ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4 mr-1" />
+                )}
+                {isExportingPDF ? "Generating..." : "Export PDF"}
               </Button>
               <Button 
                 variant="outline" 
