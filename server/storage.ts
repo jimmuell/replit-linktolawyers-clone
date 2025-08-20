@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, conversations, messages, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 
@@ -713,6 +713,49 @@ export class DatabaseStorage implements IStorage {
       .update(chatbotPrompts)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(chatbotPrompts.isActive, true));
+  }
+
+  // Chat system methods
+  async getConversations(): Promise<Conversation[]> {
+    return await db.select().from(conversations).orderBy(desc(conversations.updatedAt));
+  }
+
+  async getConversation(id: string): Promise<Conversation | undefined> {
+    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return conversation || undefined;
+  }
+
+  async createConversation(insertConversation: InsertConversation): Promise<Conversation> {
+    const [conversation] = await db
+      .insert(conversations)
+      .values(insertConversation)
+      .returning();
+    return conversation;
+  }
+
+  async updateConversation(id: string, updates: Partial<Conversation>): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .update(conversations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(conversations.id, id))
+      .returning();
+    return conversation || undefined;
+  }
+
+  async getMessagesByConversationId(conversationId: string): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(messages.createdAt);
+  }
+
+  async createMessage(insertMessage: InsertMessage): Promise<Message> {
+    const [message] = await db
+      .insert(messages)
+      .values(insertMessage)
+      .returning();
+    return message;
   }
 }
 

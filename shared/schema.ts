@@ -1,5 +1,6 @@
 import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { sql, relations } from "drizzle-orm";
 import { z } from "zod";
 
 export const users = pgTable("users", {
@@ -454,3 +455,40 @@ export const insertChatbotPromptSchema = createInsertSchema(chatbotPrompts).pick
 
 export type ChatbotPrompt = typeof chatbotPrompts.$inferSelect;
 export type InsertChatbotPrompt = z.infer<typeof insertChatbotPromptSchema>;
+
+// Chat system tables
+export const conversations = pgTable('conversations', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  title: text('title').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const messages = pgTable('messages', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar('conversation_id').notNull(),
+  content: text('content').notNull(),
+  role: text('role').notNull(), // 'user' | 'assistant'
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// Relations for chat system
+export const conversationsRelations = relations(conversations, ({ many }) => ({
+  messages: many(messages),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+}));
+
+// Insert schemas for chat system
+export const insertConversationSchema = createInsertSchema(conversations);
+export const insertMessageSchema = createInsertSchema(messages);
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;

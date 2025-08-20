@@ -1922,6 +1922,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Chat System API Routes
+
+  // Helper function to build system prompt with current date context
+  async function buildSystemPromptWithDate(): Promise<string> {
+    const activePrompt = await storage.getActiveChatbotPrompt();
+    const baseSystemPrompt = activePrompt?.prompt || "You are a helpful legal assistant chatbot for LinkToLawyers. Help users understand immigration law, guide them through our services, and answer questions about their legal needs. Be professional, informative, and helpful.";
+    
+    // Add current date context to system prompt
+    const currentDate = new Date();
+    const dateString = currentDate.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    return `${baseSystemPrompt}
+
+IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().split('T')[0]}). Use this as your reference for any date-related questions or calculations.`;
+  }
+
+  // Conversations
+  app.get("/api/conversations", async (req, res) => {
+    try {
+      const conversations = await storage.getConversations();
+      res.json(conversations);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+
+  app.post("/api/conversations", async (req, res) => {
+    try {
+      const { title = "New Conversation" } = req.body;
+      const conversation = await storage.createConversation({ title });
+      res.json(conversation);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      res.status(400).json({ error: "Failed to create conversation" });
+    }
+  });
+
+  // Messages
+  app.get("/api/conversations/:conversationId/messages", async (req, res) => {
+    try {
+      const messages = await storage.getMessagesByConversationId(req.params.conversationId);
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      res.status(500).json({ error: "Failed to fetch messages" });
+    }
+  });
+
+  app.post("/api/conversations/:conversationId/messages", async (req, res) => {
+    try {
+      const { content, role = "user" } = req.body;
+      const message = await storage.createMessage({
+        conversationId: req.params.conversationId,
+        content,
+        role,
+      });
+      res.json(message);
+    } catch (error) {
+      console.error('Error creating message:', error);
+      res.status(400).json({ error: "Failed to create message" });
+    }
+  });
+
+  // Streaming chat completion
+  app.post("/api/chat/stream", async (req, res) => {
+    try {
+      const { conversationId, message } = req.body;
+
+      if (!conversationId || !message) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Set headers for streaming
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Transfer-Encoding', 'chunked');
+
+      // Get conversation messages
+      const messages = await storage.getMessagesByConversationId(conversationId);
+      
+      // Get system prompt with current date context
+      const systemPrompt = await buildSystemPromptWithDate();
+
+      // Build OpenAI messages array
+      const openaiMessages = [
+        { role: "system" as const, content: systemPrompt },
+        ...messages.map(msg => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content
+        })),
+        { role: "user" as const, content: message }
+      ];
+
+      // Import OpenAI
+      const { default: OpenAI } = await import('openai');
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      // Get streaming response
+      const stream = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: openaiMessages,
+        stream: true,
+        max_tokens: 2000,
+        temperature: 0.7,
+      });
+      
+      let fullResponse = "";
+      
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content || "";
+        if (content) {
+          fullResponse += content;
+          res.write(content);
+        }
+      }
+
+      res.end();
+
+      // Save complete AI response as message
+      if (fullResponse.trim()) {
+        await storage.createMessage({
+          conversationId,
+          content: fullResponse,
+          role: "assistant"
+        });
+
+        // Update conversation timestamp
+        await storage.updateConversation(conversationId, { updatedAt: new Date() });
+      }
+
+    } catch (error: any) {
+      console.error("Streaming chat error:", error);
+      res.status(500).json({ error: "Failed to get streaming AI response" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
