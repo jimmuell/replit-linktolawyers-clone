@@ -99,10 +99,33 @@ const ChatPage: React.FC = () => {
     console.log("Send Email clicked");
   };
 
-  const handleClearChat = () => {
-    // Clear the current conversation and reload page to show greeting
+  const handleClearChat = async () => {
+    // Clear the current conversation and create a new one with greeting
     setConversationId(null);
-    window.location.reload();
+    
+    // Create new conversation and add greeting
+    try {
+      const newConversationId = await createNewConversation();
+      setConversationId(newConversationId);
+      
+      // Add automatic greeting message from assistant
+      await fetch(`/api/conversations/${newConversationId}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ 
+          content: "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?", 
+          role: "assistant" 
+        })
+      });
+      
+      // Refresh messages to show the greeting
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/conversations", newConversationId, "messages"] 
+      });
+    } catch (error) {
+      console.error("Failed to clear and reset chat:", error);
+    }
   };
 
   return (
