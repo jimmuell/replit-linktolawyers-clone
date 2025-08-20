@@ -158,10 +158,10 @@ export default function SmtpConfigCard() {
   });
 
   const handleSaveSettings = () => {
-    if (!formData.username || !formData.password || !formData.fromEmail) {
+    if (!formData.fromEmail || !formData.fromName) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in username, password, and from email.",
+        description: "Please fill in from email and from name.",
         variant: "destructive",
       });
       return;
@@ -176,15 +176,23 @@ export default function SmtpConfigCard() {
   };
 
   const handleSendTestEmail = () => {
-    if (!emailTest.to || !emailTest.subject || !emailTest.message) {
+    if (!emailTest.to) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in all email fields.",
+        description: "Please enter a test email address.",
         variant: "destructive",
       });
       return;
     }
-    sendTestEmailMutation.mutate(emailTest);
+    
+    // Set default values for subject and message for Resend test
+    const testData = {
+      to: emailTest.to,
+      subject: "Resend Configuration Test",
+      message: "This is a test email to verify your Resend configuration is working properly."
+    };
+    
+    sendTestEmailMutation.mutate(testData);
   };
 
   return (
@@ -192,10 +200,10 @@ export default function SmtpConfigCard() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Mail className="w-5 h-5" />
-          SMTP2GO Email Configuration
+          Resend Email Configuration
         </CardTitle>
         <CardDescription>
-          Configure your SMTP2GO email service to send emails from your application
+          Configure your Resend email service to send emails from your application
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -207,63 +215,29 @@ export default function SmtpConfigCard() {
           </TabsList>
           
           <TabsContent value="settings" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="configurationName">Configuration Name</Label>
-                <Input
-                  id="configurationName"
-                  value={formData.configurationName || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, configurationName: e.target.value }))}
-                />
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <h3 className="font-medium text-blue-900 mb-1">Resend Integration</h3>
+                  <p className="text-sm text-blue-700">
+                    Configure your Resend API settings for sending intake summaries and notifications. Your API key is stored securely as an environment variable.
+                  </p>
+                </div>
               </div>
-              
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="smtpHost">SMTP Host</Label>
-                <Input
-                  id="smtpHost"
-                  value={formData.smtpHost || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, smtpHost: e.target.value }))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="smtpPort">SMTP Port</Label>
-                <Input
-                  id="smtpPort"
-                  type="number"
-                  value={formData.smtpPort || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, smtpPort: parseInt(e.target.value) }))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  value={formData.username || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter password to update"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="fromEmail">From Email</Label>
+                <Label htmlFor="fromEmail">From Email Address</Label>
                 <Input
                   id="fromEmail"
                   type="email"
                   value={formData.fromEmail || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, fromEmail: e.target.value }))}
+                  placeholder="noreply@linktolawyers.com"
                 />
+                <p className="text-xs text-gray-500">Must be a verified domain in Resend</p>
               </div>
               
               <div className="space-y-2">
@@ -272,89 +246,97 @@ export default function SmtpConfigCard() {
                   id="fromName"
                   value={formData.fromName || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, fromName: e.target.value }))}
+                  placeholder="LinkToLawyers"
                 />
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="useSsl"
-                  checked={formData.useSsl || false}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, useSsl: checked }))}
+
+              <div className="space-y-2">
+                <Label htmlFor="replyTo">Reply-To Address</Label>
+                <Input
+                  id="replyTo"
+                  type="email"
+                  value="support@linktolawyers.com"
+                  disabled
+                  className="bg-gray-50"
                 />
-                <Label htmlFor="useSsl">Use SSL (Port 465 only)</Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="apiKeyStatus">API Key Status</Label>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-md border">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-blue-700">Environment Configuration</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">Set RESEND_API_KEY in environment variables</p>
               </div>
             </div>
             
-            <div className="pt-4">
+            <div className="pt-6 border-t">
               <Button onClick={handleSaveSettings} disabled={saveSettingsMutation.isPending}>
                 <Settings className="w-4 h-4 mr-2" />
                 {saveSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
               </Button>
             </div>
           </TabsContent>
-          
-          <TabsContent value="test" className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Connection Test</h3>
-                <div className="flex items-center gap-2 mb-2">
-                  <Button 
-                    onClick={handleTestConnection} 
-                    disabled={testConnectionMutation.isPending}
-                    variant="outline"
-                  >
-                    {testConnectionMutation.isPending ? 'Testing...' : 'Test Connection'}
-                  </Button>
-                  
-                  {connectionStatus === 'testing' && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                  )}
-                  
-                  {connectionStatus === 'success' && (
-                    <div className="flex items-center gap-1 text-green-600">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Connected</span>
-                    </div>
-                  )}
-                  
-                  {connectionStatus === 'error' && (
-                    <div className="flex items-center gap-1 text-red-600">
-                      <XCircle className="w-4 h-4" />
-                      <span>Failed</span>
-                    </div>
-                  )}
-                </div>
-                
-                {connectionMessage && (
-                  <p className={`text-sm ${connectionStatus === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                    {connectionMessage}
-                  </p>
-                )}
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Send Test Email</h3>
+
+          <TabsContent value="test" className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Test Email Configuration</h3>
+              <div className="space-y-4">
                 <div className="space-y-2">
+                  <Label htmlFor="testEmail">Test Email Address</Label>
                   <Input
-                    placeholder="Recipient email"
+                    id="testEmail"
+                    type="email"
+                    placeholder="test@example.com"
                     value={emailTest.to}
                     onChange={(e) => setEmailTest(prev => ({ ...prev, to: e.target.value }))}
                   />
-                  <Input
-                    placeholder="Subject"
-                    value={emailTest.subject}
-                    onChange={(e) => setEmailTest(prev => ({ ...prev, subject: e.target.value }))}
-                  />
-                  <Textarea
-                    placeholder="Message"
-                    value={emailTest.message}
-                    onChange={(e) => setEmailTest(prev => ({ ...prev, message: e.target.value }))}
-                    rows={4}
-                  />
-                  <Button onClick={handleSendTestEmail} disabled={sendTestEmailMutation.isPending}>
+                  <p className="text-xs text-gray-500">Sends a test email to verify your configuration</p>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  <Button 
+                    onClick={handleSendTestEmail} 
+                    disabled={sendTestEmailMutation.isPending || !emailTest.to}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
                     <Send className="w-4 h-4 mr-2" />
-                    {sendTestEmailMutation.isPending ? 'Sending...' : 'Send Test Email'}
+                    {sendTestEmailMutation.isPending ? 'Sending...' : 'Send Test'}
                   </Button>
+                  
+                  {sendTestEmailMutation.isPending && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600"></div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t pt-6">
+              <h3 className="text-lg font-semibold mb-4">Current Configuration</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">From:</span>
+                  <span className="text-sm font-medium">
+                    LinkToLawyers &lt;{settings?.fromEmail || 'noreply@linktolawyers.com'}&gt;
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Reply-To:</span>
+                  <span className="text-sm font-medium">support@linktolawyers.com</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Service:</span>
+                  <span className="text-sm font-medium text-blue-600">Resend API</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Status:</span>
+                  <span className="text-sm font-medium text-blue-600">Server Configured</span>
                 </div>
               </div>
             </div>
