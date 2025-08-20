@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@/hooks/use-chat";
 import type { Message } from "@shared/schema";
 
@@ -62,8 +60,13 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  console.log("ChatBot is rendering with isOpen:", isOpen);
+
   return (
-    <div className="fixed bottom-4 right-4 w-[450px] h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col z-50">
+    <div 
+      className="fixed bottom-4 right-4 w-[450px] h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col z-[9999]" 
+      style={{ zIndex: 9999 }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-blue-600 text-white rounded-t-lg">
         <div className="flex items-center gap-2">
@@ -150,23 +153,21 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
       {/* Input Area */}
       <div className="border-t bg-white p-4 rounded-b-lg">
         <div className="flex gap-3">
-          <div className="flex-1">
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask about immigration law, our services, or any legal questions..."
-              className="min-h-12 max-h-32 resize-none border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-              disabled={isTyping}
-            />
-          </div>
-          <Button
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask about immigration law, our services, or any legal questions..."
+            className="flex-1 min-h-12 max-h-32 resize-none rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isTyping}
+          />
+          <button
             onClick={handleSendMessage}
             disabled={!message.trim() || isTyping}
-            className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white"
+            className="h-12 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-md transition-colors flex items-center justify-center"
           >
             <Send className="w-4 h-4" />
-          </Button>
+          </button>
         </div>
         <p className="text-xs text-gray-500 mt-2">
           Press Enter to send, Shift+Enter for new line
