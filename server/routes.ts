@@ -5,6 +5,7 @@ import OpenAI from "openai";
 import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
 import { getProcessedTemplate, getLegalRequestConfirmationVariables, getAttorneyAssignmentVariables } from "./emailTemplateService";
@@ -42,7 +43,10 @@ const emailLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// SMTP transporter creation
+// Initialize Resend client
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// SMTP transporter creation (fallback for non-Resend configurations)
 async function createTransporter() {
   const settings = await storage.getSmtpSettings();
   if (!settings) {
@@ -59,6 +63,42 @@ async function createTransporter() {
       pass: settings.password,
     },
   });
+}
+
+// Email sending function that uses Resend API when configured
+async function sendEmail(to: string, subject: string, html: string, text?: string) {
+  const settings = await storage.getSmtpSettings();
+  if (!settings) {
+    throw new Error('No SMTP settings found. Please configure SMTP settings first.');
+  }
+
+  // Use Resend API if configured for Resend
+  if (settings.smtpHost === 'smtp.resend.com' && process.env.RESEND_API_KEY) {
+    try {
+      const data = await resend.emails.send({
+        from: `${settings.fromName} <${settings.fromEmail}>`,
+        to: [to],
+        subject,
+        html,
+        text,
+      });
+      return { messageId: data.data?.id || 'resend-success', success: true };
+    } catch (error: any) {
+      console.error('Resend API error:', error);
+      throw new Error(`Failed to send email via Resend: ${error.message}`);
+    }
+  }
+  
+  // Fallback to SMTP for other providers
+  const transporter = await createTransporter();
+  const info = await transporter.sendMail({
+    from: `"${settings.fromName}" <${settings.fromEmail}>`,
+    to,
+    subject,
+    text,
+    html,
+  });
+  return { messageId: info.messageId, success: true };
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -299,19 +339,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Create transporter and send email
-      const transporter = await createTransporter();
-      
-      const mailOptions = {
-        from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
-        to: recipientEmail,
-        subject: finalEmailTemplate.subject,
-        html: finalEmailTemplate.html,
-        text: finalEmailTemplate.text || ''
-      };
-
       try {
-        const result = await transporter.sendMail(mailOptions);
+        const result = await sendEmail(
+          recipientEmail,
+          finalEmailTemplate.subject,
+          finalEmailTemplate.html,
+          finalEmailTemplate.text || ''
+        );
         
         // Store successful email in history
         await storage.createEmailHistory({
@@ -388,19 +422,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         text: processedTemplate.text
       };
       
-      // Create transporter and send email
-      const transporter = await createTransporter();
-      
-      const mailOptions = {
-        from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
-        to: recipientEmail,
-        subject: finalEmailTemplate.subject,
-        html: finalEmailTemplate.html,
-        text: finalEmailTemplate.text || ''
-      };
-
       try {
-        const result = await transporter.sendMail(mailOptions);
+        const result = await sendEmail(
+          recipientEmail,
+          finalEmailTemplate.subject,
+          finalEmailTemplate.html,
+          finalEmailTemplate.text || ''
+        );
         
         // Store successful email in history
         await storage.createEmailHistory({
@@ -571,16 +599,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test SMTP connection
+  // Test SMTP/Resend connection
   app.post('/api/smtp/test', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
-      const transporter = await createTransporter();
-      await transporter.verify();
-      res.json({ message: 'SMTP connection successful', status: 'connected' });
+      const settings = await storage.getSmtpSettings();
+      if (!settings) {
+        return res.status(400).json({ error: 'No SMTP settings found' });
+      }
+
+      // Test Resend API if configured for Resend
+      if (settings.smtpHost === 'smtp.resend.com' && process.env.RESEND_API_KEY) {
+        try {
+          // Test by sending a simple test email to validate the API key
+          const testResult = await sendEmail(
+            settings.fromEmail,
+            'Resend Connection Test',
+            '<p>This is a test email to verify Resend API configuration.</p>',
+            'This is a test email to verify Resend API configuration.'
+          );
+          res.json({ message: 'Resend connection successful', status: 'connected' });
+        } catch (error: any) {
+          res.status(500).json({ 
+            message: 'Resend connection failed', 
+            error: error?.message || 'Unknown error',
+            status: 'failed'
+          });
+        }
+      } else {
+        // Test SMTP connection for other providers
+        const transporter = await createTransporter();
+        await transporter.verify();
+        res.json({ message: 'SMTP connection successful', status: 'connected' });
+      }
     } catch (error: any) {
-      console.error('SMTP test failed:', error);
+      console.error('Connection test failed:', error);
       res.status(500).json({ 
-        message: 'SMTP connection failed', 
+        message: 'Connection test failed', 
         error: error?.message || 'Unknown error',
         status: 'failed'
       });
@@ -591,23 +645,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/email/send', emailLimiter, requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const validatedData = sendEmailSchema.parse(req.body);
-      const transporter = await createTransporter();
-      const settings = await storage.getSmtpSettings();
-      
-      if (!settings) {
-        return res.status(400).json({ error: 'SMTP settings not configured' });
-      }
-      
-      const mailOptions = {
-        from: `${settings.fromName} <${settings.fromEmail}>`,
-        to: validatedData.to,
-        subject: validatedData.subject,
-        text: validatedData.message,
-        html: validatedData.message.replace(/\n/g, '<br>'),
-      };
-
       try {
-        const result = await transporter.sendMail(mailOptions);
+        const result = await sendEmail(
+          validatedData.to,
+          validatedData.subject,
+          validatedData.message.replace(/\n/g, '<br>'),
+          validatedData.message
+        );
         
         // Store successful email in history
         await storage.createEmailHistory({
@@ -962,15 +1006,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             textContent = `New Legal Case Assignment - ${request.requestNumber}\n\nDear ${attorney.firstName} ${attorney.lastName},\n\nYou have been assigned to a new legal case.\n\nRequest Number: ${request.requestNumber}\nClient: ${request.firstName} ${request.lastName}\nCase Type: ${caseTypeData?.label || request.caseType}\nLocation: ${request.location}\n\nPlease review the case details and contact the client to schedule a consultation.`;
           }
 
-          const mailOptions = {
-            from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
-            to: 'linktolawyers.us@gmail.com', // Override email address
-            subject: subject,
-            html: htmlContent,
-            text: textContent,
-          };
-
-          const result = await transporter.sendMail(mailOptions);
+          const result = await sendEmail(
+            'linktolawyers.us@gmail.com', // Override email address
+            subject,
+            htmlContent,
+            textContent
+          );
           
           // Store successful email in history
           await storage.createEmailHistory({
@@ -1167,15 +1208,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             textContent = htmlContent.replace(/<[^>]*>/g, ''); // Strip HTML for text version
           }
 
-          const mailOptions = {
-            from: `${smtpSettings.fromName} <${smtpSettings.fromEmail}>`,
-            to: 'linktolawyers.us@gmail.com', // Override email address
-            subject: subject,
-            text: textContent,
-            html: htmlContent,
-          };
-
-          await transporter.sendMail(mailOptions);
+          await sendEmail(
+            'linktolawyers.us@gmail.com', // Override email address
+            subject,
+            htmlContent,
+            textContent
+          );
 
           // Store successful email in history
           await storage.createEmailHistory({
