@@ -23,12 +23,12 @@ interface IntakeModalProps {
 
 export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
   const [formData, setFormData] = useState<IntakeFormData>({
-    fullName: '',
-    email: '',
-    caseTypes: [],
-    phoneNumber: '',
-    city: '',
-    state: ''
+    fullName: 'Jim Mueller',
+    email: 'jimmuell@aol.com',
+    caseTypes: ['family'],
+    phoneNumber: '9203625555',
+    city: 'Oshkosh',
+    state: 'WI'
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
