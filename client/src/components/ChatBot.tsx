@@ -61,12 +61,31 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   console.log("ChatBot is rendering with isOpen:", isOpen);
+  console.log("Messages count:", messages.length);
+  console.log("Current conversation ID:", conversationId);
 
   return (
-    <div 
-      className="fixed bottom-4 right-4 w-[450px] h-[600px] bg-white rounded-lg shadow-2xl border border-gray-200 flex flex-col z-[9999]" 
-      style={{ zIndex: 9999 }}
-    >
+    <>
+      {/* Debug overlay to see if anything renders at all */}
+      <div 
+        className="fixed top-4 left-4 bg-red-500 text-white p-2 rounded z-[9999]"
+        style={{ zIndex: 10000 }}
+      >
+        ChatBot Debug: {isOpen ? 'OPEN' : 'CLOSED'}
+      </div>
+      
+      <div 
+        className="fixed bottom-4 right-4 w-[450px] h-[600px] bg-red-500 rounded-lg shadow-2xl border-4 border-blue-500 flex flex-col"
+        style={{ 
+          zIndex: 9999,
+          position: 'fixed',
+          bottom: '16px',
+          right: '16px',
+          width: '450px',
+          height: '600px',
+          backgroundColor: 'red'
+        }}
+      >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b bg-blue-600 text-white rounded-t-lg">
         <div className="flex items-center gap-2">
@@ -173,7 +192,8 @@ const ChatBot: React.FC<ChatBotProps> = ({ isOpen, onClose }) => {
           Press Enter to send, Shift+Enter for new line
         </p>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
