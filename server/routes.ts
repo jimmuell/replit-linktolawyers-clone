@@ -2102,13 +2102,15 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         - Email: ${email}
         - Case Type(s): ${caseTypeText}
 
-        Please provide a personalized, helpful response that:
-        1. Acknowledges their information professionally
-        2. Addresses their specific case type needs
-        3. Explains how you can assist them
-        4. Asks relevant follow-up questions about their situation
+        IMPORTANT: The user has already provided their case type as "${caseTypeText}". Do NOT ask them to choose a case type again.
 
-        Be warm, professional, and knowledgeable about immigration law.`;
+        Please provide a personalized, helpful response that:
+        1. Acknowledges their information professionally (name, email, and specific case type)
+        2. Addresses their specific case type needs directly
+        3. Explains how you can assist them with their ${caseTypeText} case
+        4. Asks relevant follow-up questions about their specific ${caseTypeText} situation
+
+        Be warm, professional, and knowledgeable about immigration law. Since they already told you their case type, proceed directly to helping them with that specific area.`;
 
         const completion = await openai.chat.completions.create({
           model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
