@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { ArrowLeft, Star, CheckCircle, Clock, DollarSign, Users, Mail } from 'lucide-react';
+import { ArrowLeft, Star, CheckCircle, Clock, DollarSign, Users, Mail, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -311,8 +311,21 @@ export default function QuotesPage() {
         {request?.data && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Quote Summary for {request.data.firstName} {request.data.lastName}</CardTitle>
-              <CardDescription>Legal Request Number: {request.data.requestNumber}</CardDescription>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle>Quote Summary for {request.data.firstName} {request.data.lastName}</CardTitle>
+                  <CardDescription>Legal Request Number: {request.data.requestNumber}</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  onClick={() => console.log('View details clicked')}
+                >
+                  <Eye className="w-4 h-4" />
+                  View Details
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

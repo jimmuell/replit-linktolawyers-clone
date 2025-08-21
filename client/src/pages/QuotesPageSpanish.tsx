@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Star, MapPin, Briefcase, Shield, DollarSign, Calendar, Users, Award, CheckCircle, Clock, Mail } from 'lucide-react';
+import { ArrowLeft, Star, MapPin, Briefcase, Shield, DollarSign, Calendar, Users, Award, CheckCircle, Clock, Mail, Eye } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -274,10 +274,21 @@ export default function QuotesPageSpanish() {
         {/* Case Summary */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Briefcase className="w-5 h-5" />
-              <span>Resumen del Caso</span>
-            </CardTitle>
+            <div className="flex items-start justify-between">
+              <CardTitle className="flex items-center space-x-2">
+                <Briefcase className="w-5 h-5" />
+                <span>Resumen del Caso</span>
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                onClick={() => console.log('Ver detalles clicked')}
+              >
+                <Eye className="w-4 h-4" />
+                Ver Detalles
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
