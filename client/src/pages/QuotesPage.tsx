@@ -320,7 +320,7 @@ export default function QuotesPage() {
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-2"
-                  onClick={() => console.log('View details clicked')}
+                  onClick={() => setLocation(`/case-details/${request.data.requestNumber}`)}
                 >
                   <Eye className="w-4 h-4" />
                   View Details

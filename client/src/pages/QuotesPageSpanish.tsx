@@ -283,7 +283,7 @@ export default function QuotesPageSpanish() {
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2"
-                onClick={() => console.log('Ver detalles clicked')}
+                onClick={() => setLocation(`/case-details/${(request as any).data.requestNumber}`)}
               >
                 <Eye className="w-4 h-4" />
                 Ver Detalles

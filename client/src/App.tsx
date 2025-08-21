@@ -30,6 +30,7 @@ import QuotesPageSpanish from "@/pages/QuotesPageSpanish";
 import QuotesSuccessPageSpanish from "@/pages/QuotesSuccessPageSpanish";
 import PromptManagement from "@/pages/prompt-management";
 import ChatPage from "@/pages/chat";
+import CaseDetailsPage from "@/pages/CaseDetailsPage";
 
 function Router() {
   return (
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/quotes/:requestNumber/success" component={QuotesSuccessPage} />
       <Route path="/quotes/:requestNumber/spanish" component={QuotesPageSpanish} />
       <Route path="/quotes/:requestNumber/success-spanish" component={QuotesSuccessPageSpanish} />
+      <Route path="/case-details/:requestNumber" component={CaseDetailsPage} />
       <Route component={NotFound} />
     </Switch>
   );
