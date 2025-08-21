@@ -2737,9 +2737,11 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         ).length : 0
       });
 
-      // Extract user information from intake message based on language
+      // Extract user information from intake message or full conversation
       let nameMatch, emailMatch, phoneMatch, locationMatch, caseTypeMatch;
-      
+      let sourceMessage = intakeMessage;
+
+      // Try to find user information in the intake message first
       if (isSpanishConversation) {
         nameMatch = intakeMessage.match(/mi nombre es ([^,y]+)/i);
         emailMatch = intakeMessage.match(/mi correo electrónico es ([^\s,]+)/i);
@@ -2753,6 +2755,45 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         locationMatch = intakeMessage.match(/I am located in ([^,]+)/i);
         caseTypeMatch = intakeMessage.match(/I need help with ([^,]+)/i);
       }
+
+      // If not found in intake message, try to find in full conversation
+      if ((!nameMatch || !emailMatch) && fullConversation) {
+        console.log('Looking for user info in full conversation...');
+        for (const msg of fullConversation) {
+          if (msg.role === 'user') {
+            // Try both English and Spanish patterns
+            const engName = msg.content.match(/my name is ([^,and]+)/i);
+            const engEmail = msg.content.match(/my email is ([^\s,]+)/i);
+            const engPhone = msg.content.match(/my phone number is ([^\s,]+)/i);
+            const engLocation = msg.content.match(/I am located in ([^,]+)/i);
+            const engCaseType = msg.content.match(/I need help with ([^,]+)/i);
+
+            const spName = msg.content.match(/mi nombre es ([^,y]+)/i);
+            const spEmail = msg.content.match(/mi correo electrónico es ([^\s,]+)/i);
+            const spPhone = msg.content.match(/mi número de teléfono es ([^\s,]+)/i);
+            const spLocation = msg.content.match(/estoy ubicado en ([^,]+)/i);
+            const spCaseType = msg.content.match(/Necesito ayuda con ([^,]+)/i);
+
+            if ((engName && engEmail) || (spName && spEmail)) {
+              nameMatch = engName || spName;
+              emailMatch = engEmail || spEmail;
+              phoneMatch = engPhone || spPhone;
+              locationMatch = engLocation || spLocation;
+              caseTypeMatch = engCaseType || spCaseType;
+              sourceMessage = msg.content;
+              break;
+            }
+          }
+        }
+      }
+
+      console.log('User info extraction:', {
+        foundName: !!nameMatch,
+        foundEmail: !!emailMatch,
+        sourceWasIntake: sourceMessage === intakeMessage,
+        extractedName: nameMatch ? nameMatch[1].trim() : 'Not found',
+        extractedEmail: emailMatch ? emailMatch[1].trim() : 'Not found'
+      });
 
       if (!nameMatch || !emailMatch) {
         return res.status(400).json({ error: "Unable to extract user information from conversation" });
