@@ -333,7 +333,12 @@ export default function QuotesPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div>
                   <span className="text-sm font-medium text-gray-600">City, State:</span>
-                  <p className="text-sm text-gray-900 mt-1">{request.data.location || 'Not specified'}</p>
+                  <p className="text-sm text-gray-900 mt-1">
+                    {request.data.city && request.data.state 
+                      ? `${request.data.city}, ${request.data.state}`
+                      : request.data.location || 'Not specified'
+                    }
+                  </p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-600">Request Date:</span>

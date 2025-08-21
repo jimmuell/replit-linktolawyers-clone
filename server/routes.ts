@@ -62,8 +62,8 @@ async function createLegalRequestFromConversation(conversationId: string, summar
     const nameMatch = intakeMessage.content.match(/my name is ([^,and]+)/i);
     const emailMatch = intakeMessage.content.match(/my email is ([^\s,]+)/i);
     const phoneMatch = intakeMessage.content.match(/my phone number is ([^\s,]+)/i);
-    const locationMatch = intakeMessage.content.match(/I am located in ([^,]+)/i);
-    const caseTypeMatch = intakeMessage.content.match(/I need help with ([^,]+)/i);
+    const locationMatch = intakeMessage.content.match(/I am located in ([^.]+)/i);
+    const caseTypeMatch = intakeMessage.content.match(/I need help with ([^.]+)/i);
 
     if (!nameMatch || !emailMatch || !caseTypeMatch) {
       console.log('Missing required information from intake message');
@@ -81,6 +81,22 @@ async function createLegalRequestFromConversation(conversationId: string, summar
     const location = locationMatch ? locationMatch[1].trim() : undefined;
     const caseType = caseTypeMatch[1].trim();
 
+    // Parse city and state from location if available
+    let city = undefined;
+    let state = undefined;
+    
+    if (location) {
+      // Handle formats like "City, State" or "City, ST"
+      const locationParts = location.split(',').map(part => part.trim());
+      if (locationParts.length >= 2) {
+        city = locationParts[0];
+        state = locationParts[1];
+      } else {
+        // If only one part, assume it's city
+        city = locationParts[0];
+      }
+    }
+
     // Use the summary content as the case description
     const caseDescription = summaryContent;
 
@@ -97,6 +113,8 @@ async function createLegalRequestFromConversation(conversationId: string, summar
       caseType,
       caseDescription,
       location,
+      city,
+      state,
       agreeToTerms: true, // Assume they agree by using the chat system
       status: 'under_review'
     };
