@@ -38,8 +38,8 @@ const CaseDetailsPage: React.FC = () => {
     enabled: !!requestNumber,
   });
 
-  const handleBackToDashboard = () => {
-    navigate('/');
+  const handleBackToQuotes = () => {
+    navigate(`/quotes/${requestNumber}`);
   };
 
   const handleDownloadPDF = () => {
@@ -68,8 +68,8 @@ const CaseDetailsPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">Case not found</p>
-          <Button onClick={handleBackToDashboard} className="mt-4">
-            Back to Home
+          <Button onClick={handleBackToQuotes} className="mt-4">
+            Back to Quotes
           </Button>
         </div>
       </div>
@@ -111,17 +111,17 @@ const CaseDetailsPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <Button 
               variant="ghost" 
-              onClick={handleBackToDashboard}
+              onClick={handleBackToQuotes}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Dashboard</span>
+              <span>Back to Quotes</span>
             </Button>
 
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                 <FileText className="w-3 h-3 mr-1" />
-                Intake Summary
+                Case Summary
               </Badge>
               <Button 
                 onClick={handleDownloadPDF}
@@ -224,10 +224,10 @@ const CaseDetailsPage: React.FC = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={handleBackToDashboard}
+                  onClick={handleBackToQuotes}
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
+                  Back to Quotes
                 </Button>
                 <Button 
                   variant="outline" 
