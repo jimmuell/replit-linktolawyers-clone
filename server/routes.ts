@@ -2686,34 +2686,55 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
   // Send email template from chat
   app.post("/api/chat/send-template", async (req, res) => {
     try {
-      const { conversationId, intakeMessage, templateId } = req.body;
+      const { conversationId, intakeMessage, templateId, fullConversation, detectedLanguage } = req.body;
 
       if (!conversationId || !intakeMessage) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      // Detect if this is a Spanish conversation
-      const isSpanishConversation = intakeMessage.includes('mi nombre es') || 
-                                    intakeMessage.includes('mi correo electrónico es') ||
-                                    intakeMessage.includes('estoy ubicado en') ||
-                                    intakeMessage.includes('Necesito ayuda con') ||
-                                    intakeMessage.includes('Hola Jim Mueller') ||
-                                    intakeMessage.includes('gracias por compartir') ||
-                                    intakeMessage.includes('inmigración familiar') ||
-                                    intakeMessage.includes('¿Estás dentro de EE.UU.') ||
-                                    intakeMessage.includes('situación') ||
-                                    intakeMessage.includes('Vamos a empezar');
+      // Detect if this is a Spanish conversation using multiple methods
+      let isSpanishConversation = false;
 
-      console.log('Server Spanish detection:', {
+      // Method 1: Use detected language from client
+      if (detectedLanguage === 'es') {
+        isSpanishConversation = true;
+      }
+
+      // Method 2: Check full conversation if provided
+      if (!isSpanishConversation && fullConversation) {
+        isSpanishConversation = fullConversation.some((msg: { role: string; content: string }) => 
+          msg.content.includes('mi nombre es') || 
+          msg.content.includes('mi correo electrónico es') ||
+          msg.content.includes('estoy ubicado en') ||
+          msg.content.includes('Necesito ayuda con') ||
+          msg.content.includes('Hola Jim Mueller') ||
+          msg.content.includes('gracias por compartir') ||
+          msg.content.includes('inmigración familiar') ||
+          msg.content.includes('¿Estás dentro de EE.UU.') ||
+          msg.content.includes('situación') ||
+          msg.content.includes('Vamos a empezar')
+        );
+      }
+
+      // Method 3: Fallback to intake message only
+      if (!isSpanishConversation) {
+        isSpanishConversation = intakeMessage.includes('mi nombre es') || 
+                                 intakeMessage.includes('mi correo electrónico es') ||
+                                 intakeMessage.includes('estoy ubicado en') ||
+                                 intakeMessage.includes('Necesito ayuda con');
+      }
+
+      console.log('Server Spanish detection (enhanced):', {
         isSpanishConversation,
-        intakeMessagePreview: intakeMessage.substring(0, 200),
-        spanishPhrases: [
-          intakeMessage.includes('mi nombre es'),
-          intakeMessage.includes('Hola Jim Mueller'),
-          intakeMessage.includes('gracias por compartir'),
-          intakeMessage.includes('inmigración familiar'),
-          intakeMessage.includes('situación')
-        ]
+        detectedLanguage,
+        hasFullConversation: !!fullConversation,
+        conversationMessages: fullConversation ? fullConversation.length : 0,
+        spanishInConversation: fullConversation ? fullConversation.filter((msg: { role: string; content: string }) => 
+          msg.content.includes('gracias') || 
+          msg.content.includes('Hola') || 
+          msg.content.includes('inmigración') ||
+          msg.content.includes('situación')
+        ).length : 0
       });
 
       // Extract user information from intake message based on language

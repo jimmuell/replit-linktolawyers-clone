@@ -453,11 +453,12 @@ const ChatPage: React.FC = () => {
       return;
     }
 
-    // Extract user information from the first intake message
+    // Extract user information from the first intake message (English or Spanish)
     const intakeMessage = messages.find(msg => 
-      msg.role === 'user' && 
-      msg.content.includes('Hello, my name is') && 
-      msg.content.includes('I need help with')
+      msg.role === 'user' && (
+        (msg.content.includes('Hello, my name is') && msg.content.includes('I need help with')) ||
+        (msg.content.includes('Hola, mi nombre es') && msg.content.includes('Necesito ayuda con'))
+      )
     );
 
     if (!intakeMessage) {
@@ -470,14 +471,16 @@ const ChatPage: React.FC = () => {
     }
 
     try {
-      // Send template email with conversation data
+      // Send template email with full conversation data for better language detection
       const response = await fetch('/api/chat/send-template', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           conversationId,
-          intakeMessage: intakeMessage.content
+          intakeMessage: intakeMessage.content,
+          fullConversation: messages.map(msg => ({ role: msg.role, content: msg.content })),
+          detectedLanguage: language
         })
       });
 
