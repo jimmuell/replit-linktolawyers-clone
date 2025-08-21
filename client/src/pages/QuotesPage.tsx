@@ -321,12 +321,25 @@ export default function QuotesPage() {
                   <p className="text-sm text-gray-900 mt-1">{getCaseTypeLabel(request.data.caseType)}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-600">Timeline:</span>
-                  <p className="text-sm text-gray-900 mt-1">3-6 months</p>
+                  <span className="text-sm font-medium text-gray-600">Email:</span>
+                  <p className="text-sm text-gray-900 mt-1">{request.data.email}</p>
                 </div>
                 <div>
-                  <span className="text-sm font-medium text-gray-600">Budget:</span>
-                  <p className="text-sm text-gray-900 mt-1">5k-10k</p>
+                  <span className="text-sm font-medium text-gray-600">Phone:</span>
+                  <p className="text-sm text-gray-900 mt-1">{request.data.phoneNumber}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <div>
+                  <span className="text-sm font-medium text-gray-600">Location:</span>
+                  <p className="text-sm text-gray-900 mt-1">{request.data.location || 'Not specified'}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-600">Request Date:</span>
+                  <p className="text-sm text-gray-900 mt-1">
+                    {new Date(request.data.createdAt).toLocaleDateString()} at {new Date(request.data.createdAt).toLocaleTimeString()}
+                  </p>
                 </div>
               </div>
               

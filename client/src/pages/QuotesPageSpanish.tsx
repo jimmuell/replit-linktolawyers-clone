@@ -267,7 +267,7 @@ export default function QuotesPageSpanish() {
             Cotizaciones de Abogados para {(request as any).data.firstName} {(request as any).data.lastName}
           </h1>
           <p className="text-gray-600">
-            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {String(getCaseTypeDisplayName((request as any)?.data?.caseType) || '')}.
+            Revisa y selecciona los abogados con los que te gustaría conectarte para tu caso de {getCaseTypeDisplayName((request as any)?.data?.caseType) || ''}.
           </p>
         </div>
 
@@ -286,12 +286,25 @@ export default function QuotesPageSpanish() {
                 <p className="text-gray-900">{getCaseTypeDisplayName((request as any).data.caseType)}</p>
               </div>
               <div>
+                <span className="font-medium text-gray-700">Correo Electrónico:</span>
+                <p className="text-gray-900">{(request as any).data.email}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Teléfono:</span>
+                <p className="text-gray-900">{(request as any).data.phoneNumber}</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div>
                 <span className="font-medium text-gray-700">Ubicación:</span>
                 <p className="text-gray-900">{(request as any).data.location || 'No especificada'}</p>
               </div>
               <div>
                 <span className="font-medium text-gray-700">Fecha de Solicitud:</span>
-                <p className="text-gray-900">{new Date((request as any).data.createdAt).toLocaleDateString('es-ES')}</p>
+                <p className="text-gray-900">
+                  {new Date((request as any).data.createdAt).toLocaleDateString('es-ES')} a las {new Date((request as any).data.createdAt).toLocaleTimeString('es-ES')}
+                </p>
               </div>
             </div>
             <div className="mt-4">
