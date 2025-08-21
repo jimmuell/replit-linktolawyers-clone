@@ -2093,8 +2093,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced Chat System API Routes
 
   // Helper function to build system prompt with current date context
-  async function buildSystemPromptWithDate(): Promise<string> {
-    const activePrompt = await storage.getActiveChatbotPrompt();
+  async function buildSystemPromptWithDate(conversationId?: string): Promise<string> {
+    // Try to detect language from conversation context
+    let language = 'en'; // default to English
+    
+    if (conversationId) {
+      try {
+        const messages = await storage.getMessagesByConversationId(conversationId);
+        // Look for Spanish intake messages to detect language
+        const hasSpanishIntake = messages.some(msg => 
+          msg.content.includes('Hola, mi nombre es') || 
+          msg.content.includes('Necesito ayuda con') ||
+          msg.content.includes('estoy ubicado en')
+        );
+        
+        if (hasSpanishIntake) {
+          language = 'es';
+        }
+      } catch (error) {
+        console.log('Could not detect language from conversation, using default English');
+      }
+    }
+    
+    const activePrompt = await storage.getActiveChatbotPromptByLanguage(language);
     const baseSystemPrompt = activePrompt?.prompt || "You are a helpful legal assistant chatbot for LinkToLawyers. Help users understand immigration law, guide them through our services, and answer questions about their legal needs. Be professional, informative, and helpful.";
     
     // Add current date context to system prompt
@@ -2296,7 +2317,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       const messages = await storage.getMessagesByConversationId(conversationId);
       
       // Get system prompt with current date context
-      const systemPrompt = await buildSystemPromptWithDate();
+      const systemPrompt = await buildSystemPromptWithDate(conversationId);
 
       // Build OpenAI messages array
       const openaiMessages = [
