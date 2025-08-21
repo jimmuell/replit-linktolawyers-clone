@@ -2696,7 +2696,25 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       const isSpanishConversation = intakeMessage.includes('mi nombre es') || 
                                     intakeMessage.includes('mi correo electrónico es') ||
                                     intakeMessage.includes('estoy ubicado en') ||
-                                    intakeMessage.includes('Necesito ayuda con');
+                                    intakeMessage.includes('Necesito ayuda con') ||
+                                    intakeMessage.includes('Hola Jim Mueller') ||
+                                    intakeMessage.includes('gracias por compartir') ||
+                                    intakeMessage.includes('inmigración familiar') ||
+                                    intakeMessage.includes('¿Estás dentro de EE.UU.') ||
+                                    intakeMessage.includes('situación') ||
+                                    intakeMessage.includes('Vamos a empezar');
+
+      console.log('Server Spanish detection:', {
+        isSpanishConversation,
+        intakeMessagePreview: intakeMessage.substring(0, 200),
+        spanishPhrases: [
+          intakeMessage.includes('mi nombre es'),
+          intakeMessage.includes('Hola Jim Mueller'),
+          intakeMessage.includes('gracias por compartir'),
+          intakeMessage.includes('inmigración familiar'),
+          intakeMessage.includes('situación')
+        ]
+      });
 
       // Extract user information from intake message based on language
       let nameMatch, emailMatch, phoneMatch, locationMatch, caseTypeMatch;
@@ -2738,16 +2756,25 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         }
         
         // Find appropriate template based on language
+        console.log('Template selection debug:', {
+          isSpanishConversation,
+          availableTemplates: activeTemplates.map(t => ({ id: t.id, name: t.name })),
+          intakeMessagePreview: intakeMessage.substring(0, 100)
+        });
+
         if (isSpanishConversation) {
           template = activeTemplates.find(t => t.name === 'Chat Confirmation Spanish') ||
                      activeTemplates.find(t => t.name.toLowerCase().includes('spanish'));
+          console.log('Spanish template selected:', template ? template.name : 'None found');
         } else {
           template = activeTemplates.find(t => t.name === 'Chat Confirmation');
+          console.log('English template selected:', template ? template.name : 'None found');
         }
         
         // Fallback to most recent template if language-specific not found
         if (!template) {
           template = activeTemplates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+          console.log('Fallback template used:', template ? template.name : 'None found');
         }
       }
 
