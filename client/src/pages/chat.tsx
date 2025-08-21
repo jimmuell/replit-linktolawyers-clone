@@ -554,7 +554,7 @@ const ChatPage: React.FC = () => {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" className="text-gray-600 hover:text-gray-800 transition-colors">
+              <Link href={language === 'es' ? '/es' : '/'} className="text-gray-600 hover:text-gray-800 transition-colors">
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <div className="flex items-center gap-2">
