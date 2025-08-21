@@ -2631,6 +2631,98 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
     }
   });
 
+  // Send email template from chat
+  app.post("/api/chat/send-template", async (req, res) => {
+    try {
+      const { conversationId, intakeMessage, templateId } = req.body;
+
+      if (!conversationId || !intakeMessage) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      // Extract user information from intake message
+      const nameMatch = intakeMessage.match(/my name is ([^,and]+)/i);
+      const emailMatch = intakeMessage.match(/my email is ([^\s,]+)/i);
+      const phoneMatch = intakeMessage.match(/my phone number is ([^\s,]+)/i);
+      const locationMatch = intakeMessage.match(/I am located in ([^,]+)/i);
+      const caseTypeMatch = intakeMessage.match(/I need help with ([^,]+)/i);
+
+      if (!nameMatch || !emailMatch) {
+        return res.status(400).json({ error: "Unable to extract user information from conversation" });
+      }
+
+      const customerName = nameMatch[1].trim();
+      const customerEmail = emailMatch[1].trim();
+      const phoneNumber = phoneMatch ? phoneMatch[1].trim() : '';
+      const location = locationMatch ? locationMatch[1].trim() : '';
+      const caseType = caseTypeMatch ? caseTypeMatch[1].trim() : '';
+
+      // Get the latest email template if templateId not provided
+      let template;
+      if (templateId) {
+        template = await storage.getEmailTemplate(templateId);
+      } else {
+        // Get the most recent template
+        const allTemplates = await storage.getAllEmailTemplates();
+        const activeTemplates = allTemplates.filter(t => t.isActive);
+        if (activeTemplates.length === 0) {
+          return res.status(404).json({ error: "No active email templates found" });
+        }
+        // Sort by creation date and get the most recent
+        template = activeTemplates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      }
+
+      if (!template) {
+        return res.status(404).json({ error: "Email template not found" });
+      }
+
+      // Process template variables
+      let processedHtml = template.htmlContent || '';
+      let processedSubject = template.subject || '';
+
+      // Replace common variables
+      const variables = {
+        '{{name}}': customerName,
+        '{{customerName}}': customerName,
+        '{{email}}': customerEmail,
+        '{{phone}}': phoneNumber,
+        '{{phoneNumber}}': phoneNumber,
+        '{{location}}': location,
+        '{{caseType}}': caseType,
+        '{{date}}': new Date().toLocaleDateString(),
+        '{{time}}': new Date().toLocaleTimeString(),
+      };
+
+      Object.entries(variables).forEach(([variable, value]) => {
+        processedHtml = processedHtml.replace(new RegExp(variable, 'g'), value);
+        processedSubject = processedSubject.replace(new RegExp(variable, 'g'), value);
+      });
+
+      // Send email using the existing sendEmail function
+      console.log(`📧 Sending template "${template.name}" email to ${customerEmail}...`);
+      
+      const result = await sendEmail(
+        customerEmail,
+        processedSubject,
+        processedHtml,
+        template.textContent || '' // Use text content if available
+      );
+
+      console.log(`📧 Template email sent successfully to ${customerEmail}`);
+
+      res.json({ 
+        success: true, 
+        recipientEmail: customerEmail,
+        templateName: template.name,
+        emailId: result.messageId
+      });
+
+    } catch (error) {
+      console.error('Error sending template email:', error);
+      res.status(500).json({ error: "Failed to send template email" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

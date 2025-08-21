@@ -404,13 +404,67 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const handleSendTemplate = () => {
-    // TODO: Implement send template functionality
-    console.log("Send Template clicked");
-    toast({
-      title: "Send Template",
-      description: "Template functionality coming soon!",
-    });
+  const handleSendTemplate = async () => {
+    if (!conversationId || !messages.length) {
+      toast({
+        title: "Cannot Send Template",
+        description: "No conversation data available to send.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Extract user information from the first intake message
+    const intakeMessage = messages.find(msg => 
+      msg.role === 'user' && 
+      msg.content.includes('Hello, my name is') && 
+      msg.content.includes('I need help with')
+    );
+
+    if (!intakeMessage) {
+      toast({
+        title: "Cannot Send Template",
+        description: "Unable to find user information in conversation.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Send template email with conversation data
+      const response = await fetch('/api/chat/send-template', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          conversationId,
+          intakeMessage: intakeMessage.content
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Template Sent Successfully! 📧",
+          description: `Template "${result.templateName}" sent to ${result.recipientEmail}`,
+          duration: 6000,
+        });
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Template Send Failed",
+          description: error.error || "Failed to send template",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error sending template:', error);
+      toast({
+        title: "Template Send Failed",
+        description: "Network error while sending template",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClearChat = async () => {
