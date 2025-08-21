@@ -280,7 +280,7 @@ export default function QuotesPageSpanish() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <span className="text-sm font-medium text-gray-600">Tipo de Caso:</span>
                 <p className="text-sm text-gray-900 mt-1">{getCaseTypeDisplayName((request as any).data.caseType)}</p>
@@ -293,13 +293,13 @@ export default function QuotesPageSpanish() {
                 <span className="text-sm font-medium text-gray-600">Teléfono:</span>
                 <p className="text-sm text-gray-900 mt-1">{(request as any).data.phoneNumber}</p>
               </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div>
                 <span className="text-sm font-medium text-gray-600">Ubicación:</span>
                 <p className="text-sm text-gray-900 mt-1">{(request as any).data.location || 'No especificada'}</p>
               </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
                 <span className="text-sm font-medium text-gray-600">Fecha de Solicitud:</span>
                 <p className="text-sm text-gray-900 mt-1">
@@ -313,7 +313,7 @@ export default function QuotesPageSpanish() {
                 </p>
               </div>
             </div>
-            <div className="mt-4">
+            <div className="mt-6">
               <span className="text-sm font-medium text-gray-600">Descripción del Caso:</span>
               <p className="text-sm text-gray-900 mt-1">{(request as any).data.caseDescription}</p>
             </div>
