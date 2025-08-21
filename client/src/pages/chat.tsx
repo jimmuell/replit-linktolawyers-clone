@@ -51,7 +51,7 @@ const ChatPage: React.FC = () => {
   });
 
   const {
-    messages,
+    messages = [],
     isLoading,
     sendMessage,
     createNewConversation,
