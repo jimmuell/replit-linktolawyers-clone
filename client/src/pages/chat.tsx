@@ -67,7 +67,13 @@ const ChatPage: React.FC = () => {
         msg.content.includes('mi correo electrónico es') ||
         msg.content.includes('estoy ubicado en') ||
         msg.content.includes('Necesito ayuda con') ||
-        msg.content.includes('Resumen de Admisión de Abogado')
+        msg.content.includes('Resumen de Admisión de Abogado') ||
+        msg.content.includes('Hola Jim Mueller') ||
+        msg.content.includes('gracias por compartir') ||
+        msg.content.includes('inmigración familiar') ||
+        msg.content.includes('¿Estás dentro de EE.UU.') ||
+        msg.content.includes('situación') ||
+        msg.content.includes('Vamos a empezar')
       );
       
       if (hasSpanishContent && language !== 'es') {
@@ -243,13 +249,35 @@ const ChatPage: React.FC = () => {
     setIsExportingPDF(true);
     
     try {
-      // Detect if this is a Spanish conversation
-      const isSpanishConversation = messages.some(msg => 
+      // Detect if this is a Spanish conversation - check both messages and current language state
+      const isSpanishConversation = language === 'es' || messages.some(msg => 
         msg.content.includes('Hola, mi nombre es') || 
         msg.content.includes('Necesito ayuda con') ||
         msg.content.includes('estoy ubicado en') ||
-        msg.content.includes('Resumen de Admisión de Abogado')
+        msg.content.includes('Resumen de Admisión de Abogado') ||
+        msg.content.includes('Hola Jim Mueller') ||
+        msg.content.includes('gracias por compartir') ||
+        msg.content.includes('inmigración familiar') ||
+        msg.content.includes('¿Estás dentro de EE.UU.') ||
+        msg.content.includes('situación') ||
+        msg.content.includes('Vamos a empezar')
       );
+
+      // Debug Spanish detection
+      console.log('PDF Export - Spanish detection:', {
+        isSpanishConversation,
+        currentLanguage: language,
+        messageCount: messages.length,
+        spanishMessages: messages.filter(msg => 
+          msg.content.includes('gracias') || 
+          msg.content.includes('Hola') || 
+          msg.content.includes('inmigración') ||
+          msg.content.includes('situación')
+        ).map(msg => ({
+          role: msg.role,
+          preview: msg.content.substring(0, 50) + '...'
+        }))
+      });
 
       // Create PDF document
       const doc = new jsPDF();
