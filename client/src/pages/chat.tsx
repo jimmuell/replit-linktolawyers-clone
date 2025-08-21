@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2, Loader2, CheckCircle } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2, Loader2, CheckCircle, File } from 'lucide-react';
 import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
@@ -404,6 +404,15 @@ const ChatPage: React.FC = () => {
     }
   };
 
+  const handleSendTemplate = () => {
+    // TODO: Implement send template functionality
+    console.log("Send Template clicked");
+    toast({
+      title: "Send Template",
+      description: "Template functionality coming soon!",
+    });
+  };
+
   const handleClearChat = async () => {
     setIsClearing(true);
     
@@ -478,6 +487,15 @@ const ChatPage: React.FC = () => {
               >
                 <Mail className="w-4 h-4 mr-1" />
                 Send Email
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => handleSendTemplate()}
+                className="text-gray-600 hover:text-gray-800"
+              >
+                <File className="w-4 h-4 mr-1" />
+                Send Template
               </Button>
               <Button 
                 variant="outline" 
