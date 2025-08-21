@@ -81,10 +81,13 @@ export interface IStorage {
   // Chatbot Prompts
   getAllChatbotPrompts(): Promise<ChatbotPrompt[]>;
   getActiveChatbotPrompt(): Promise<ChatbotPrompt | undefined>;
+  getActiveChatbotPromptByLanguage(language: string): Promise<ChatbotPrompt | undefined>;
+  getChatbotPrompt(id: number): Promise<ChatbotPrompt | undefined>;
   createChatbotPrompt(prompt: InsertChatbotPrompt): Promise<ChatbotPrompt>;
   updateChatbotPrompt(id: number, updates: Partial<InsertChatbotPrompt>): Promise<ChatbotPrompt>;
   deleteChatbotPrompt(id: number): Promise<void>;
   deactivateAllChatbotPrompts(): Promise<void>;
+  deactivateChatbotPromptsByLanguage(language: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -713,6 +716,35 @@ export class DatabaseStorage implements IStorage {
       .update(chatbotPrompts)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(chatbotPrompts.isActive, true));
+  }
+
+  async getActiveChatbotPromptByLanguage(language: string): Promise<ChatbotPrompt | undefined> {
+    const [activePrompt] = await db
+      .select()
+      .from(chatbotPrompts)
+      .where(and(
+        eq(chatbotPrompts.isActive, true),
+        eq(chatbotPrompts.language, language)
+      ));
+    return activePrompt || undefined;
+  }
+
+  async getChatbotPrompt(id: number): Promise<ChatbotPrompt | undefined> {
+    const [prompt] = await db
+      .select()
+      .from(chatbotPrompts)
+      .where(eq(chatbotPrompts.id, id));
+    return prompt || undefined;
+  }
+
+  async deactivateChatbotPromptsByLanguage(language: string): Promise<void> {
+    await db
+      .update(chatbotPrompts)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(and(
+        eq(chatbotPrompts.isActive, true),
+        eq(chatbotPrompts.language, language)
+      ));
   }
 
   // Chat system methods

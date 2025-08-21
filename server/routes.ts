@@ -1946,24 +1946,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/chatbot-prompts/active', async (req, res) => {
     try {
       const language = req.query.lang as string || 'en';
-      let activePrompt;
       
-      if (language === 'es') {
-        // Get Spanish prompt
-        const allPrompts = await storage.getAllChatbotPrompts();
-        activePrompt = allPrompts.find(p => p.name.includes('Español') || p.name.includes('Spanish'));
-        
-        if (!activePrompt) {
-          // Fallback to English if no Spanish prompt found
-          activePrompt = await storage.getActiveChatbotPrompt();
-        }
-      } else {
-        // Get English prompt (default)
-        activePrompt = await storage.getActiveChatbotPrompt();
-      }
+      // Get active prompt for the specified language
+      const activePrompt = await storage.getActiveChatbotPromptByLanguage(language);
       
       if (!activePrompt) {
-        return res.status(404).json({ error: 'No active prompt found' });
+        return res.status(404).json({ error: `No active prompt found for language: ${language}` });
       }
       res.json(activePrompt);
     } catch (error) {
@@ -2014,8 +2002,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       
-      // Deactivate all prompts first
-      await storage.deactivateAllChatbotPrompts();
+      // Get the prompt to find its language
+      const promptToActivate = await storage.getChatbotPrompt(id);
+      if (!promptToActivate) {
+        return res.status(404).json({ error: 'Prompt not found' });
+      }
+      
+      // Deactivate all prompts for the same language first
+      await storage.deactivateChatbotPromptsByLanguage(promptToActivate.language);
       
       // Activate the specified prompt
       const prompt = await storage.updateChatbotPrompt(id, { isActive: true });

@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Plus, Edit, Trash2, MessageSquare, CheckCircle } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -23,6 +24,7 @@ interface ChatbotPrompt {
   prompt: string;
   initialGreeting?: string;
   description?: string;
+  language: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -33,6 +35,7 @@ const promptFormSchema = z.object({
   prompt: z.string().min(10, 'Prompt must be at least 10 characters'),
   initialGreeting: z.string().optional(),
   description: z.string().optional(),
+  language: z.enum(['en', 'es'], { required_error: 'Language is required' }),
   isActive: z.boolean(),
 });
 
@@ -52,6 +55,7 @@ export default function PromptManagement() {
       prompt: '',
       initialGreeting: '',
       description: '',
+      language: 'en' as const,
       isActive: false,
     },
   });
@@ -125,6 +129,7 @@ export default function PromptManagement() {
       prompt: '',
       initialGreeting: '',
       description: '',
+      language: 'en' as const,
       isActive: false,
     });
     setIsDialogOpen(true);
@@ -137,6 +142,7 @@ export default function PromptManagement() {
       prompt: prompt.prompt,
       initialGreeting: prompt.initialGreeting || '',
       description: prompt.description || '',
+      language: prompt.language || 'en',
       isActive: prompt.isActive,
     });
     setIsDialogOpen(true);
@@ -177,7 +183,8 @@ export default function PromptManagement() {
     );
   }
 
-  const activePrompt = prompts.find(p => p.isActive);
+  const activeEnglishPrompt = prompts.find(p => p.isActive && p.language === 'en');
+  const activeSpanishPrompt = prompts.find(p => p.isActive && p.language === 'es');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -195,21 +202,42 @@ export default function PromptManagement() {
           </Button>
         </div>
 
-        {activePrompt && (
-          <Card className="mb-6 border-green-200 bg-green-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-700">
-                <CheckCircle className="w-5 h-5" />
-                Active Prompt: {activePrompt.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-green-600 text-sm mb-2">{activePrompt.description}</p>
-              <div className="bg-white rounded-lg p-3 border">
-                <p className="text-sm text-gray-700">{activePrompt.prompt.substring(0, 200)}...</p>
-              </div>
-            </CardContent>
-          </Card>
+        {(activeEnglishPrompt || activeSpanishPrompt) && (
+          <div className="space-y-4 mb-6">
+            {activeEnglishPrompt && (
+              <Card className="border-green-200 bg-green-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-700">
+                    <CheckCircle className="w-5 h-5" />
+                    Active English Prompt: {activeEnglishPrompt.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-green-600 text-sm mb-2">{activeEnglishPrompt.description}</p>
+                  <div className="bg-white rounded-lg p-3 border">
+                    <p className="text-sm text-gray-700">{activeEnglishPrompt.prompt.substring(0, 200)}...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {activeSpanishPrompt && (
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
+                    <CheckCircle className="w-5 h-5" />
+                    Active Spanish Prompt: {activeSpanishPrompt.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-blue-600 text-sm mb-2">{activeSpanishPrompt.description}</p>
+                  <div className="bg-white rounded-lg p-3 border">
+                    <p className="text-sm text-gray-700">{activeSpanishPrompt.prompt.substring(0, 200)}...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         )}
 
         {isLoading ? (
@@ -236,6 +264,9 @@ export default function PromptManagement() {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           {prompt.name}
+                          <Badge variant="outline" className="text-xs">
+                            {prompt.language === 'es' ? 'Español' : 'English'}
+                          </Badge>
                           {prompt.isActive && <Badge variant="default" className="bg-green-600">Active</Badge>}
                         </CardTitle>
                         {prompt.description && (
@@ -332,6 +363,31 @@ export default function PromptManagement() {
                         <Input placeholder="Brief description of this prompt's purpose" {...field} />
                       </FormControl>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Language</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select language" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Spanish (Español)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                      <p className="text-sm text-gray-500">
+                        Choose the language for this prompt. Only one prompt per language can be active at a time.
+                      </p>
                     </FormItem>
                   )}
                 />
