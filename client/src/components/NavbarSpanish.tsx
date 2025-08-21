@@ -60,6 +60,9 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
             <Link href="/es/ayuda" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
               Ayuda
             </Link>
+            <Link href="/es/chat" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
+              Bot
+            </Link>
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
@@ -138,6 +141,13 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
                 onClick={() => setIsMenuOpen(false)}
               >
                 Ayuda
+              </Link>
+              <Link 
+                href="/es/chat" 
+                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Bot
               </Link>
               
               <div className="pt-3 border-t border-gray-200">
