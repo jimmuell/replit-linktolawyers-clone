@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
+import { IntakeModal } from "@/components/IntakeModal";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
 import { Link } from "wouter";
@@ -14,8 +15,17 @@ export default function HomeSpanish() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
+  const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const { user, logout } = useAuth();
+
+  const handleIntakeSubmit = (data: { fullName: string; email: string; caseTypes: string[]; language?: string }) => {
+    setIsIntakeModalOpen(false);
+    // Navigate to chat with intake data
+    const dataWithLanguage = { ...data, language: 'es' }; // Add Spanish language for Spanish modal
+    const intakeData = encodeURIComponent(JSON.stringify(dataWithLanguage));
+    window.location.href = `/chat?intake=${intakeData}`;
+  };
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -104,6 +114,12 @@ export default function HomeSpanish() {
                   onClick={() => setIsQuoteModalOpen(true)}
                 >
                   ¡Obtén Una Cotización Legal Gratuita!
+                </Button>
+                <Button 
+                  className="bg-blue-600 text-white hover:bg-blue-700 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsIntakeModalOpen(true)}
+                >
+                  Chatear con Asistente Legal
                 </Button>
                 <Button 
                   variant="outline"
@@ -319,6 +335,13 @@ export default function HomeSpanish() {
       <SpanishLegalRequestForm
         isOpen={isQuoteModalOpen}
         onClose={() => setIsQuoteModalOpen(false)}
+      />
+
+      {/* Intake Modal */}
+      <IntakeModal
+        isOpen={isIntakeModalOpen}
+        onClose={() => setIsIntakeModalOpen(false)}
+        onSubmit={handleIntakeSubmit}
       />
 
       </div>

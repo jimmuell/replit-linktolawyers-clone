@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import LoginModal from "@/components/LoginModal";
+import { IntakeModal } from "@/components/IntakeModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
@@ -32,6 +33,7 @@ export default function Home() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
+  const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
 
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
@@ -60,6 +62,14 @@ export default function Home() {
   const [isCopied, setIsCopied] = useState(false);
   const { user, logout } = useAuth();
   const { toast } = useToast();
+
+  const handleIntakeSubmit = (data: { fullName: string; email: string; caseTypes: string[]; language?: string }) => {
+    setIsIntakeModalOpen(false);
+    // Navigate to chat with intake data
+    const dataWithLanguage = { ...data, language: 'en' }; // Add English language for English modal
+    const intakeData = encodeURIComponent(JSON.stringify(dataWithLanguage));
+    window.location.href = `/chat?intake=${intakeData}`;
+  };
 
   // Redirect authenticated users to appropriate dashboard
   useEffect(() => {
@@ -417,6 +427,12 @@ export default function Home() {
                   onClick={() => setIsQuoteModalOpen(true)}
                 >
                   Get A Free Legal Quote!
+                </Button>
+                <Button 
+                  className="bg-blue-600 text-white hover:bg-blue-700 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsIntakeModalOpen(true)}
+                >
+                  Chat with Legal Assistant
                 </Button>
                 <Button 
                   variant="outline"
@@ -907,6 +923,13 @@ export default function Home() {
       <TrackRequestModal
         isOpen={isTrackRequestModalOpen}
         onClose={() => setIsTrackRequestModalOpen(false)}
+      />
+
+      {/* Intake Modal */}
+      <IntakeModal
+        isOpen={isIntakeModalOpen}
+        onClose={() => setIsIntakeModalOpen(false)}
+        onSubmit={handleIntakeSubmit}
       />
 
 
