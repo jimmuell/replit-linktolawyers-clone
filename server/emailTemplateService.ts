@@ -66,7 +66,7 @@ export async function getProcessedTemplate(
  * Get template variables for legal request confirmation
  */
 export function getLegalRequestConfirmationVariables(legalRequest: any, caseTypeData?: any): TemplateVariables {
-  const baseUrl = process.env.REPLIT_DOMAINS || 'https://link-to-lawyers-clone-JamesMueller.replit.app';
+  const baseUrl = 'https://link-to-lawyers-clone-jamesmueller.replit.app';
   const quotesUrl = `${baseUrl}/quotes/${legalRequest.requestNumber}`;
   
   return {

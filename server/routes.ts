@@ -2443,7 +2443,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       let requestNumber = '';
       if (recentLegalRequest) {
         requestNumber = recentLegalRequest.requestNumber;
-        trackingLink = `${process.env.REPLIT_DOMAINS || 'https://link-to-lawyers-clone-JamesMueller.replit.app'}/quotes/${requestNumber}`;
+        trackingLink = `https://link-to-lawyers-clone-jamesmueller.replit.app/quotes/${requestNumber}`;
       }
 
       // Create email HTML using the provided template structure
@@ -2711,7 +2711,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       let quotesButton = '';
       if (recentLegalRequest) {
         requestNumber = recentLegalRequest.requestNumber;
-        const baseUrl = process.env.REPLIT_DOMAINS || 'https://link-to-lawyers-clone-jamesmueller.replit.app';
+        const baseUrl = 'https://link-to-lawyers-clone-jamesmueller.replit.app';
         quotesUrl = `${baseUrl}/quotes/${requestNumber}`;
         quotesButton = `<div style="text-align: center; margin: 30px 0;">
           <a href="${quotesUrl}" 
