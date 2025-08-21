@@ -158,12 +158,7 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
         )}
       </nav>
       
-      {/* Spanish Intake Modal */}
-      <IntakeModalSpanish
-        isOpen={isIntakeModalOpen}
-        onClose={() => setIsIntakeModalOpen(false)}
-        onStartChat={handleStartChat}
-      />
+
     </header>
   );
 }
