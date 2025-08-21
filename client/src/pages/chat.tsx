@@ -18,7 +18,7 @@ const ChatPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Check if we're on Spanish route
+  // Check if we're on Spanish route or have Spanish content
   useEffect(() => {
     const path = window.location.pathname;
     if (path.includes('/es') || path.includes('/chat-es')) {
@@ -27,6 +27,23 @@ const ChatPage: React.FC = () => {
       setLanguage('en');
     }
   }, []);
+
+  // Detect language from conversation content
+  useEffect(() => {
+    if (messages.length > 0) {
+      const hasSpanishContent = messages.some(msg => 
+        msg.content.includes('Hola, mi nombre es') || 
+        msg.content.includes('mi correo electrónico es') ||
+        msg.content.includes('estoy ubicado en') ||
+        msg.content.includes('Necesito ayuda con') ||
+        msg.content.includes('Resumen de Admisión de Abogado')
+      );
+      
+      if (hasSpanishContent && language !== 'es') {
+        setLanguage('es');
+      }
+    }
+  }, [messages, language]);
 
   // Fetch active prompt for initial greeting - language specific
   const { data: activePrompt } = useQuery<{
@@ -218,13 +235,22 @@ const ChatPage: React.FC = () => {
 
   const handleExportPDF = async () => {
     if (!messages.length) {
-      alert('No conversation to export');
+      const alertText = language === 'es' ? 'No hay conversación para exportar' : 'No conversation to export';
+      alert(alertText);
       return;
     }
 
     setIsExportingPDF(true);
     
     try {
+      // Detect if this is a Spanish conversation
+      const isSpanishConversation = messages.some(msg => 
+        msg.content.includes('Hola, mi nombre es') || 
+        msg.content.includes('Necesito ayuda con') ||
+        msg.content.includes('estoy ubicado en') ||
+        msg.content.includes('Resumen de Admisión de Abogado')
+      );
+
       // Create PDF document
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -245,22 +271,47 @@ const ChatPage: React.FC = () => {
         return doc.splitTextToSize(text, maxWidth);
       };
 
+      // Language-specific text
+      const texts = isSpanishConversation ? {
+        title: 'Reporte de Conversación del Asistente Legal',
+        generatedOn: 'Generado el:',
+        conversationId: 'ID de Conversación:',
+        caseSummary: 'Resumen del Caso',
+        clientInfo: 'Información del Cliente:',
+        summaryText: 'Esta conversación involucró asistencia legal sobre asuntos de inmigración. El cliente se comunicó con el asistente legal de IA para discutir su caso y recibir orientación sobre procedimientos de ley de inmigración.',
+        client: 'Cliente',
+        assistant: 'Asistente Legal',
+        footerLeft: 'LinkToLawyers - Reporte del Asistente Legal',
+        page: 'Página'
+      } : {
+        title: 'Legal Assistant Conversation Report',
+        generatedOn: 'Generated on:',
+        conversationId: 'Conversation ID:',
+        caseSummary: 'Case Summary',
+        clientInfo: 'Client Information:',
+        summaryText: 'This conversation involved legal assistance regarding immigration matters. The client engaged with the AI legal assistant to discuss their case and receive guidance on immigration law procedures.',
+        client: 'Client',
+        assistant: 'Legal Assistant',
+        footerLeft: 'LinkToLawyers - Legal Assistant Report',
+        page: 'Page'
+      };
+
       // Add header
       doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
-      doc.text('Legal Assistant Conversation Report', margin, yPosition);
+      doc.text(texts.title, margin, yPosition);
       yPosition += 15;
 
       // Add date and time
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       const now = new Date();
-      doc.text(`Generated on: ${now.toLocaleDateString()} at ${now.toLocaleTimeString()}`, margin, yPosition);
+      doc.text(`${texts.generatedOn} ${now.toLocaleDateString()} at ${now.toLocaleTimeString()}`, margin, yPosition);
       yPosition += 10;
 
       // Add conversation ID if available
       if (conversationId) {
-        doc.text(`Conversation ID: ${conversationId}`, margin, yPosition);
+        doc.text(`${texts.conversationId} ${conversationId}`, margin, yPosition);
         yPosition += 15;
       }
 
@@ -275,31 +326,32 @@ const ChatPage: React.FC = () => {
         const content = firstUserMessage.content;
         if (content.includes('my name is') && content.includes('email is')) {
           userInfo = content;
+        } else if (content.includes('mi nombre es') && content.includes('mi correo electrónico es')) {
+          userInfo = content;
         }
       }
 
       // Add case summary section
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Case Summary', margin, yPosition);
+      doc.text(texts.caseSummary, margin, yPosition);
       yPosition += 8;
       
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       
       if (userInfo) {
-        const wrappedInfo = wrapText(`Client Information: ${userInfo}`, pageWidth - 2 * margin);
+        const wrappedInfo = wrapText(`${texts.clientInfo} ${userInfo}`, pageWidth - 2 * margin);
         doc.text(wrappedInfo, margin, yPosition);
         yPosition += wrappedInfo.length * 5 + 5;
       }
 
       // Generate case summary from conversation
       const conversationText = messages.map(msg => 
-        `${msg.role === 'user' ? 'Client' : 'Assistant'}: ${msg.content}`
+        `${msg.role === 'user' ? texts.client : texts.assistant}: ${msg.content}`
       ).join(' ').slice(0, 500);
 
-      const summaryText = `This conversation involved legal assistance regarding immigration matters. The client engaged with the AI legal assistant to discuss their case and receive guidance on immigration law procedures.`;
-      const wrappedSummary = wrapText(summaryText, pageWidth - 2 * margin);
+      const wrappedSummary = wrapText(texts.summaryText, pageWidth - 2 * margin);
       doc.text(wrappedSummary, margin, yPosition);
       yPosition += wrappedSummary.length * 5 + 15;
 
@@ -315,7 +367,7 @@ const ChatPage: React.FC = () => {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         
-        const role = msg.role === 'user' ? 'Client' : 'Legal Assistant';
+        const role = msg.role === 'user' ? texts.client : texts.assistant;
         const timestamp = new Date(msg.createdAt || Date.now()).toLocaleString();
         
         checkNewPage(15);
@@ -343,8 +395,8 @@ const ChatPage: React.FC = () => {
         doc.setPage(i);
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
-        doc.text('LinkToLawyers - Legal Assistant Report', margin, pageHeight - 10);
+        doc.text(`${texts.page} ${i} of ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
+        doc.text(texts.footerLeft, margin, pageHeight - 10);
       }
 
       // Generate filename with timestamp

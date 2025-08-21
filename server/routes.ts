@@ -2692,12 +2692,28 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      // Extract user information from intake message
-      const nameMatch = intakeMessage.match(/my name is ([^,and]+)/i);
-      const emailMatch = intakeMessage.match(/my email is ([^\s,]+)/i);
-      const phoneMatch = intakeMessage.match(/my phone number is ([^\s,]+)/i);
-      const locationMatch = intakeMessage.match(/I am located in ([^,]+)/i);
-      const caseTypeMatch = intakeMessage.match(/I need help with ([^,]+)/i);
+      // Detect if this is a Spanish conversation
+      const isSpanishConversation = intakeMessage.includes('mi nombre es') || 
+                                    intakeMessage.includes('mi correo electrónico es') ||
+                                    intakeMessage.includes('estoy ubicado en') ||
+                                    intakeMessage.includes('Necesito ayuda con');
+
+      // Extract user information from intake message based on language
+      let nameMatch, emailMatch, phoneMatch, locationMatch, caseTypeMatch;
+      
+      if (isSpanishConversation) {
+        nameMatch = intakeMessage.match(/mi nombre es ([^,y]+)/i);
+        emailMatch = intakeMessage.match(/mi correo electrónico es ([^\s,]+)/i);
+        phoneMatch = intakeMessage.match(/mi número de teléfono es ([^\s,]+)/i);
+        locationMatch = intakeMessage.match(/estoy ubicado en ([^,]+)/i);
+        caseTypeMatch = intakeMessage.match(/Necesito ayuda con ([^,]+)/i);
+      } else {
+        nameMatch = intakeMessage.match(/my name is ([^,and]+)/i);
+        emailMatch = intakeMessage.match(/my email is ([^\s,]+)/i);
+        phoneMatch = intakeMessage.match(/my phone number is ([^\s,]+)/i);
+        locationMatch = intakeMessage.match(/I am located in ([^,]+)/i);
+        caseTypeMatch = intakeMessage.match(/I need help with ([^,]+)/i);
+      }
 
       if (!nameMatch || !emailMatch) {
         return res.status(400).json({ error: "Unable to extract user information from conversation" });
@@ -2709,19 +2725,30 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       const location = locationMatch ? locationMatch[1].trim() : '';
       const caseType = caseTypeMatch ? caseTypeMatch[1].trim() : '';
 
-      // Get the latest email template if templateId not provided
+      // Get the appropriate email template based on language
       let template;
       if (templateId) {
         template = await storage.getEmailTemplate(templateId);
       } else {
-        // Get the most recent template
+        // Get language-specific template
         const allTemplates = await storage.getAllEmailTemplates();
         const activeTemplates = allTemplates.filter(t => t.isActive);
         if (activeTemplates.length === 0) {
           return res.status(404).json({ error: "No active email templates found" });
         }
-        // Sort by creation date and get the most recent
-        template = activeTemplates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+        
+        // Find appropriate template based on language
+        if (isSpanishConversation) {
+          template = activeTemplates.find(t => t.name === 'Chat Confirmation Spanish') ||
+                     activeTemplates.find(t => t.name.toLowerCase().includes('spanish'));
+        } else {
+          template = activeTemplates.find(t => t.name === 'Chat Confirmation');
+        }
+        
+        // Fallback to most recent template if language-specific not found
+        if (!template) {
+          template = activeTemplates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+        }
       }
 
       if (!template) {
