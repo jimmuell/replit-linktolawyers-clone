@@ -15,12 +15,12 @@ interface IntakeModalSpanishProps {
 
 export default function IntakeModalSpanish({ isOpen, onClose, onStartChat }: IntakeModalSpanishProps) {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phoneNumber: '',
-    city: '',
-    state: '',
-    caseTypes: [] as string[]
+    fullName: 'Jim Mueller',
+    email: 'jimmuell@aol.com',
+    phoneNumber: '9203625555',
+    city: 'Oshkosh',
+    state: 'WI',
+    caseTypes: ['family-immigration'] as string[]
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
