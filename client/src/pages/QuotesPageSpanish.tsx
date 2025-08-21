@@ -280,36 +280,42 @@ export default function QuotesPageSpanish() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <span className="font-medium text-gray-700">Tipo de Caso:</span>
-                <p className="text-gray-900">{getCaseTypeDisplayName((request as any).data.caseType)}</p>
+                <span className="text-sm font-medium text-gray-600">Tipo de Caso:</span>
+                <p className="text-sm text-gray-900 mt-1">{getCaseTypeDisplayName((request as any).data.caseType)}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-700">Correo Electrónico:</span>
-                <p className="text-gray-900">{(request as any).data.email}</p>
+                <span className="text-sm font-medium text-gray-600">Correo Electrónico:</span>
+                <p className="text-sm text-gray-900 mt-1 break-all">{(request as any).data.email}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-700">Teléfono:</span>
-                <p className="text-gray-900">{(request as any).data.phoneNumber}</p>
+                <span className="text-sm font-medium text-gray-600">Teléfono:</span>
+                <p className="text-sm text-gray-900 mt-1">{(request as any).data.phoneNumber}</p>
+              </div>
+              <div>
+                <span className="text-sm font-medium text-gray-600">Ubicación:</span>
+                <p className="text-sm text-gray-900 mt-1">{(request as any).data.location || 'No especificada'}</p>
               </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div>
-                <span className="font-medium text-gray-700">Ubicación:</span>
-                <p className="text-gray-900">{(request as any).data.location || 'No especificada'}</p>
+                <span className="text-sm font-medium text-gray-600">Fecha de Solicitud:</span>
+                <p className="text-sm text-gray-900 mt-1">
+                  {new Date((request as any).data.createdAt).toLocaleDateString('es-ES')}
+                </p>
               </div>
               <div>
-                <span className="font-medium text-gray-700">Fecha de Solicitud:</span>
-                <p className="text-gray-900">
-                  {new Date((request as any).data.createdAt).toLocaleDateString('es-ES')} a las {new Date((request as any).data.createdAt).toLocaleTimeString('es-ES')}
+                <span className="text-sm font-medium text-gray-600">Hora de Solicitud:</span>
+                <p className="text-sm text-gray-900 mt-1">
+                  {new Date((request as any).data.createdAt).toLocaleTimeString('es-ES')}
                 </p>
               </div>
             </div>
             <div className="mt-4">
-              <span className="font-medium text-gray-700">Descripción del Caso:</span>
-              <p className="text-gray-900 mt-1">{(request as any).data.caseDescription}</p>
+              <span className="text-sm font-medium text-gray-600">Descripción del Caso:</span>
+              <p className="text-sm text-gray-900 mt-1">{(request as any).data.caseDescription}</p>
             </div>
           </CardContent>
         </Card>
