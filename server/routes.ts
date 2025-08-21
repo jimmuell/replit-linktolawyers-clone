@@ -2162,17 +2162,20 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
   // Intake data submission endpoint
   app.post("/api/chat/intake", async (req, res) => {
     try {
-      const { fullName, email, caseTypes, phoneNumber, city, state } = req.body;
+      const { fullName, email, caseTypes, phoneNumber, city, state, language } = req.body;
       
       if (!fullName || !email || !caseTypes || caseTypes.length === 0) {
         return res.status(400).json({ error: "Missing required intake information" });
       }
 
+      // Detect language from request or default to English
+      const userLanguage = language || 'en';
+
       // Create a new conversation
       const conversation = await storage.createConversation({ title: `${fullName} - Immigration Intake` });
       
-      // Get active prompt for system context
-      const activePrompt = await storage.getActiveChatbotPrompt();
+      // Get active prompt for system context based on language
+      const activePrompt = await storage.getActiveChatbotPromptByLanguage(userLanguage);
       const baseSystemPrompt = activePrompt?.prompt || "You are a helpful legal assistant chatbot for LinkToLawyers.";
       
       // Create intake message with the user's information

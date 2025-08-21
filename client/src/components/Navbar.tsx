@@ -23,13 +23,14 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
 
   const { user, logout } = useAuth();
 
-  const handleIntakeSubmit = (data: { fullName: string; email: string; caseTypes: string[] }) => {
+  const handleIntakeSubmit = (data: { fullName: string; email: string; caseTypes: string[]; language?: string }) => {
     setIsIntakeModalOpen(false);
     if (onStartIntake) {
       onStartIntake(data);
     } else {
       // Default behavior: navigate to chat with intake data
-      const intakeData = encodeURIComponent(JSON.stringify(data));
+      const dataWithLanguage = { ...data, language: 'en' }; // Add English language for English modal
+      const intakeData = encodeURIComponent(JSON.stringify(dataWithLanguage));
       window.location.href = `/chat?intake=${intakeData}`;
     }
   };
