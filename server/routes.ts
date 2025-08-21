@@ -46,11 +46,12 @@ async function createLegalRequestFromConversation(conversationId: string, summar
     // Get all messages from the conversation to extract user information
     const messages = await storage.getMessagesByConversationId(conversationId);
     
-    // Find the initial intake message to extract user details
+    // Find the initial intake message to extract user details (English or Spanish)
     const intakeMessage = messages.find(msg => 
-      msg.role === 'user' && 
-      msg.content.includes('Hello, my name is') && 
-      msg.content.includes('I need help with')
+      msg.role === 'user' && (
+        (msg.content.includes('Hello, my name is') && msg.content.includes('I need help with')) ||
+        (msg.content.includes('Hola, mi nombre es') && msg.content.includes('Necesito ayuda con'))
+      )
     );
 
     if (!intakeMessage) {
@@ -58,12 +59,24 @@ async function createLegalRequestFromConversation(conversationId: string, summar
       return;
     }
 
-    // Extract information from the intake message
-    const nameMatch = intakeMessage.content.match(/my name is ([^,and]+)/i);
-    const emailMatch = intakeMessage.content.match(/my email is ([^\s,]+)/i);
-    const phoneMatch = intakeMessage.content.match(/my phone number is ([^\s,]+)/i);
-    const locationMatch = intakeMessage.content.match(/I am located in ([^.]+)/i);
-    const caseTypeMatch = intakeMessage.content.match(/I need help with ([^.]+)/i);
+    // Extract information from the intake message (English or Spanish)
+    const isSpanish = intakeMessage.content.includes('Hola, mi nombre es');
+    
+    let nameMatch, emailMatch, phoneMatch, locationMatch, caseTypeMatch;
+    
+    if (isSpanish) {
+      nameMatch = intakeMessage.content.match(/mi nombre es ([^,y]+)/i);
+      emailMatch = intakeMessage.content.match(/mi correo electrónico es ([^\s,]+)/i);
+      phoneMatch = intakeMessage.content.match(/mi número de teléfono es ([^\s,]+)/i);
+      locationMatch = intakeMessage.content.match(/estoy ubicado en ([^.]+)/i);
+      caseTypeMatch = intakeMessage.content.match(/Necesito ayuda con ([^.]+)/i);
+    } else {
+      nameMatch = intakeMessage.content.match(/my name is ([^,and]+)/i);
+      emailMatch = intakeMessage.content.match(/my email is ([^\s,]+)/i);
+      phoneMatch = intakeMessage.content.match(/my phone number is ([^\s,]+)/i);
+      locationMatch = intakeMessage.content.match(/I am located in ([^.]+)/i);
+      caseTypeMatch = intakeMessage.content.match(/I need help with ([^.]+)/i);
+    }
 
     if (!nameMatch || !emailMatch || !caseTypeMatch) {
       console.log('Missing required information from intake message');
@@ -2209,22 +2222,44 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         }
       }).join(', ');
 
-      // Build intake message with optional fields
-      let intakeMessage = `Hello, my name is ${fullName} and my email is ${email}`;
+      // Build intake message with optional fields based on language
+      let intakeMessage: string;
       
-      if (phoneNumber) {
-        intakeMessage += ` and my phone number is ${phoneNumber}`;
+      if (userLanguage === 'es') {
+        // Spanish format
+        intakeMessage = `Hola, mi nombre es ${fullName} y mi correo electrónico es ${email}`;
+        
+        if (phoneNumber) {
+          intakeMessage += `, mi número de teléfono es ${phoneNumber}`;
+        }
+        
+        if (city && state) {
+          intakeMessage += `, estoy ubicado en ${city}, ${state}`;
+        } else if (city) {
+          intakeMessage += `, estoy ubicado en ${city}`;
+        } else if (state) {
+          intakeMessage += `, estoy ubicado en ${state}`;
+        }
+        
+        intakeMessage += `. Necesito ayuda con ${caseTypeText}.`;
+      } else {
+        // English format
+        intakeMessage = `Hello, my name is ${fullName} and my email is ${email}`;
+        
+        if (phoneNumber) {
+          intakeMessage += ` and my phone number is ${phoneNumber}`;
+        }
+        
+        if (city && state) {
+          intakeMessage += `. I am located in ${city}, ${state}`;
+        } else if (city) {
+          intakeMessage += `. I am located in ${city}`;
+        } else if (state) {
+          intakeMessage += `. I am located in ${state}`;
+        }
+        
+        intakeMessage += `. I need help with ${caseTypeText}.`;
       }
-      
-      if (city && state) {
-        intakeMessage += `. I am located in ${city}, ${state}`;
-      } else if (city) {
-        intakeMessage += `. I am located in ${city}`;
-      } else if (state) {
-        intakeMessage += `. I am located in ${state}`;
-      }
-      
-      intakeMessage += `. I need help with ${caseTypeText}.`;
       
       // Save user message
       await storage.createMessage({

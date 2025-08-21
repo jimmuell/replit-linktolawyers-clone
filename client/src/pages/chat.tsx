@@ -185,8 +185,11 @@ const ChatPage: React.FC = () => {
           
           // Add automatic greeting message from assistant using active prompt greeting or fallback
           setTimeout(async () => {
-            const greetingContent = activePrompt?.initialGreeting || 
-              "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?";
+            const fallbackGreeting = language === 'es' 
+              ? "¡Hola! Soy tu Asistente Legal de IA. Estoy aquí para ayudarte con preguntas sobre ley de inmigración, nuestros servicios legales, o cualquier otro asunto legal que quieras discutir. ¿Cómo puedo ayudarte hoy?"
+              : "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?";
+            
+            const greetingContent = activePrompt?.initialGreeting || fallbackGreeting;
             
             await fetch(`/api/conversations/${newConversationId}/messages`, {
               method: "POST",
@@ -523,8 +526,11 @@ const ChatPage: React.FC = () => {
       setConversationId(newConversationId);
       
       // Add automatic greeting message from assistant using active prompt greeting or fallback
-      const greetingContent = activePrompt?.initialGreeting || 
-        "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?";
+      const fallbackGreeting = language === 'es' 
+        ? "¡Hola! Soy tu Asistente Legal de IA. Estoy aquí para ayudarte con preguntas sobre ley de inmigración, nuestros servicios legales, o cualquier otro asunto legal que quieras discutir. ¿Cómo puedo ayudarte hoy?"
+        : "Hello! I'm your Legal Assistant AI. I'm here to help you with questions about immigration law, our legal services, or any other legal matters you'd like to discuss. How can I assist you today?";
+      
+      const greetingContent = activePrompt?.initialGreeting || fallbackGreeting;
       
       await fetch(`/api/conversations/${newConversationId}/messages`, {
         method: "POST",
