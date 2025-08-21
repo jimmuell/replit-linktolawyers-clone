@@ -47,10 +47,7 @@ const CaseDetailsPage: React.FC = () => {
     // TODO: Implement PDF download functionality
   };
 
-  const handleNewConsultation = () => {
-    console.log('New consultation clicked');
-    // TODO: Navigate to consultation booking
-  };
+
 
   if (isLoading) {
     return (
@@ -236,14 +233,6 @@ const CaseDetailsPage: React.FC = () => {
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download PDF
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={handleNewConsultation}
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  New Consultation
                 </Button>
               </CardContent>
             </Card>
