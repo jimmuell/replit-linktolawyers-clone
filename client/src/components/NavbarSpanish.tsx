@@ -6,6 +6,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
+import IntakeModalSpanish from "@/components/IntakeModalSpanish";
 
 interface NavbarSpanishProps {
   activeSection: string;
@@ -16,7 +17,14 @@ interface NavbarSpanishProps {
 
 export default function NavbarSpanish({ activeSection, scrollToSection, setIsLoginModalOpen, hideUserDropdown = false }: NavbarSpanishProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const { user, logout } = useAuth();
+
+  const handleStartChat = (intakeData: any) => {
+    // Navigate to Spanish chat with intake data
+    const intakeParam = encodeURIComponent(JSON.stringify(intakeData));
+    window.location.href = `/es/chat?intake=${intakeParam}`;
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50 backdrop-blur-sm border-b border-gray-200">
@@ -60,9 +68,12 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
             <Link href="/es/ayuda" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
               Ayuda
             </Link>
-            <Link href="/es/chat" className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors">
+            <button
+              onClick={() => setIsIntakeModalOpen(true)}
+              className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            >
               Bot
-            </Link>
+            </button>
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
@@ -142,13 +153,15 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
               >
                 Ayuda
               </Link>
-              <Link 
-                href="/es/chat" 
-                className="block px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+              <button
+                onClick={() => {
+                  setIsIntakeModalOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Bot
-              </Link>
+              </button>
               
               <div className="pt-3 border-t border-gray-200">
                 <Link href="/" onClick={() => setIsMenuOpen(false)}>
@@ -161,6 +174,13 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
           </div>
         )}
       </nav>
+      
+      {/* Spanish Intake Modal */}
+      <IntakeModalSpanish
+        isOpen={isIntakeModalOpen}
+        onClose={() => setIsIntakeModalOpen(false)}
+        onStartChat={handleStartChat}
+      />
     </header>
   );
 }
