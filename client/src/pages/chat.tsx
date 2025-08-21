@@ -28,23 +28,6 @@ const ChatPage: React.FC = () => {
     }
   }, []);
 
-  // Detect language from conversation content
-  useEffect(() => {
-    if (messages.length > 0) {
-      const hasSpanishContent = messages.some(msg => 
-        msg.content.includes('Hola, mi nombre es') || 
-        msg.content.includes('mi correo electrónico es') ||
-        msg.content.includes('estoy ubicado en') ||
-        msg.content.includes('Necesito ayuda con') ||
-        msg.content.includes('Resumen de Admisión de Abogado')
-      );
-      
-      if (hasSpanishContent && language !== 'es') {
-        setLanguage('es');
-      }
-    }
-  }, [messages, language]);
-
   // Fetch active prompt for initial greeting - language specific
   const { data: activePrompt } = useQuery<{
     id: number;
@@ -75,6 +58,23 @@ const ChatPage: React.FC = () => {
     isTyping,
     streamingMessage
   } = useChat(conversationId);
+
+  // Detect language from conversation content
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      const hasSpanishContent = messages.some(msg => 
+        msg.content.includes('Hola, mi nombre es') || 
+        msg.content.includes('mi correo electrónico es') ||
+        msg.content.includes('estoy ubicado en') ||
+        msg.content.includes('Necesito ayuda con') ||
+        msg.content.includes('Resumen de Admisión de Abogado')
+      );
+      
+      if (hasSpanishContent && language !== 'es') {
+        setLanguage('es');
+      }
+    }
+  }, [messages, language]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
