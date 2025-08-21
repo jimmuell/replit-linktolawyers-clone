@@ -54,6 +54,7 @@ function Router() {
       <Route path="/email-templates" component={EmailTemplatesPage} />
       <Route path="/prompt-management" component={PromptManagement} />
       <Route path="/chat" component={ChatPage} />
+      <Route path="/es/chat" component={ChatPage} />
       <Route path="/free-resources" component={FreeResources} />
       <Route path="/es/recursos-gratuitos" component={FreeResourcesSpanish} />
       <Route path="/help" component={Help} />

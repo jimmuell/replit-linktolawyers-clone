@@ -1945,7 +1945,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get active chatbot prompt (public endpoint for chatbot)
   app.get('/api/chatbot-prompts/active', async (req, res) => {
     try {
-      const activePrompt = await storage.getActiveChatbotPrompt();
+      const language = req.query.lang as string || 'en';
+      let activePrompt;
+      
+      if (language === 'es') {
+        // Get Spanish prompt
+        const allPrompts = await storage.getAllChatbotPrompts();
+        activePrompt = allPrompts.find(p => p.name.includes('Español') || p.name.includes('Spanish'));
+        
+        if (!activePrompt) {
+          // Fallback to English if no Spanish prompt found
+          activePrompt = await storage.getActiveChatbotPrompt();
+        }
+      } else {
+        // Get English prompt (default)
+        activePrompt = await storage.getActiveChatbotPrompt();
+      }
+      
       if (!activePrompt) {
         return res.status(404).json({ error: 'No active prompt found' });
       }

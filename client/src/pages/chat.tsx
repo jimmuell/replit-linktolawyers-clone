@@ -13,11 +13,22 @@ const ChatPage: React.FC = () => {
   const [isClearing, setIsClearing] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   const [hasCheckedLegalRequest, setHasCheckedLegalRequest] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'es'>('en');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch active prompt for initial greeting
+  // Check if we're on Spanish route
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.includes('/es') || path.includes('/chat-es')) {
+      setLanguage('es');
+    } else {
+      setLanguage('en');
+    }
+  }, []);
+
+  // Fetch active prompt for initial greeting - language specific
   const { data: activePrompt } = useQuery<{
     id: number;
     name: string;
@@ -28,7 +39,14 @@ const ChatPage: React.FC = () => {
     createdAt: string;
     updatedAt: string;
   }>({
-    queryKey: ['/api/chatbot-prompts/active'],
+    queryKey: ['/api/chatbot-prompts/active', language],
+    queryFn: async () => {
+      const response = await fetch(`/api/chatbot-prompts/active?lang=${language}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch prompt');
+      return response.json();
+    },
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
@@ -72,8 +90,10 @@ const ChatPage: React.FC = () => {
               const result = await response.json();
               if (result.hasLegalRequest) {
                 toast({
-                  title: "Legal Request Created! 📋",
-                  description: `Your case has been documented as ${result.requestNumber}. You'll receive an email confirmation shortly.`,
+                  title: language === 'es' ? "¡Solicitud Legal Creada! 📋" : "Legal Request Created! 📋",
+                  description: language === 'es' 
+                    ? `Su caso ha sido documentado como ${result.requestNumber}. Recibirá una confirmación por correo electrónico en breve.`
+                    : `Your case has been documented as ${result.requestNumber}. You'll receive an email confirmation shortly.`,
                   duration: 8000,
                 });
                 setHasCheckedLegalRequest(true);
@@ -384,8 +404,10 @@ const ChatPage: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         toast({
-          title: "Template Sent Successfully! 📧",
-          description: `Template "${result.templateName}" sent to ${result.recipientEmail}`,
+          title: language === 'es' ? "¡Plantilla Enviada Exitosamente! 📧" : "Template Sent Successfully! 📧",
+          description: language === 'es' 
+            ? `Plantilla "${result.templateName}" enviada a ${result.recipientEmail}`
+            : `Template "${result.templateName}" sent to ${result.recipientEmail}`,
           duration: 6000,
         });
       } else {
@@ -454,7 +476,9 @@ const ChatPage: React.FC = () => {
               </Link>
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-6 h-6 text-blue-600" />
-                <h1 className="text-xl font-semibold text-gray-900">Legal Assistant</h1>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  {language === 'es' ? 'Asistente Legal' : 'Legal Assistant'}
+                </h1>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -470,7 +494,9 @@ const ChatPage: React.FC = () => {
                 ) : (
                   <FileText className="w-4 h-4 mr-1" />
                 )}
-                {isExportingPDF ? "Generating..." : "Export PDF"}
+                {isExportingPDF 
+                  ? (language === 'es' ? "Generando..." : "Generating...") 
+                  : (language === 'es' ? "Exportar PDF" : "Export PDF")}
               </Button>
 
               <Button 
@@ -480,7 +506,7 @@ const ChatPage: React.FC = () => {
                 className="text-gray-600 hover:text-gray-800"
               >
                 <File className="w-4 h-4 mr-1" />
-                Send Template
+                {language === 'es' ? 'Enviar Plantilla' : 'Send Template'}
               </Button>
               <Button 
                 variant="outline" 
@@ -494,7 +520,9 @@ const ChatPage: React.FC = () => {
                 ) : (
                   <Trash2 className="w-4 h-4 mr-1" />
                 )}
-                {isClearing ? "Clearing..." : "Clear"}
+                {isClearing 
+                  ? (language === 'es' ? "Borrando..." : "Clearing...") 
+                  : (language === 'es' ? "Borrar" : "Clear")}
               </Button>
             </div>
           </div>
@@ -576,7 +604,9 @@ const ChatPage: React.FC = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about immigration law, our services, or any legal questions..."
+                placeholder={language === 'es' 
+                  ? "Pregunta sobre leyes de inmigración, nuestros servicios, o cualquier pregunta legal..."
+                  : "Ask about immigration law, our services, or any legal questions..."}
                 className="w-full min-h-12 max-h-32 resize-none rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
                 disabled={isTyping}
                 rows={1}
@@ -592,14 +622,16 @@ const ChatPage: React.FC = () => {
           </div>
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-gray-500">
-              Press Enter to send, Shift+Enter for new line
+              {language === 'es' 
+                ? "Presiona Enter para enviar, Shift+Enter para nueva línea"
+                : "Press Enter to send, Shift+Enter for new line"}
             </p>
             {isTyping && (
               <p className="text-xs text-blue-600 flex items-center gap-1">
                 <span className="inline-block w-2 h-2 bg-blue-600 rounded-full animate-bounce"></span>
                 <span className="inline-block w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></span>
                 <span className="inline-block w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
-                AI is typing...
+                {language === 'es' ? 'IA está escribiendo...' : 'AI is typing...'}
               </p>
             )}
           </div>

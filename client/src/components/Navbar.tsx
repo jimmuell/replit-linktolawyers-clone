@@ -150,7 +150,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 Sign In
               </Button>
             )}
-            <Link href="/es" className="text-gray-700 hover:text-primary transition-colors">
+            <Link href="/es/chat" className="text-gray-700 hover:text-primary transition-colors">
               <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-6">
                 Español
               </Button>
