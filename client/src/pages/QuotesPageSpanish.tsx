@@ -297,7 +297,7 @@ export default function QuotesPageSpanish() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
               <div>
-                <span className="text-sm font-medium text-gray-600">Ubicación:</span>
+                <span className="text-sm font-medium text-gray-600">Ciudad, Estado:</span>
                 <p className="text-sm text-gray-900 mt-1">{(request as any).data.location || 'No especificada'}</p>
               </div>
               <div>
