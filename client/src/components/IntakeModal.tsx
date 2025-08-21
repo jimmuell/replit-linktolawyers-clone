@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClipboardList } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface IntakeFormData {
   fullName: string;
@@ -22,6 +23,9 @@ interface IntakeModalProps {
 }
 
 export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
+  const [location] = useLocation();
+  const isSpanish = location.startsWith('/es');
+
   const [formData, setFormData] = useState<IntakeFormData>({
     fullName: 'Jim Mueller',
     email: 'jimmuell@aol.com',
@@ -33,11 +37,55 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const caseTypeOptions = [
+  const caseTypeOptions = isSpanish ? [
+    { id: 'family', label: 'Inmigración Familiar' },
+    { id: 'asylum', label: 'Asilo' },
+    { id: 'naturalization', label: 'Naturalización / Ciudadanía' }
+  ] : [
     { id: 'family', label: 'Family Immigration' },
     { id: 'asylum', label: 'Asylum' },
     { id: 'naturalization', label: 'Naturalization / Citizenship' }
   ];
+
+  const labels = isSpanish ? {
+    title: 'Formulario de Admisión',
+    subtitle: 'Cuéntanos sobre tu caso legal',
+    fullName: 'Nombre Completo',
+    email: 'Correo Electrónico',
+    phoneNumber: 'Número de Teléfono',
+    city: 'Ciudad',
+    state: 'Estado',
+    caseType: 'Tipo de Caso',
+    continueButton: 'Continuar al Chat',
+    cancelButton: 'Cancelar',
+    selectAtLeastOne: 'Por favor selecciona al menos un tipo de caso',
+    fullNameRequired: 'El nombre completo es requerido',
+    emailRequired: 'La dirección de correo electrónico es requerida',
+    emailInvalid: 'Por favor ingresa una dirección de correo válida',
+    optional: '(opcional)',
+    fullNamePlaceholder: 'Ingresa tu nombre completo',
+    emailPlaceholder: 'Ingresa tu correo electrónico',
+    phonePlaceholder: 'Ingresa tu número de teléfono'
+  } : {
+    title: 'Intake Form',
+    subtitle: 'Tell us about your legal case',
+    fullName: 'Full Name',
+    email: 'Email Address',
+    phoneNumber: 'Phone Number',
+    city: 'City',
+    state: 'State',
+    caseType: 'Case Type',
+    continueButton: 'Continue to Chat',
+    cancelButton: 'Cancel',
+    selectAtLeastOne: 'Please select at least one case type',
+    fullNameRequired: 'Full name is required',
+    emailRequired: 'Email address is required',
+    emailInvalid: 'Please enter a valid email address',
+    optional: '(optional)',
+    fullNamePlaceholder: 'Enter your full name',
+    emailPlaceholder: 'Enter your email address',
+    phonePlaceholder: 'Enter your phone number'
+  };
 
   const handleCaseTypeChange = (caseTypeId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -52,17 +100,17 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
     const newErrors: Record<string, string> = {};
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
+      newErrors.fullName = labels.fullNameRequired;
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email address is required';
+      newErrors.email = labels.emailRequired;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = labels.emailInvalid;
     }
 
     if (formData.caseTypes.length === 0) {
-      newErrors.caseTypes = 'Please select at least one case type';
+      newErrors.caseTypes = labels.selectAtLeastOne;
     }
 
     setErrors(newErrors);
@@ -109,10 +157,10 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
             <ClipboardList className="w-8 h-8 text-yellow-600" />
           </div>
           <DialogTitle className="text-xl font-bold text-gray-900 text-center">
-            Start Your Immigration Assistant Chat
+            {labels.title}
           </DialogTitle>
           <p className="text-gray-600 mt-2 text-center text-sm">
-            Please provide your basic information to get started
+            {labels.subtitle}
           </p>
         </DialogHeader>
 
@@ -120,12 +168,12 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
           {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="fullName" className="text-gray-700 font-medium">
-              Full Name <span className="text-red-500">*</span>
+              {labels.fullName} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="fullName"
               type="text"
-              placeholder="Enter your full name"
+              placeholder={labels.fullNamePlaceholder}
               value={formData.fullName}
               onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
               className={errors.fullName ? 'border-red-500' : ''}
@@ -138,12 +186,12 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
           {/* Email Address */}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-gray-700 font-medium">
-              Email Address <span className="text-red-500">*</span>
+              {labels.email} <span className="text-red-500">*</span>
             </Label>
             <Input
               id="email"
               type="email"
-              placeholder="Enter your email address"
+              placeholder={labels.emailPlaceholder}
               value={formData.email}
               onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
               className={errors.email ? 'border-red-500' : ''}
@@ -156,12 +204,12 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
           {/* Phone Number */}
           <div className="space-y-2">
             <Label htmlFor="phoneNumber" className="text-gray-700 font-medium">
-              Phone Number <span className="text-gray-500">(optional)</span>
+              {labels.phoneNumber} <span className="text-gray-500">{labels.optional}</span>
             </Label>
             <Input
               id="phoneNumber"
               type="tel"
-              placeholder="Enter your phone number"
+              placeholder={labels.phonePlaceholder}
               value={formData.phoneNumber || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
             />
@@ -170,14 +218,14 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
           {/* Location */}
           <div className="space-y-2">
             <Label className="text-gray-700 font-medium">
-              Location
+              {isSpanish ? 'Ubicación' : 'Location'}
             </Label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Input
                   id="city"
                   type="text"
-                  placeholder="City"
+                  placeholder={labels.city}
                   value={formData.city || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                 />
@@ -186,7 +234,7 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
                 <Input
                   id="state"
                   type="text"
-                  placeholder="State"
+                  placeholder={labels.state}
                   value={formData.state || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                 />
@@ -197,7 +245,7 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
           {/* Case Type */}
           <div className="space-y-3">
             <Label className="text-gray-700 font-medium">
-              Case Type <span className="text-red-500">*</span>
+              {labels.caseType} <span className="text-red-500">*</span>
             </Label>
             <div className="space-y-3">
               {caseTypeOptions.map((option) => (
@@ -231,13 +279,13 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
               onClick={handleClose}
               className="text-gray-600"
             >
-              Back
+              {labels.cancelButton}
             </Button>
             <Button
               type="submit"
               className="bg-gray-900 hover:bg-gray-800 text-white px-8"
             >
-              Start Chat
+              {labels.continueButton}
             </Button>
           </div>
         </form>
