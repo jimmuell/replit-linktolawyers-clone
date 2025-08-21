@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Mail, Trash2, Loader2, CheckCircle, File } from 'lucide-react';
+import { MessageCircle, Send, Bot, User, ArrowLeft, FileText, Trash2, Loader2, CheckCircle, File } from 'lucide-react';
 import { useChat } from "@/hooks/use-chat";
 import { Link } from 'wouter';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
@@ -341,68 +341,7 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const handleSendEmail = async () => {
-    if (!conversationId || !messages.length) {
-      toast({
-        title: "Cannot Send Email",
-        description: "No conversation data available to send.",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    // Extract user information from the first intake message
-    const intakeMessage = messages.find(msg => 
-      msg.role === 'user' && 
-      msg.content.includes('Hello, my name is') && 
-      msg.content.includes('I need help with')
-    );
-
-    if (!intakeMessage) {
-      toast({
-        title: "Cannot Send Email",
-        description: "Unable to find user information in conversation.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Send email with conversation data
-      const response = await fetch('/api/chat/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          conversationId,
-          intakeMessage: intakeMessage.content
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        toast({
-          title: "Email Sent Successfully! 📧",
-          description: `Confirmation email sent to ${result.recipientEmail}${result.requestNumber ? ` with tracking link for ${result.requestNumber}` : ''}.`,
-          duration: 6000,
-        });
-      } else {
-        const error = await response.json();
-        toast({
-          title: "Email Failed",
-          description: error.error || "Failed to send email",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error sending email:', error);
-      toast({
-        title: "Email Failed",
-        description: "Network error while sending email",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleSendTemplate = async () => {
     if (!conversationId || !messages.length) {
@@ -533,15 +472,7 @@ const ChatPage: React.FC = () => {
                 )}
                 {isExportingPDF ? "Generating..." : "Export PDF"}
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => handleSendEmail()}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <Mail className="w-4 h-4 mr-1" />
-                Send Email
-              </Button>
+
               <Button 
                 variant="outline" 
                 size="sm"

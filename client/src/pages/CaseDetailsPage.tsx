@@ -42,9 +42,119 @@ const CaseDetailsPage: React.FC = () => {
     navigate(`/quotes/${requestNumber}`);
   };
 
-  const handleDownloadPDF = () => {
-    console.log('Download PDF clicked');
-    // TODO: Implement PDF download functionality
+  const handleDownloadPDF = async () => {
+    if (!request?.data) return;
+    
+    try {
+      const jsPDF = (await import('jspdf')).default;
+      const doc = new jsPDF();
+      
+      // Document settings
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 20;
+      let yPosition = margin;
+      
+      // Helper function to add text with word wrapping
+      const addText = (text: string, fontSize = 10, fontStyle = 'normal', maxWidth = pageWidth - 2 * margin) => {
+        doc.setFontSize(fontSize);
+        doc.setFont('helvetica', fontStyle);
+        const lines = doc.splitTextToSize(text, maxWidth);
+        
+        lines.forEach((line: string) => {
+          if (yPosition > pageHeight - margin) {
+            doc.addPage();
+            yPosition = margin;
+          }
+          doc.text(line, margin, yPosition);
+          yPosition += fontSize * 0.5;
+        });
+        yPosition += 5; // Extra spacing after text blocks
+      };
+      
+      // Header
+      doc.setFillColor(30, 64, 175); // Blue background
+      doc.rect(0, 0, pageWidth, 40, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('LinkToLawyers', margin, 25);
+      doc.setFontSize(12);
+      doc.text('Case Details Report', margin, 35);
+      
+      yPosition = 55;
+      doc.setTextColor(0, 0, 0);
+      
+      // Case Information
+      addText(`Case Number: ${request.data.requestNumber.toUpperCase()}`, 14, 'bold');
+      addText(`Generated: ${new Date().toLocaleDateString('en-US', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+      })}`, 10);
+      
+      yPosition += 10;
+      
+      // Client Information Section
+      addText('CLIENT INFORMATION', 14, 'bold');
+      doc.setDrawColor(0, 0, 0);
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+      
+      addText(`Name: ${request.data.firstName} ${request.data.lastName}`, 11);
+      addText(`Email: ${request.data.email}`, 11);
+      if (request.data.phoneNumber) {
+        addText(`Phone: ${request.data.phoneNumber}`, 11);
+      }
+      addText(`Case Type: ${request.data.caseType}`, 11);
+      if (request.data.location) {
+        addText(`Location: ${request.data.location}`, 11);
+      }
+      if (request.data.city && request.data.state) {
+        addText(`City, State: ${request.data.city}, ${request.data.state}`, 11);
+      }
+      addText(`Status: ${request.data.status}`, 11);
+      addText(`Created: ${new Date(request.data.createdAt).toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', 
+        hour: 'numeric', minute: '2-digit', hour12: true
+      })}`, 11);
+      
+      yPosition += 10;
+      
+      // Case Description Section
+      addText('CASE DESCRIPTION', 14, 'bold');
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+      
+      addText(request.data.caseDescription, 10, 'normal');
+      
+      yPosition += 15;
+      
+      // Important Notice
+      addText('IMPORTANT NOTICE', 12, 'bold');
+      doc.line(margin, yPosition, pageWidth - margin, yPosition);
+      yPosition += 10;
+      
+      addText('This case summary provides general information only and does not constitute legal advice. For specific legal questions, consult with a qualified immigration attorney.', 9, 'normal');
+      
+      // Footer
+      const totalPages = (doc as any).internal.pages.length - 1;
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 30, pageHeight - 10);
+        doc.text('LinkToLawyers - Case Details Report', margin, pageHeight - 10);
+      }
+      
+      // Generate filename with case number and timestamp
+      const filename = `Case_${request.data.requestNumber}_${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${new Date().getDate().toString().padStart(2, '0')}.pdf`;
+      
+      // Save the PDF
+      doc.save(filename);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
   };
 
 
