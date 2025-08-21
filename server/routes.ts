@@ -2443,7 +2443,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       let requestNumber = '';
       if (recentLegalRequest) {
         requestNumber = recentLegalRequest.requestNumber;
-        trackingLink = `https://link-to-lawyers-clone-JamesMueller.replit.app/quotes/${requestNumber}`;
+        trackingLink = `${process.env.REPLIT_DOMAINS || 'https://link-to-lawyers-clone-JamesMueller.replit.app'}/quotes/${requestNumber}`;
       }
 
       // Create email HTML using the provided template structure

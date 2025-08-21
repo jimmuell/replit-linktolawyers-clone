@@ -116,7 +116,7 @@ export function generateConfirmationEmail(requestData: LegalRequestData, caseTyp
       </div>
       
       <div style="text-align: center; margin: 30px 0;">
-        <a href="${process.env.REPLIT_DOMAINS || 'http://localhost:5000'}/quotes/${requestNumber}" 
+        <a href="${process.env.REPLIT_DOMAINS || 'https://link-to-lawyers-clone-JamesMueller.replit.app'}/quotes/${requestNumber}" 
            style="background-color: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
           View Your Quotes & Request Status
         </a>
