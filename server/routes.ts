@@ -2698,6 +2698,29 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
       let processedHtml = template.htmlContent || '';
       let processedSubject = template.subject || '';
 
+      // Look for recent legal request for this email
+      const allLegalRequests = await storage.getAllLegalRequests();
+      const recentLegalRequest = allLegalRequests.find(lr => 
+        lr.email === customerEmail && 
+        new Date(lr.createdAt).getTime() > Date.now() - (10 * 60 * 1000) // last 10 minutes
+      );
+
+      // Generate tracking link and request number if legal request exists
+      let quotesUrl = '';
+      let requestNumber = '';
+      let quotesButton = '';
+      if (recentLegalRequest) {
+        requestNumber = recentLegalRequest.requestNumber;
+        const baseUrl = process.env.REPLIT_DOMAINS || 'https://link-to-lawyers-clone-jamesmueller.replit.app';
+        quotesUrl = `${baseUrl}/quotes/${requestNumber}`;
+        quotesButton = `<div style="text-align: center; margin: 30px 0;">
+          <a href="${quotesUrl}" 
+             style="background-color: #1e40af; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px;">
+            View Your Quotes & Request Status
+          </a>
+        </div>`;
+      }
+
       // Replace common variables
       const variables = {
         '{{name}}': customerName,
@@ -2709,6 +2732,9 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         '{{caseType}}': caseType,
         '{{date}}': new Date().toLocaleDateString(),
         '{{time}}': new Date().toLocaleTimeString(),
+        '{{requestNumber}}': requestNumber,
+        '{{quotesUrl}}': quotesUrl,
+        '{{quotesButton}}': quotesButton,
       };
 
       Object.entries(variables).forEach(([variable, value]) => {
