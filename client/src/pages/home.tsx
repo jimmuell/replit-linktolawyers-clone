@@ -422,17 +422,18 @@ export default function Home() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                <Button 
+                {/* Hidden - Get A Free Legal Quote button - when pressed displays the legal request form workflow */}
+                {/* <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsQuoteModalOpen(true)}
                 >
                   Get A Free Legal Quote!
-                </Button>
+                </Button> */}
                 <Button 
-                  className="bg-blue-600 text-white hover:bg-blue-700 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsIntakeModalOpen(true)}
                 >
-                  Chat with Legal Assistant
+                  Click For Free Quote!
                 </Button>
                 <Button 
                   variant="outline"

@@ -109,17 +109,18 @@ export default function HomeSpanish() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                <Button 
+                {/* Hidden - ¡Obtén Una Cotización Legal Gratuita! button - when pressed displays the legal request form workflow */}
+                {/* <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsQuoteModalOpen(true)}
                 >
                   ¡Obtén Una Cotización Legal Gratuita!
-                </Button>
+                </Button> */}
                 <Button 
-                  className="bg-blue-600 text-white hover:bg-blue-700 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsIntakeModalOpen(true)}
                 >
-                  Chatear con Asistente Legal
+                  ¡Haz Clic Para Cotización Gratuita!
                 </Button>
                 <Button 
                   variant="outline"
