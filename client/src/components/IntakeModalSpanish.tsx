@@ -255,6 +255,13 @@ export default function IntakeModalSpanish({ isOpen, onClose, onStartChat }: Int
             )}
           </div>
 
+          {/* Legal Disclaimer */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>Legal Disclaimer:</strong> This AI assistant provides general information only and does not constitute legal advice. For specific legal matters, please consult with a qualified immigration attorney.
+            </p>
+          </div>
+
           {/* Submit Buttons */}
           <div className="flex space-x-3 pt-4">
             <Button

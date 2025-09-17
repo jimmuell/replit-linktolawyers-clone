@@ -277,6 +277,13 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
             )}
           </div>
 
+          {/* Legal Disclaimer */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              <strong>Legal Disclaimer:</strong> This AI assistant provides general information only and does not constitute legal advice. For specific legal matters, please consult with a qualified immigration attorney.
+            </p>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex justify-between pt-4">
             <Button
