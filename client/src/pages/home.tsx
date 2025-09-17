@@ -436,7 +436,7 @@ export default function Home() {
                   onClick={() => setIsNewQuoteModalOpen(true)}
                   data-testid="button-get-quote"
                 >
-                  Get Quote
+                  Get A Free Quote
                 </Button>
                 <Button 
                   variant="outline"

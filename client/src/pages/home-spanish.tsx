@@ -121,7 +121,7 @@ export default function HomeSpanish() {
                   onClick={() => setIsQuoteModalOpen(true)}
                   data-testid="button-get-quote"
                 >
-                  Obtener Cotización
+                  Obtener Una Cotización Gratuita
                 </Button>
                 <Button 
                   variant="outline"
