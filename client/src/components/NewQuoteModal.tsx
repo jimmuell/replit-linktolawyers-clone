@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ClipboardList, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import HierarchicalCaseTypeSelect from './HierarchicalCaseTypeSelect';
 import { FamilyImmigrationForm } from './FamilyImmigrationForm';
 import { AsylumForm } from './AsylumForm';
 import { NaturalizationForm } from './NaturalizationForm';
@@ -15,7 +17,6 @@ interface NewQuoteModalProps {
 }
 
 type Step = 'basic-info' | 'case-type' | 'case-form' | 'summary';
-type CaseType = 'family' | 'asylum' | 'naturalization' | '';
 
 interface BasicInfo {
   firstName: string;
@@ -25,7 +26,7 @@ interface BasicInfo {
 
 export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>('basic-info');
-  const [caseType, setCaseType] = useState<CaseType>('');
+  const [caseType, setCaseType] = useState<string>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>({
     firstName: '',
     lastName: '',
@@ -33,6 +34,15 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   });
   const [formResponses, setFormResponses] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Fetch case types from API
+  const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
+    queryKey: ['/api/case-types'],
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const caseTypes = (caseTypesData as any)?.data || [];
 
   const validateBasicInfo = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -189,31 +199,20 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
               <p className="text-gray-600 mt-2">Please select the type of immigration case you need help with</p>
             </div>
 
-            <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value as CaseType)}>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                  <RadioGroupItem value="family" id="family" data-testid="radio-family" />
-                  <Label htmlFor="family" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Family Immigration</div>
-                    <div className="text-sm text-gray-500">Spouse, parent, or child immigration matters</div>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                  <RadioGroupItem value="asylum" id="asylum" data-testid="radio-asylum" />
-                  <Label htmlFor="asylum" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Asylum</div>
-                    <div className="text-sm text-gray-500">Protection from persecution in your home country</div>
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-gray-50">
-                  <RadioGroupItem value="naturalization" id="naturalization" data-testid="radio-naturalization" />
-                  <Label htmlFor="naturalization" className="flex-1 cursor-pointer">
-                    <div className="font-medium">Naturalization / Citizenship</div>
-                    <div className="text-sm text-gray-500">Becoming a U.S. citizen through naturalization</div>
-                  </Label>
-                </div>
-              </div>
-            </RadioGroup>
+            <div className="space-y-4">
+              <Label htmlFor="caseType">Case Type <span className="text-red-500">*</span></Label>
+              <HierarchicalCaseTypeSelect
+                caseTypes={caseTypes}
+                value={caseType}
+                onValueChange={setCaseType}
+                loading={caseTypesLoading}
+                placeholder="Choose your case type..."
+                data-testid="select-case-type"
+              />
+              {errors.caseType && (
+                <p className="text-red-500 text-sm mt-1">{errors.caseType}</p>
+              )}
+            </div>
 
             <div className="flex justify-between space-x-3">
               <Button variant="outline" onClick={() => setCurrentStep('basic-info')} data-testid="button-back">
@@ -228,15 +227,16 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 
       case 'case-form':
         const renderCaseForm = () => {
-          switch (caseType) {
-            case 'family':
-              return <FamilyImmigrationForm onComplete={handleFormComplete} onBack={() => setCurrentStep('case-type')} />;
-            case 'asylum':
-              return <AsylumForm onComplete={handleFormComplete} onBack={() => setCurrentStep('case-type')} />;
-            case 'naturalization':
-              return <NaturalizationForm onComplete={handleFormComplete} onBack={() => setCurrentStep('case-type')} />;
-            default:
-              return null;
+          // Map database case type values to the appropriate forms
+          if (caseType.includes('family-based') || caseType.includes('k1-fiance') || caseType.includes('removal-of-conditions')) {
+            return <FamilyImmigrationForm onComplete={handleFormComplete} onBack={() => setCurrentStep('case-type')} />;
+          } else if (caseType.includes('asylum')) {
+            return <AsylumForm onComplete={handleFormComplete} onBack={() => setCurrentStep('case-type')} />;
+          } else if (caseType.includes('citizenship') || caseType.includes('naturalization')) {
+            return <NaturalizationForm onComplete={handleFormComplete} onBack={() => setCurrentStep('case-type')} />;
+          } else {
+            // For other case types, default to family immigration form
+            return <FamilyImmigrationForm onComplete={handleFormComplete} onBack={() => setCurrentStep('case-type')} />;
           }
         };
         return renderCaseForm();
