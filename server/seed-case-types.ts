@@ -47,13 +47,23 @@ export async function seedCaseTypes() {
         isActive: true
       },
       {
+        value: "removal-of-conditions",
+        label: "Removal of Conditions",
+        labelEs: "Eliminación de Condiciones",
+        description: "Make My 2-Year Conditional Green Card Permanent",
+        descriptionEs: "Hacer Permanente Mi Tarjeta Verde Condicional de 2 Años",
+        category: "Green Card Renewal",
+        displayOrder: 5,
+        isActive: true
+      },
+      {
         value: "citizenship-naturalization-n400",
         label: "Citizenship & Naturalization - Naturalization (N-400)",
         labelEs: "Ciudadanía y Naturalización - Naturalización (N-400)",
         description: "You are applying to become a U.S. citizen",
         descriptionEs: "Estás solicitando convertirte en ciudadano estadounidense",
         category: "Citizenship & Naturalization",
-        displayOrder: 5,
+        displayOrder: 6,
         isActive: true
       },
       {
@@ -63,7 +73,7 @@ export async function seedCaseTypes() {
         description: "You are claiming U.S. citizenship automatically through your parent(s)",
         descriptionEs: "Estás reclamando ciudadanía estadounidense automáticamente a través de tu(s) padre(s)",
         category: "Citizenship & Naturalization",
-        displayOrder: 6,
+        displayOrder: 7,
         isActive: true
       },
       {
@@ -73,7 +83,7 @@ export async function seedCaseTypes() {
         description: "You are not in immigration court and want to apply for asylum with USCIS",
         descriptionEs: "No estás en corte de inmigración y quieres aplicar por asilo con USCIS",
         category: "Asylum",
-        displayOrder: 7,
+        displayOrder: 8,
         isActive: true
       },
       {
@@ -83,7 +93,7 @@ export async function seedCaseTypes() {
         description: "You are in immigration court and are requesting asylum as a defense against deportation",
         descriptionEs: "Estás en corte de inmigración y solicitas asilo como defensa contra la deportación",
         category: "Asylum",
-        displayOrder: 8,
+        displayOrder: 9,
         isActive: true
       },
       {
@@ -93,7 +103,7 @@ export async function seedCaseTypes() {
         description: "You are in immigration court or received a Notice to Appear (NTA)",
         descriptionEs: "Estás en corte de inmigración o recibiste una Notificación para Comparecer (NTA)",
         category: "Deportation Defense / Removal Proceedings",
-        displayOrder: 9,
+        displayOrder: 10,
         isActive: true
       },
       {
@@ -103,7 +113,7 @@ export async function seedCaseTypes() {
         description: "You are applying independently due to abuse by a U.S. citizen or green card holder spouse, parent, or child",
         descriptionEs: "Estás aplicando independientemente debido a abuso por parte de un cónyuge, padre o hijo ciudadano estadounidense o portador de tarjeta verde",
         category: "Violence Against Women Act (VAWA)",
-        displayOrder: 10,
+        displayOrder: 11,
         isActive: true
       },
       {
@@ -113,7 +123,7 @@ export async function seedCaseTypes() {
         description: "You're not sure or need help with a different immigration matter",
         descriptionEs: "No estás seguro o necesitas ayuda con un asunto de inmigración diferente",
         category: "Other",
-        displayOrder: 11,
+        displayOrder: 12,
         isActive: true
       }
     ];
