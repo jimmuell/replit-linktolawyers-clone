@@ -200,21 +200,32 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
             </div>
 
             <div className="space-y-4">
-              <Label htmlFor="caseType">Case Type <span className="text-red-500">*</span></Label>
-              <HierarchicalCaseTypeSelect
-                caseTypes={caseTypes}
-                value={caseType}
-                onValueChange={setCaseType}
-                loading={caseTypesLoading}
-                placeholder="Choose your case type..."
-                data-testid="select-case-type"
-              />
+              <Label className="text-lg font-medium">Case Type <span className="text-red-500">*</span></Label>
+              
+              {caseTypesLoading ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Loading case types...</p>
+                </div>
+              ) : (
+                <RadioGroup value={caseType} onValueChange={setCaseType} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {caseTypes.map((caseTypeOption: any) => (
+                    <div key={caseTypeOption.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                      <RadioGroupItem value={caseTypeOption.value} id={caseTypeOption.value} className="mt-1" data-testid={`radio-${caseTypeOption.value}`} />
+                      <Label htmlFor={caseTypeOption.value} className="flex-1 cursor-pointer">
+                        <div className="font-medium text-gray-900 mb-1">{caseTypeOption.label}</div>
+                        <div className="text-sm text-gray-600 leading-relaxed">{caseTypeOption.description}</div>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+              
               {errors.caseType && (
                 <p className="text-red-500 text-sm mt-1">{errors.caseType}</p>
               )}
             </div>
 
-            <div className="flex justify-between space-x-3">
+            <div className="flex justify-between space-x-3 pt-4">
               <Button variant="outline" onClick={() => setCurrentStep('basic-info')} data-testid="button-back">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
               </Button>
@@ -274,7 +285,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className={`${currentStep === 'case-type' ? 'max-w-4xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader className="sr-only">
           <DialogTitle>Get Quote</DialogTitle>
         </DialogHeader>
