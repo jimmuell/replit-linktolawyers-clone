@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { ClipboardList, ArrowLeft, ArrowRight } from 'lucide-react';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface NewQuoteModalProps {
   isOpen: boolean;
@@ -369,6 +371,10 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [additionalDetails, setAdditionalDetails] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const { toast } = useToast();
 
   // Case type options (exactly 5 as specified)
   const caseTypeOptions = [
@@ -410,6 +416,18 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkCurrentQuestionValid = (): boolean => {
+    if (!caseType || currentStep !== 'questionnaire') return true;
+    
+    const flow = FLOW_CONFIG[caseType];
+    const currentQuestion = flow.nodes[currentNodeKey];
+    
+    if (!currentQuestion?.required) return true;
+    
+    const answer = answers[currentNodeKey];
+    return !(!answer || (typeof answer === 'string' && !answer.trim()));
+  };
+
   const validateCurrentQuestion = (): boolean => {
     if (!caseType || currentStep !== 'questionnaire') return true;
     
@@ -438,6 +456,9 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     if (caseType) {
       const flow = FLOW_CONFIG[caseType];
       setCurrentNodeKey(flow.start);
+      setNavigationHistory([]); // Reset navigation history for new flow
+      setAnswers({}); // Clear previous answers to avoid stale data
+      setErrors({});
       setCurrentStep('questionnaire');
     }
   };
@@ -450,6 +471,9 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     
     if (currentQuestion.next) {
       const nextKey = currentQuestion.next(answers);
+      // Always track current node in navigation history
+      setNavigationHistory(prev => [...prev, currentNodeKey]);
+      
       if (nextKey === 'END') {
         setCurrentStep('wrap-up');
       } else {
@@ -462,72 +486,98 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     if (currentStep === 'case-type') {
       setCurrentStep('basic-info');
     } else if (currentStep === 'questionnaire') {
-      // Find previous question by checking which question leads to current one
-      if (!caseType) return;
-      const flow = FLOW_CONFIG[caseType];
-      
-      // If we're at the start, go back to case-type
-      if (currentNodeKey === flow.start) {
+      // Use navigation history for accurate back navigation
+      if (navigationHistory.length > 0) {
+        const previousNodeKey = navigationHistory[navigationHistory.length - 1];
+        setNavigationHistory(prev => prev.slice(0, -1));
+        setCurrentNodeKey(previousNodeKey);
+      } else {
+        // If no history, go back to case-type (we're at the start)
         setCurrentStep('case-type');
-        return;
-      }
-      
-      // Find the previous question
-      for (const [nodeKey, question] of Object.entries(flow.nodes)) {
-        if (question.next && question.next(answers) === currentNodeKey) {
-          setCurrentNodeKey(nodeKey);
-          return;
-        }
       }
     } else if (currentStep === 'wrap-up') {
-      // Find the last question in the flow
-      if (!caseType) return;
-      const flow = FLOW_CONFIG[caseType];
-      for (const [nodeKey, question] of Object.entries(flow.nodes)) {
-        if (question.next && question.next(answers) === 'END') {
-          setCurrentNodeKey(nodeKey);
-          setCurrentStep('questionnaire');
-          return;
-        }
+      // Go back to the last question using navigation history
+      if (navigationHistory.length > 0) {
+        const lastNodeKey = navigationHistory[navigationHistory.length - 1];
+        setCurrentNodeKey(lastNodeKey);
+        setCurrentStep('questionnaire');
+      } else if (caseType) {
+        // If no history, go to the start of the flow
+        const flow = FLOW_CONFIG[caseType];
+        setCurrentNodeKey(flow.start);
+        setCurrentStep('questionnaire');
       }
     }
   };
 
   const handleSubmit = async () => {
-    // Create transcript of questions and answers
-    const transcript: Array<{ question: string; answer: string }> = [];
+    if (isSubmitting) return;
     
-    if (caseType) {
-      const flow = FLOW_CONFIG[caseType];
-      Object.entries(answers).forEach(([questionId, answer]) => {
-        const question = flow.nodes[questionId];
-        if (question) {
-          let answerText = String(answer);
-          if (question.options) {
-            const option = question.options.find(opt => opt.value === answer);
-            answerText = option?.label || answerText;
+    setIsSubmitting(true);
+    
+    try {
+      // Create transcript of questions and answers in order
+      const transcript: Array<{ question: string; answer: string }> = [];
+      
+      if (caseType) {
+        const flow = FLOW_CONFIG[caseType];
+        // Create ordered transcript based on navigation history + current answers
+        const questionOrder = [...navigationHistory, currentNodeKey];
+        
+        questionOrder.forEach((questionId) => {
+          const question = flow.nodes[questionId];
+          const answer = answers[questionId];
+          if (question && answer !== undefined) {
+            let answerText = String(answer);
+            if (question.options) {
+              const option = question.options.find(opt => opt.value === answer);
+              answerText = option?.label || answerText;
+            }
+            transcript.push({
+              question: question.prompt,
+              answer: answerText
+            });
           }
-          transcript.push({
-            question: question.prompt,
-            answer: answerText
-          });
+        });
+      }
+
+      // Format data to match existing backend endpoint
+      const submissionData = {
+        firstName: basicInfo.fullName.split(' ')[0] || basicInfo.fullName,
+        lastName: basicInfo.fullName.split(' ').slice(1).join(' ') || '',
+        email: basicInfo.email,
+        caseType,
+        formResponses: {
+          answers,
+          additionalDetails,
+          transcript,
+          submittedAt: new Date().toISOString()
         }
+      };
+
+      // POST to structured intakes endpoint
+      await apiRequest('/api/structured-intakes', {
+        method: 'POST',
+        body: JSON.stringify(submissionData)
       });
+
+      toast({
+        title: 'Quote Request Submitted',
+        description: 'Thank you! An experienced attorney will be in touch soon.',
+        variant: 'default'
+      });
+
+      handleClose();
+    } catch (error) {
+      console.error('Error submitting intake:', error);
+      toast({
+        title: 'Submission Failed',
+        description: 'There was an error submitting your request. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const submissionData = {
-      basicInfo,
-      caseType,
-      answers,
-      additionalDetails,
-      transcript
-    };
-
-    console.log('Submitting structured intake:', submissionData);
-    
-    // TODO: POST to /api/structured-intakes
-    // For now, just close the modal
-    handleClose();
   };
 
   const handleClose = () => {
@@ -538,6 +588,8 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     setAnswers({});
     setAdditionalDetails('');
     setErrors({});
+    setNavigationHistory([]);
+    setIsSubmitting(false);
     onClose();
   };
 
@@ -695,7 +747,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
             </div>
 
             <div className="space-y-4">
-              <RadioGroup value={caseType} onValueChange={setCaseType} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value as CaseType)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {caseTypeOptions.map((caseTypeOption) => (
                   <div key={caseTypeOption.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                     <RadioGroupItem value={caseTypeOption.value} id={caseTypeOption.value} className="mt-1" data-testid={`radio-${caseTypeOption.value}`} />
@@ -727,7 +779,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
               <Button variant="outline" onClick={handleBack} data-testid="button-back">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
               </Button>
-              <Button onClick={handleQuestionNext} disabled={!validateCurrentQuestion()} data-testid="button-continue">
+              <Button onClick={handleQuestionNext} disabled={!checkCurrentQuestionValid()} data-testid="button-continue">
                 Continue <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -770,8 +822,13 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
               <Button variant="outline" onClick={handleBack} data-testid="button-back">
                 <ArrowLeft className="w-4 h-4 mr-2" /> Back
               </Button>
-              <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 text-white" data-testid="button-submit">
-                Submit Request
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isSubmitting}
+                className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50" 
+                data-testid="button-submit"
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Request'}
               </Button>
             </div>
           </div>
@@ -787,6 +844,9 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
       <DialogContent className={`${currentStep === 'case-type' ? 'max-w-4xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader className="sr-only">
           <DialogTitle>Get Quote</DialogTitle>
+          <DialogDescription>
+            Complete our intake form to get matched with an experienced immigration attorney
+          </DialogDescription>
         </DialogHeader>
         {renderStep()}
       </DialogContent>
