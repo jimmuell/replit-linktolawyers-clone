@@ -192,33 +192,46 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
         );
 
       case 'case-type':
+        const caseTypeOptions = [
+          {
+            value: 'family-based-immigrant-visa-immediate-relative',
+            label: 'Green Card through a Spouse or Family Member ("Family-Based Green Card") Family'
+          },
+          {
+            value: 'k1-fiance-visa',
+            label: 'Fiance(e) Visa ("K-1 visa")'
+          },
+          {
+            value: 'removal-of-conditions',
+            label: 'Make My 2-Year Conditional Green Card Permanent ("Removal of Conditions ")'
+          },
+          {
+            value: 'asylum-affirmative',
+            label: 'Asylum or Protection From Persecution'
+          },
+          {
+            value: 'citizenship-naturalization-n400',
+            label: 'U.S. Citizenship ("Naturalization") - Applying to become a U.S. Citizen Naturalization / Citizenship'
+          }
+        ];
+
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Choose Your Case Type</h2>
-              <p className="text-gray-600 mt-2">Please select the type of immigration case you need help with</p>
+              <h2 className="text-xl font-bold text-gray-900">Please choose the closest option:</h2>
             </div>
 
             <div className="space-y-4">
-              <Label className="text-lg font-medium">Case Type <span className="text-red-500">*</span></Label>
-              
-              {caseTypesLoading ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Loading case types...</p>
-                </div>
-              ) : (
-                <RadioGroup value={caseType} onValueChange={setCaseType} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {caseTypes.map((caseTypeOption: any) => (
-                    <div key={caseTypeOption.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                      <RadioGroupItem value={caseTypeOption.value} id={caseTypeOption.value} className="mt-1" data-testid={`radio-${caseTypeOption.value}`} />
-                      <Label htmlFor={caseTypeOption.value} className="flex-1 cursor-pointer">
-                        <div className="font-medium text-gray-900 mb-1">{caseTypeOption.label}</div>
-                        <div className="text-sm text-gray-600 leading-relaxed">{caseTypeOption.description}</div>
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              )}
+              <RadioGroup value={caseType} onValueChange={setCaseType} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {caseTypeOptions.map((caseTypeOption) => (
+                  <div key={caseTypeOption.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                    <RadioGroupItem value={caseTypeOption.value} id={caseTypeOption.value} className="mt-1" data-testid={`radio-${caseTypeOption.value}`} />
+                    <Label htmlFor={caseTypeOption.value} className="flex-1 cursor-pointer">
+                      <div className="font-medium text-gray-900">{caseTypeOption.label}</div>
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
               
               {errors.caseType && (
                 <p className="text-red-500 text-sm mt-1">{errors.caseType}</p>
