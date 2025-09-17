@@ -405,6 +405,21 @@ export const insertAttorneyNoteSchema = createInsertSchema(attorneyNotes).pick({
   isPrivate: true,
 });
 
+// New structured form intake system
+export const structuredIntakes = pgTable("structured_intakes", {
+  id: serial("id").primaryKey(),
+  requestNumber: varchar("request_number", { length: 10 }).notNull().unique(),
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  caseType: varchar("case_type", { length: 50 }).notNull(), // 'family', 'asylum', 'naturalization'
+  formResponses: text("form_responses").notNull(), // JSON string of form responses
+  attorneyIntakeSummary: text("attorney_intake_summary"), // Generated summary from prompt format
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, completed, assigned
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertRequestAttorneyAssignment = z.infer<typeof insertRequestAttorneyAssignmentSchema>;
 export type SelectRequestAttorneyAssignment = typeof requestAttorneyAssignments.$inferSelect;
@@ -500,3 +515,18 @@ export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+// Insert schema for structured intakes
+export const insertStructuredIntakeSchema = createInsertSchema(structuredIntakes).pick({
+  requestNumber: true,
+  firstName: true,
+  lastName: true,  
+  email: true,
+  caseType: true,
+  formResponses: true,
+  attorneyIntakeSummary: true,
+  status: true,
+});
+
+export type InsertStructuredIntake = z.infer<typeof insertStructuredIntakeSchema>;
+export type StructuredIntake = typeof structuredIntakes.$inferSelect;

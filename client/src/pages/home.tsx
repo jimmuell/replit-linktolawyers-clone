@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import LoginModal from "@/components/LoginModal";
 import { IntakeModal } from "@/components/IntakeModal";
+import { NewQuoteModal } from "@/components/NewQuoteModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
@@ -31,6 +32,7 @@ import girlThinkingImage from "@assets/girl-final_1752714322954_1752927927876.pn
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [isNewQuoteModalOpen, setIsNewQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
@@ -445,7 +447,7 @@ export default function Home() {
                 <Button 
                   variant="outline"
                   className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsIntakeModalOpen(true)}
+                  onClick={() => setIsNewQuoteModalOpen(true)}
                   data-testid="button-get-quote"
                 >
                   Get Quote
@@ -941,7 +943,11 @@ export default function Home() {
         onSubmit={handleIntakeSubmit}
       />
 
-
+      {/* New Quote Modal - Structured Form System */}
+      <NewQuoteModal
+        isOpen={isNewQuoteModalOpen}
+        onClose={() => setIsNewQuoteModalOpen(false)}
+      />
 
       {/* Terms and Conditions Modal */}
       <TermsAndConditionsModal

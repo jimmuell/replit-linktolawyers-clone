@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, conversations, messages, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, conversations, messages, structuredIntakes, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage, type StructuredIntake, type InsertStructuredIntake } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 
@@ -88,6 +88,13 @@ export interface IStorage {
   deleteChatbotPrompt(id: number): Promise<void>;
   deactivateAllChatbotPrompts(): Promise<void>;
   deactivateChatbotPromptsByLanguage(language: string): Promise<void>;
+  // Structured Intakes
+  createStructuredIntake(intake: InsertStructuredIntake): Promise<StructuredIntake>;
+  getStructuredIntake(id: number): Promise<StructuredIntake | undefined>;
+  getStructuredIntakeByRequestNumber(requestNumber: string): Promise<StructuredIntake | undefined>;
+  getAllStructuredIntakes(): Promise<StructuredIntake[]>;
+  updateStructuredIntake(id: number, updates: Partial<InsertStructuredIntake>): Promise<StructuredIntake>;
+  deleteStructuredIntake(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -788,6 +795,51 @@ export class DatabaseStorage implements IStorage {
       .values(insertMessage)
       .returning();
     return message;
+  }
+
+  // Structured Intakes methods
+  async createStructuredIntake(intake: InsertStructuredIntake): Promise<StructuredIntake> {
+    const [result] = await db
+      .insert(structuredIntakes)
+      .values(intake)
+      .returning();
+    return result;
+  }
+
+  async getStructuredIntake(id: number): Promise<StructuredIntake | undefined> {
+    const [result] = await db
+      .select()
+      .from(structuredIntakes)
+      .where(eq(structuredIntakes.id, id));
+    return result || undefined;
+  }
+
+  async getStructuredIntakeByRequestNumber(requestNumber: string): Promise<StructuredIntake | undefined> {
+    const [result] = await db
+      .select()
+      .from(structuredIntakes)
+      .where(eq(structuredIntakes.requestNumber, requestNumber));
+    return result || undefined;
+  }
+
+  async getAllStructuredIntakes(): Promise<StructuredIntake[]> {
+    return await db
+      .select()
+      .from(structuredIntakes)
+      .orderBy(desc(structuredIntakes.createdAt));
+  }
+
+  async updateStructuredIntake(id: number, updates: Partial<InsertStructuredIntake>): Promise<StructuredIntake> {
+    const [result] = await db
+      .update(structuredIntakes)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(structuredIntakes.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteStructuredIntake(id: number): Promise<void> {
+    await db.delete(structuredIntakes).where(eq(structuredIntakes.id, id));
   }
 }
 

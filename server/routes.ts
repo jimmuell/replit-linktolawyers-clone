@@ -233,6 +233,129 @@ async function sendEmail(to: string, subject: string, html: string, text?: strin
   return { messageId: info.messageId, success: true };
 }
 
+// Generate Attorney Intake Summary based on prompt format
+function generateAttorneyIntakeSummary(intakeData: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  caseType: string;
+  formResponses: Record<string, any>;
+}): string {
+  const { firstName, lastName, email, caseType, formResponses } = intakeData;
+  
+  // Convert case type to display format
+  const caseTypeDisplay = caseType === 'family' ? 'Family' : 
+                          caseType === 'asylum' ? 'Asylum' : 
+                          caseType === 'naturalization' ? 'Naturalization' : caseType;
+  
+  let summary = `### Attorney Intake Summary\n`;
+  summary += `**Name:** ${firstName} ${lastName}\n`;
+  summary += `**Email:** ${email}\n`;
+  summary += `**Case Type:** ${caseTypeDisplay}\n`;
+  summary += `**Questions & Responses:**\n`;
+  
+  // Add questions and responses based on case type
+  let questionNumber = 1;
+  
+  if (caseType === 'family') {
+    summary += `${questionNumber++}. Are you inside the U.S. right now, or outside the U.S.? — ${formResponses.locationStatus === 'inside' ? 'Inside the U.S.' : 'Outside the U.S.'}\n`;
+    
+    if (formResponses.locationStatus === 'inside') {
+      if (formResponses.entryMethod) {
+        summary += `${questionNumber++}. How did you come into the U.S.? — ${formResponses.entryMethod}\n`;
+      }
+      if (formResponses.wasInspected) {
+        summary += `${questionNumber++}. When you entered, did a U.S. officer check your passport or papers? — ${formResponses.wasInspected === 'yes' ? 'Yes, an officer checked my papers' : 'No, no officer checked my papers'}\n`;
+      }
+      if (formResponses.legalStatus) {
+        summary += `${questionNumber++}. Are you still in legal status, or out of status? — ${formResponses.legalStatus === 'in-status' ? 'In legal status' : 'Out of status'}\n`;
+      }
+      if (formResponses.entryDate) {
+        summary += `${questionNumber++}. What date did you enter? — ${formResponses.entryDate}\n`;
+      }
+      if (formResponses.visaType) {
+        summary += `${questionNumber++}. What kind of visa or entry did you use? — ${formResponses.visaType}\n`;
+      }
+      if (formResponses.hasFamily) {
+        summary += `${questionNumber++}. Do you have a close family member who can help you? — ${formResponses.hasFamily === 'yes' ? 'Yes' : 'No'}\n`;
+      }
+      if (formResponses.everMarried) {
+        summary += `${questionNumber++}. Have you ever been married before? — ${formResponses.everMarried === 'yes' ? 'Yes' : 'No'}\n`;
+      }
+    } else if (formResponses.locationStatus === 'outside') {
+      if (formResponses.hasUSFamily) {
+        summary += `${questionNumber++}. Do you have a close family member who can help you? — ${formResponses.hasUSFamily === 'yes' ? 'Yes' : 'No'}\n`;
+      }
+      if (formResponses.previousVisa) {
+        summary += `${questionNumber++}. Have you ever applied for a U.S. visa before? — ${formResponses.previousVisa}\n`;
+      }
+      if (formResponses.legalHelp) {
+        summary += `${questionNumber++}. What kind of legal help are you looking for right now? — ${formResponses.legalHelp}\n`;
+      }
+    }
+  } else if (caseType === 'asylum') {
+    if (formResponses.entryMethod) {
+      summary += `${questionNumber++}. How did you come into the U.S.? — ${formResponses.entryMethod}\n`;
+    }
+    if (formResponses.entryDate) {
+      summary += `${questionNumber++}. What date did you enter? — ${formResponses.entryDate}\n`;
+    }
+    if (formResponses.afraidToReturn) {
+      summary += `${questionNumber++}. Do you feel afraid to go back to your home country? — ${formResponses.afraidToReturn === 'yes' ? 'Yes' : 'No'}\n`;
+    }
+    if (formResponses.reasonAfraid && formResponses.afraidToReturn === 'yes') {
+      summary += `${questionNumber++}. Why do you feel afraid? — ${formResponses.reasonAfraid}\n`;
+    }
+    if (formResponses.inRemovalProceedings) {
+      summary += `${questionNumber++}. Has the U.S. government sent you to immigration court or removal proceedings? — ${formResponses.inRemovalProceedings === 'yes' ? 'Yes' : formResponses.inRemovalProceedings === 'no' ? 'No' : 'Not sure'}\n`;
+    }
+  } else if (caseType === 'naturalization') {
+    if (formResponses.howGotGreenCard) {
+      summary += `${questionNumber++}. How did you get your green card? — ${formResponses.howGotGreenCard}\n`;
+    }
+    if (formResponses.greenCardStartDate) {
+      summary += `${questionNumber++}. What is the start date on your green card? — ${formResponses.greenCardStartDate}\n`;
+    }
+    if (formResponses.tripsOver6Months) {
+      summary += `${questionNumber++}. Since getting your green card, have you taken any trips outside the U.S. for more than 6 months? — ${formResponses.tripsOver6Months === 'yes' ? 'Yes' : 'No'}\n`;
+    }
+    if (formResponses.livedHalfTime5Years) {
+      summary += `${questionNumber++}. In the last 5 years, have you lived in the U.S. at least half the time? — ${formResponses.livedHalfTime5Years === 'yes' ? 'Yes' : 'No'}\n`;
+    }
+    if (formResponses.marriageRule3Years) {
+      summary += `${questionNumber++}. 3-year rule application status — ${formResponses.marriageRule3Years === 'yes' ? 'Yes, applies to me' : formResponses.marriageRule3Years === 'no' ? 'Does not apply' : 'Not sure'}\n`;
+    }
+  }
+  
+  // Generate case summary
+  summary += `\n**Case Summary:**\n`;
+  if (caseType === 'family') {
+    const location = formResponses.locationStatus === 'inside' ? 'inside the U.S.' : 'outside the U.S.';
+    summary += `${firstName} is seeking family immigration assistance and is currently ${location}. `;
+    if (formResponses.locationStatus === 'inside' && formResponses.legalStatus) {
+      summary += `Their current legal status is ${formResponses.legalStatus === 'in-status' ? 'in status' : 'out of status'}. `;
+    }
+    summary += `They need guidance on family-based immigration options and next steps.`;
+  } else if (caseType === 'asylum') {
+    summary += `${firstName} is seeking asylum protection in the United States. `;
+    if (formResponses.afraidToReturn === 'yes') {
+      summary += `They have expressed fear of returning to their home country. `;
+    }
+    if (formResponses.inRemovalProceedings === 'yes') {
+      summary += `They are currently in removal proceedings. `;
+    }
+    summary += `They need immediate legal assistance with their asylum case.`;
+  } else if (caseType === 'naturalization') {
+    summary += `${firstName} is seeking to become a U.S. citizen through naturalization. `;
+    if (formResponses.greenCardStartDate) {
+      summary += `They became a permanent resident on ${formResponses.greenCardStartDate}. `;
+    }
+    summary += `They need guidance on the naturalization process and eligibility requirements.`;
+  }
+  
+  return summary;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Mount attorney referrals routes
   app.use('/api/attorney-referrals', attorneyReferralsRouter);
@@ -671,6 +794,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting legal request:", error);
       res.status(500).json({ success: false, error: "Failed to delete legal request" });
+    }
+  });
+
+  // Structured Intake API routes
+  app.post("/api/structured-intakes", async (req, res) => {
+    try {
+      const { firstName, lastName, email, caseType, formResponses } = req.body;
+      
+      if (!firstName || !lastName || !email || !caseType || !formResponses) {
+        return res.status(400).json({ success: false, error: "Missing required fields" });
+      }
+
+      // Generate request number
+      const requestNumber = generateRequestNumber();
+      
+      // Generate Attorney Intake Summary based on prompt format
+      const attorneyIntakeSummary = generateAttorneyIntakeSummary({
+        firstName,
+        lastName,
+        email,
+        caseType,
+        formResponses
+      });
+
+      const validatedData = {
+        requestNumber,
+        firstName,
+        lastName,
+        email,
+        caseType,
+        formResponses: JSON.stringify(formResponses),
+        attorneyIntakeSummary,
+        status: 'pending'
+      };
+      
+      const structuredIntake = await storage.createStructuredIntake(validatedData);
+      res.json({ success: true, data: structuredIntake });
+    } catch (error) {
+      console.error("Error creating structured intake:", error);
+      res.status(500).json({ success: false, error: "Failed to create structured intake" });
+    }
+  });
+
+  app.get("/api/structured-intakes/:requestNumber", async (req, res) => {
+    try {
+      const requestNumber = req.params.requestNumber;
+      const structuredIntake = await storage.getStructuredIntakeByRequestNumber(requestNumber);
+      
+      if (!structuredIntake) {
+        return res.status(404).json({ success: false, error: "Structured intake not found" });
+      }
+      
+      // Parse form responses from JSON
+      const parsedIntake = {
+        ...structuredIntake,
+        formResponses: JSON.parse(structuredIntake.formResponses)
+      };
+      
+      res.json({ success: true, data: parsedIntake });
+    } catch (error) {
+      console.error("Error fetching structured intake:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch structured intake" });
+    }
+  });
+
+  app.get("/api/structured-intakes", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const structuredIntakes = await storage.getAllStructuredIntakes();
+      // Parse form responses from JSON for all intakes
+      const parsedIntakes = structuredIntakes.map(intake => ({
+        ...intake,
+        formResponses: JSON.parse(intake.formResponses)
+      }));
+      res.json({ success: true, data: parsedIntakes });
+    } catch (error) {
+      console.error("Error fetching structured intakes:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch structured intakes" });
     }
   });
 
