@@ -109,18 +109,19 @@ export default function HomeSpanish() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                {/* Hidden - ¡Obtén Una Cotización Legal Gratuita! button - when pressed displays the legal request form workflow */}
+                {/* Hidden - AI Agent flow button for intake - when pressed opens the AI chatbot intake workflow */}
                 {/* <Button 
-                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsQuoteModalOpen(true)}
-                >
-                  ¡Obtén Una Cotización Legal Gratuita!
-                </Button> */}
-                <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsIntakeModalOpen(true)}
                 >
                   ¡Haz Clic Para Cotización Gratuita!
+                </Button> */}
+                <Button 
+                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsQuoteModalOpen(true)}
+                  data-testid="button-get-quote"
+                >
+                  Obtener Cotización
                 </Button>
                 <Button 
                   variant="outline"
@@ -128,14 +129,6 @@ export default function HomeSpanish() {
                   onClick={() => setIsTrackRequestModalOpen(true)}
                 >
                   Rastrea Tu Solicitud
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsIntakeModalOpen(true)}
-                  data-testid="button-get-quote"
-                >
-                  Obtener Cotización
                 </Button>
               </div>
             </div>

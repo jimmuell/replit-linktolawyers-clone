@@ -424,18 +424,19 @@ export default function Home() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                {/* Hidden - Get A Free Legal Quote button - when pressed displays the legal request form workflow */}
+                {/* Hidden - AI Agent flow button for intake - when pressed opens the AI chatbot intake workflow */}
                 {/* <Button 
-                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsQuoteModalOpen(true)}
-                >
-                  Get A Free Legal Quote!
-                </Button> */}
-                <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsIntakeModalOpen(true)}
                 >
                   Click For Free Quote!
+                </Button> */}
+                <Button 
+                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsNewQuoteModalOpen(true)}
+                  data-testid="button-get-quote"
+                >
+                  Get Quote
                 </Button>
                 <Button 
                   variant="outline"
@@ -443,14 +444,6 @@ export default function Home() {
                   onClick={() => setIsTrackRequestModalOpen(true)}
                 >
                   Track Your Request
-                </Button>
-                <Button 
-                  variant="outline"
-                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsNewQuoteModalOpen(true)}
-                  data-testid="button-get-quote"
-                >
-                  Get Quote
                 </Button>
               </div>
             </div>
