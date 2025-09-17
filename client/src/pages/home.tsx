@@ -442,6 +442,14 @@ export default function Home() {
                 >
                   Track Your Request
                 </Button>
+                <Button 
+                  variant="outline"
+                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsIntakeModalOpen(true)}
+                  data-testid="button-get-quote"
+                >
+                  Get Quote
+                </Button>
               </div>
             </div>
             
