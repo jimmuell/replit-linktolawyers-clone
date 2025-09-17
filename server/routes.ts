@@ -837,6 +837,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/structured-intakes/public", async (req, res) => {
+    try {
+      const structuredIntakes = await storage.getAllStructuredIntakes();
+      // Return only public information for dropdown - no sensitive data
+      const publicIntakes = structuredIntakes.map(intake => ({
+        id: intake.id,
+        requestNumber: intake.requestNumber,
+        firstName: intake.firstName,
+        lastName: intake.lastName,
+        caseType: intake.caseType,
+        status: intake.status,
+        createdAt: intake.createdAt
+      }));
+      res.json({ success: true, data: publicIntakes });
+    } catch (error) {
+      console.error("Error fetching public structured intakes:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch structured intakes" });
+    }
+  });
+
   app.get("/api/structured-intakes/:requestNumber", async (req, res) => {
     try {
       const requestNumber = req.params.requestNumber;
