@@ -21,9 +21,9 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Fetch available structured intakes for dropdown
-  const { data: structuredIntakes, isLoading } = useQuery<{data: Array<{id: number, requestNumber: string, firstName: string, lastName: string, caseType: string, status: string}>}>({
-    queryKey: ['/api/structured-intakes/public'],
+  // Fetch available legal requests for dropdown
+  const { data: legalRequests, isLoading } = useQuery<{data: Array<{id: number, requestNumber: string, firstName: string, lastName: string}>}>({
+    queryKey: ['/api/legal-requests/public'],
     enabled: isOpen,
   });
 
@@ -84,9 +84,9 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
                   <SelectValue placeholder={isLoading ? "Cargando solicitudes..." : "Elegir una solicitud"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {structuredIntakes?.data?.map((intake: any) => (
-                    <SelectItem key={intake.id} value={intake.requestNumber}>
-                      {intake.requestNumber} - {intake.firstName} {intake.lastName}
+                  {legalRequests?.data?.map((request: any) => (
+                    <SelectItem key={request.id} value={request.requestNumber}>
+                      {request.requestNumber} - {request.firstName} {request.lastName}
                     </SelectItem>
                   ))}
                 </SelectContent>

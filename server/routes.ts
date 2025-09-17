@@ -818,7 +818,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         formResponses
       });
 
-      const validatedData = {
+      // Create structured intake
+      const structuredIntakeData = {
         requestNumber,
         firstName,
         lastName,
@@ -829,31 +830,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'pending'
       };
       
-      const structuredIntake = await storage.createStructuredIntake(validatedData);
+      const structuredIntake = await storage.createStructuredIntake(structuredIntakeData);
+
+      // Also create corresponding legal request for compatibility with existing quotes system
+      const legalRequestData = {
+        requestNumber,
+        firstName,
+        lastName,
+        email,
+        caseType,
+        caseDescription: attorneyIntakeSummary, // Use the generated summary as description
+        agreeToTerms: true, // Assume true since user completed intake
+        status: 'under_review'
+        // phoneNumber, location, city, state, captcha are optional and not collected in structured intake
+      };
+
+      // Validate the data before creating legal request
+      const validatedLegalRequestData = insertLegalRequestSchema.parse(legalRequestData);
+      await storage.createLegalRequest(validatedLegalRequestData);
+
       res.json({ success: true, data: structuredIntake });
     } catch (error) {
       console.error("Error creating structured intake:", error);
       res.status(500).json({ success: false, error: "Failed to create structured intake" });
-    }
-  });
-
-  app.get("/api/structured-intakes/public", async (req, res) => {
-    try {
-      const structuredIntakes = await storage.getAllStructuredIntakes();
-      // Return only public information for dropdown - no sensitive data
-      const publicIntakes = structuredIntakes.map(intake => ({
-        id: intake.id,
-        requestNumber: intake.requestNumber,
-        firstName: intake.firstName,
-        lastName: intake.lastName,
-        caseType: intake.caseType,
-        status: intake.status,
-        createdAt: intake.createdAt
-      }));
-      res.json({ success: true, data: publicIntakes });
-    } catch (error) {
-      console.error("Error fetching public structured intakes:", error);
-      res.status(500).json({ success: false, error: "Failed to fetch structured intakes" });
     }
   });
 
