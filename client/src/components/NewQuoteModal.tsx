@@ -558,7 +558,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
       // POST to structured intakes endpoint
       await apiRequest('/api/structured-intakes', {
         method: 'POST',
-        body: JSON.stringify(submissionData)
+        body: submissionData
       });
 
       toast({
