@@ -33,11 +33,11 @@ export default function IntakeModalSpanish({ isOpen, onClose, onStartChat }: Int
 
   const caseTypes = (caseTypesData as any)?.data || [];
 
-  const caseTypeOptions = [
-    { id: 'family-immigration', label: 'Inmigración Familiar' },
-    { id: 'asylum', label: 'Asilo' },
-    { id: 'naturalization-citizenship', label: 'Naturalización / Ciudadanía' }
-  ];
+  // Convert database case types to options for the form (Spanish labels)
+  const caseTypeOptions = caseTypes.map((caseType: any) => ({
+    id: caseType.value,
+    label: caseType.labelEs || caseType.label
+  }));
 
   const handleCaseTypeChange = (caseTypeId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -79,7 +79,7 @@ export default function IntakeModalSpanish({ isOpen, onClose, onStartChat }: Int
     // Create intake message in Spanish format
     const location = [formData.city, formData.state].filter(Boolean).join(', ');
     const caseTypeLabels = formData.caseTypes.map(id => {
-      const option = caseTypeOptions.find(opt => opt.id === id);
+      const option = caseTypeOptions.find((opt: { id: string; label: string }) => opt.id === id);
       return option?.label || id;
     }).join(', ');
 
@@ -232,7 +232,7 @@ export default function IntakeModalSpanish({ isOpen, onClose, onStartChat }: Int
               Tipo de Caso <span className="text-red-500">*</span>
             </Label>
             <div className="space-y-3">
-              {caseTypeOptions.map((option) => (
+              {caseTypeOptions.map((option: { id: string; label: string }) => (
                 <div key={option.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={option.id}

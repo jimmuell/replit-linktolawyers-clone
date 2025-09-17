@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClipboardList } from "lucide-react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 interface IntakeFormData {
   fullName: string;
@@ -26,26 +27,31 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
   const [location] = useLocation();
   const isSpanish = location.startsWith('/es');
 
+  // Fetch case types from API
+  const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
+    queryKey: ['/api/case-types'],
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const allCaseTypes = (caseTypesData as any)?.data || [];
+
   const [formData, setFormData] = useState<IntakeFormData>({
-    fullName: 'Jim Mueller',
-    email: 'jimmuell@aol.com',
-    caseTypes: ['family'],
-    phoneNumber: '9203625555',
-    city: 'Oshkosh',
-    state: 'WI'
+    fullName: '',
+    email: '',
+    caseTypes: [],
+    phoneNumber: '',
+    city: '',
+    state: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const caseTypeOptions = isSpanish ? [
-    { id: 'family', label: 'Inmigración Familiar' },
-    { id: 'asylum', label: 'Asilo' },
-    { id: 'naturalization', label: 'Naturalización / Ciudadanía' }
-  ] : [
-    { id: 'family', label: 'Family Immigration' },
-    { id: 'asylum', label: 'Asylum' },
-    { id: 'naturalization', label: 'Naturalization / Citizenship' }
-  ];
+  // Convert database case types to options for the form
+  const caseTypeOptions = allCaseTypes.map((caseType: any) => ({
+    id: caseType.value,
+    label: isSpanish && caseType.labelEs ? caseType.labelEs : caseType.label
+  }));
 
   const labels = isSpanish ? {
     title: 'Formulario de Admisión',
@@ -248,7 +254,7 @@ export function IntakeModal({ isOpen, onClose, onSubmit }: IntakeModalProps) {
               {labels.caseType} <span className="text-red-500">*</span>
             </Label>
             <div className="space-y-3">
-              {caseTypeOptions.map((option) => (
+              {caseTypeOptions.map((option: { id: string; label: string }) => (
                 <div key={option.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={option.id}
