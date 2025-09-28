@@ -761,8 +761,88 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const isSpanish = location.startsWith('/es');
   const { toast } = useToast();
 
+  // Spanish UI labels
+  const labels = isSpanish ? {
+    title: 'Obtener Cotización',
+    subtitle: 'Complete nuestro formulario de admisión para ser emparejado con un abogado de inmigración experimentado',
+    fullName: 'Nombre Completo',
+    email: 'Correo Electrónico',
+    caseType: 'Tipo de Caso',
+    additionalDetails: '¿Le gustaría agregar más detalles sobre su caso? Esto ayuda al abogado a entender mejor su caso.',
+    additionalDetailsPlaceholder: 'Opcional: Comparta cualquier detalle adicional sobre su caso...',
+    continueButton: 'Continuar',
+    backButton: 'Atrás',
+    submitButton: 'Enviar Solicitud',
+    submittingButton: 'Enviando...',
+    cancelButton: 'Cancelar',
+    thankYou: '¡Gracias!',
+    thankYouSubtitle: 'Lo emparejaremos con un abogado experimentado que maneja este tipo de caso y se pondrán en contacto pronto.',
+    legalDisclaimer: 'Descargo de Responsabilidad Legal: Este asistente de IA proporciona solo información general y no constituye asesoramiento legal. Para asuntos legales específicos, consulte con un abogado de inmigración calificado.',
+    otherDialogTitle: '¡Gracias por su interés!',
+    otherDialogMessage: `Apreciamos su interés! Actualmente, proporcionamos servicios para estas categorías principales:
+• Tarjeta Verde a través de un Cónyuge o Familiar (Tarjeta Verde Basada en Familia)  
+• Visa de Prometido(a) (Visa K-1)
+• Remoción de Condiciones en una Tarjeta Verde Condicional de 2 Años (Tarjeta Verde Permanente)
+• Asilo o Protección contra la Persecución
+• Ciudadanía Estadounidense (Naturalización / Ciudadanía)
+
+Aunque es posible que no podamos proporcionar una cotización para otros tipos de casos, enviaremos su información a un abogado en nuestra base de datos que pueda ayudarle. Por favor, vuelva a consultar ya que estamos expandiendo constantemente y agregando nuevas categorías.`,
+    closeButton: 'Cerrar'
+  } : {
+    title: 'Get Quote',
+    subtitle: 'Complete our intake form to get matched with an experienced immigration attorney',
+    fullName: 'Full Name',
+    email: 'Email Address',
+    caseType: 'Case Type',
+    additionalDetails: 'Would you like to add any more details about your case? This helps the attorney understand your case better.',
+    additionalDetailsPlaceholder: 'Optional: Share any additional details about your case...',
+    continueButton: 'Continue',
+    backButton: 'Back',
+    submitButton: 'Submit Request',
+    submittingButton: 'Submitting...',
+    cancelButton: 'Cancel',
+    thankYou: 'Thank You!',
+    thankYouSubtitle: 'We\'ll match you with an experienced attorney who handles this type of case and they\'ll be in touch soon.',
+    legalDisclaimer: 'Legal Disclaimer: This AI assistant provides general information only and does not constitute legal advice. For specific legal matters, please consult with a qualified immigration attorney.',
+    otherDialogTitle: 'Thank You for Your Interest!',
+    otherDialogMessage: `We appreciate your interest! Currently, we provide services for these main categories:
+• Green Card through a Spouse or Family Member (Family-Based Green Card)
+• Fiancé(e) Visa (K-1 Visa)  
+• Removing Conditions on a 2-Year Conditional Green Card (Permanent Green Card)
+• Asylum or Protection from Persecution
+• U.S. Citizenship (Naturalization / Citizenship)
+
+While we may not be able to provide a quote for other types of cases, we will forward your information to an attorney in our database who may be able to assist you. Please check back as we are constantly expanding and adding new categories.`,
+    closeButton: 'Close'
+  };
+
   // Case type options (exactly 5 as specified)
-  const caseTypeOptions = [
+  const caseTypeOptions = isSpanish ? [
+    {
+      value: 'family-based-immigrant-visa-immediate-relative' as CaseType,
+      label: 'Tarjeta Verde a través de un Cónyuge o Familiar ("Tarjeta Verde Basada en Familia")'
+    },
+    {
+      value: 'k1-fiance-visa' as CaseType,
+      label: 'Visa de Prometido(a) ("Visa K-1")'
+    },
+    {
+      value: 'removal-of-conditions' as CaseType,
+      label: 'Hacer Permanente mi Tarjeta Verde Condicional de 2 Años ("Remoción de Condiciones")'
+    },
+    {
+      value: 'asylum-affirmative' as CaseType,
+      label: 'Asilo o Protección contra la Persecución'
+    },
+    {
+      value: 'citizenship-naturalization-n400' as CaseType,
+      label: 'Ciudadanía Estadounidense ("Naturalización") - Solicitar para convertirse en Ciudadano Estadounidense'
+    },
+    {
+      value: 'other' as CaseType,
+      label: 'Otro'
+    }
+  ] : [
     {
       value: 'family-based-immigrant-visa-immediate-relative' as CaseType,
       label: 'Green Card through a Spouse or Family Member ("Family-Based Green Card") Family'
@@ -1133,7 +1213,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="fullName">Full Name <span className="text-red-500">*</span></Label>
+                <Label htmlFor="fullName">{labels.fullName} <span className="text-red-500">*</span></Label>
                 <Input
                   id="fullName"
                   value={basicInfo.fullName}
@@ -1147,7 +1227,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
               </div>
 
               <div>
-                <Label htmlFor="email">Email Address <span className="text-red-500">*</span></Label>
+                <Label htmlFor="email">{labels.email} <span className="text-red-500">*</span></Label>
                 <Input
                   id="email"
                   type="email"
@@ -1164,7 +1244,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 
             <div className="flex justify-end">
               <Button onClick={handleBasicInfoNext} disabled={!basicInfo.fullName || !basicInfo.email} data-testid="button-continue">
-                Continue <ArrowRight className="w-4 h-4 ml-2" />
+                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -1192,10 +1272,10 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 
             <div className="flex justify-between space-x-3 pt-4">
               <Button variant="outline" onClick={handleBack} data-testid="button-back">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
               </Button>
               <Button onClick={handleCaseTypeNext} disabled={!caseType} data-testid="button-continue">
-                Continue <ArrowRight className="w-4 h-4 ml-2" />
+                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -1208,10 +1288,10 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
             
             <div className="flex justify-between space-x-3 pt-4">
               <Button variant="outline" onClick={handleBack} data-testid="button-back">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
               </Button>
               <Button onClick={handleQuestionNext} disabled={!checkCurrentQuestionValid()} data-testid="button-continue">
-                Continue <ArrowRight className="w-4 h-4 ml-2" />
+                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
@@ -1221,29 +1301,29 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Thank You!</h2>
+              <h2 className="text-xl font-bold text-gray-900">{labels.thankYou}</h2>
               <p className="text-gray-600 mt-2">
-                We'll match you with an experienced attorney who handles this type of case and they'll be in touch soon.
+                {labels.thankYouSubtitle}
               </p>
             </div>
 
             {/* Legal Disclaimer */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-800">
-                <strong>Legal Disclaimer:</strong> This AI assistant provides general information only and does not constitute legal advice. For specific legal matters, please consult with a qualified immigration attorney.
+                <strong>{isSpanish ? 'Descargo de Responsabilidad Legal:' : 'Legal Disclaimer:'}</strong> {labels.legalDisclaimer}
               </p>
             </div>
 
             {/* Optional Details */}
             <div className="space-y-4">
               <Label htmlFor="additionalDetails">
-                Would you like to add any more details about your case? This helps the attorney understand your case better.
+                {labels.additionalDetails}
               </Label>
               <Textarea
                 id="additionalDetails"
                 value={additionalDetails}
                 onChange={(e) => setAdditionalDetails(e.target.value)}
-                placeholder="Optional: Share any additional details about your case..."
+                placeholder={labels.additionalDetailsPlaceholder}
                 rows={4}
                 data-testid="textarea-additional-details"
               />
@@ -1251,7 +1331,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 
             <div className="flex justify-between space-x-3 pt-4">
               <Button variant="outline" onClick={handleBack} data-testid="button-back">
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
               </Button>
               <Button 
                 onClick={handleSubmit} 
@@ -1259,7 +1339,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
                 className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50" 
                 data-testid="button-submit"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                {isSubmitting ? labels.submittingButton : labels.submitButton}
               </Button>
             </div>
           </div>
@@ -1275,9 +1355,9 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className={`${currentStep === 'case-type' ? 'max-w-4xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto`}>
           <DialogHeader className="sr-only">
-            <DialogTitle>Get Quote</DialogTitle>
+            <DialogTitle>{labels.title}</DialogTitle>
             <DialogDescription>
-              Complete our intake form to get matched with an experienced immigration attorney
+              {labels.subtitle}
             </DialogDescription>
           </DialogHeader>
           {renderStep()}
@@ -1288,25 +1368,15 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
       <Dialog open={showOtherCaseDialog} onOpenChange={handleClose}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Thank You for Your Interest!</DialogTitle>
+            <DialogTitle>{labels.otherDialogTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-gray-700">
-              We appreciate your interest! Currently, we provide services for these main categories:
-            </p>
-            <ul className="space-y-2 text-gray-700 ml-4">
-              <li>• Green Card through a Spouse or Family Member (Family-Based Green Card)</li>
-              <li>• Fiancé(e) Visa (K-1 Visa)</li>
-              <li>• Removing Conditions on a 2-Year Conditional Green Card (Permanent Green Card)</li>
-              <li>• Asylum or Protection from Persecution</li>
-              <li>• U.S. Citizenship (Naturalization / Citizenship)</li>
-            </ul>
-            <p className="text-gray-700">
-              While we may not be able to provide a quote for other types of cases, we will forward your information to an attorney in our database who may be able to assist you. Please check back as we are constantly expanding and adding new categories.
-            </p>
+            <div className="text-gray-700 whitespace-pre-line">
+              {labels.otherDialogMessage}
+            </div>
             <div className="flex justify-end pt-4">
               <Button onClick={handleClose} className="bg-blue-600 hover:bg-blue-700 text-white">
-                Close
+                {labels.closeButton}
               </Button>
             </div>
           </div>
