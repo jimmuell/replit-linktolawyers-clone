@@ -431,7 +431,7 @@ export default function Home() {
                   onClick={() => setIsNewQuoteModalOpen(true)}
                   data-testid="button-get-quote"
                 >
-                  Get A Free Quote
+                  See Immigration Lawyer Prices
                 </Button>
                 <Button 
                   variant="outline"

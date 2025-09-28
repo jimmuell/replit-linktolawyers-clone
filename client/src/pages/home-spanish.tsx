@@ -116,7 +116,7 @@ export default function HomeSpanish() {
                   onClick={() => setIsQuoteModalOpen(true)}
                   data-testid="button-get-quote"
                 >
-                  Obtener Una Cotización Gratuita
+                  Ver Precios de Abogados de Inmigración
                 </Button>
                 <Button 
                   variant="outline"
