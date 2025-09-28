@@ -27,7 +27,7 @@ import PrivacyPolicyModal from "@/components/PrivacyPolicyModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
-import girlThinkingImage from "@assets/girl-thinking-english_1759069892567.jpg";
+import girlThinkingImage from "@assets/girl-thinking-english_1759076159405.jpg";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
