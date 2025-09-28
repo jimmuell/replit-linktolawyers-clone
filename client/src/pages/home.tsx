@@ -413,11 +413,7 @@ export default function Home() {
                 
                 <div className="space-y-6 mb-8">
                   <p className="text-xl text-gray-600 max-w-lg">
-                    Our platform simplifies the process of finding and connecting with experienced lawyers, ensuring you receive the best legal support tailored to your unique situation, at an affordable price.
-                  </p>
-                  
-                  <p className="text-xl text-gray-600 max-w-lg">
-                    Take control of your legal expenses today. Compare quotes from multiple attorneys, negotiate fair pricing, and make confident decisions about your legal representation. Start your journey to affordable legal services now.
+                    No hidden costs. No pressure. Transparent pricing upfront, so you know exactly what to expect. Our service is 100% free and comes with no obligations — connect with an immigration lawyer only if and when you're ready.
                   </p>
                 </div>
               </div>
