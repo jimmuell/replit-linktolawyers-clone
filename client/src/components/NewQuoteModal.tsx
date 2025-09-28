@@ -49,7 +49,7 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: 'Great! This is for people getting a green card through a U.S. citizen or legal permanent resident family member. Is that correct?',
+        prompt: 'Great! This is for people getting a green card through a U.S. citizen or legal permanent resident family member. Is that your situation?',
         options: [
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' }
