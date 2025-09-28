@@ -322,8 +322,15 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
     nodes: {
       green_card_how: {
         id: 'green_card_how',
-        kind: 'textarea',
-        prompt: 'How did you get your green card? (Example: through family, work, marriage, or something else.)',
+        kind: 'single',
+        prompt: 'How did you get your Green Card? Please select one:',
+        options: [
+          { value: 'family', label: 'Family sponsorship (through a U.S. citizen or permanent resident)' },
+          { value: 'marriage', label: 'Marriage' },
+          { value: 'work', label: 'Work' },
+          { value: 'asylum', label: 'Asylum' },
+          { value: 'other', label: 'Other' }
+        ],
         required: true,
         next: () => 'green_card_date'
       },
