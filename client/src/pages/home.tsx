@@ -408,8 +408,7 @@ export default function Home() {
                   See How Much Immigration Lawyers Charge for Your Case — Free & No Obligations
                 </h1>
                 <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-8 leading-relaxed">
-                  Compare And Negotiate Legal Fees<br />
-                  From Law Firms Nationwide
+                  Quick, simple, and transparent — get personalized lawyer costs based on your case, with no obligations.
                 </h2>
                 
                 <div className="space-y-6 mb-8">
