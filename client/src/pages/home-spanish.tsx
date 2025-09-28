@@ -90,20 +90,15 @@ export default function HomeSpanish() {
             <div className="mb-8 lg:mb-0 flex flex-col h-full">
               <div className="flex-grow flex flex-col">
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                  Encuentra Tu Abogado de Inmigración
+                  Ve Cuánto Cobran los Abogados de Inmigración por Tu Caso — Gratis y Sin Obligaciones
                 </h1>
                 <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-8 leading-relaxed">
-                  Compara Y Negocia Honorarios Legales<br />
-                  De Firmas Jurídicas En Todo El País
+                  Rápido, simple y transparente — obtén costos personalizados de abogados basados en tu caso, sin obligaciones.
                 </h2>
                 
                 <div className="space-y-6 mb-8">
                   <p className="text-xl text-gray-600 max-w-lg">
-                    Nuestra plataforma simplifica el proceso de encontrar y conectar con abogados experimentados, asegurando que recibas el mejor apoyo legal adaptado a tu situación única, a un precio asequible.
-                  </p>
-                  
-                  <p className="text-xl text-gray-600 max-w-lg">
-                    Toma control de tus gastos legales hoy. Compara cotizaciones de múltiples abogados, negocia precios justos y toma decisiones informadas sobre tu representación legal. Comienza tu camino hacia servicios legales asequibles ahora.
+                    Sin costos ocultos. Sin presión. Precios transparentes por adelantado, para que sepas exactamente qué esperar. Nuestro servicio es 100% gratuito y viene sin obligaciones — conéctate con un abogado de inmigración solo si y cuando estés listo.
                   </p>
                 </div>
               </div>
