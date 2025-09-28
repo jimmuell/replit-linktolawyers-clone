@@ -918,16 +918,47 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`${currentStep === 'case-type' ? 'max-w-4xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto`}>
-        <DialogHeader className="sr-only">
-          <DialogTitle>Get Quote</DialogTitle>
-          <DialogDescription>
-            Complete our intake form to get matched with an experienced immigration attorney
-          </DialogDescription>
-        </DialogHeader>
-        {renderStep()}
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className={`${currentStep === 'case-type' ? 'max-w-4xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto`}>
+          <DialogHeader className="sr-only">
+            <DialogTitle>Get Quote</DialogTitle>
+            <DialogDescription>
+              Complete our intake form to get matched with an experienced immigration attorney
+            </DialogDescription>
+          </DialogHeader>
+          {renderStep()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog for "Other" case type submissions */}
+      <Dialog open={showOtherCaseDialog} onOpenChange={handleClose}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Thank You for Your Interest!</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-gray-700">
+              We appreciate your interest! Currently, we provide services for these main categories:
+            </p>
+            <ul className="space-y-2 text-gray-700 ml-4">
+              <li>• Green Card through a Spouse or Family Member (Family-Based Green Card)</li>
+              <li>• Fiancé(e) Visa (K-1 Visa)</li>
+              <li>• Removing Conditions on a 2-Year Conditional Green Card (Permanent Green Card)</li>
+              <li>• Asylum or Protection from Persecution</li>
+              <li>• U.S. Citizenship (Naturalization / Citizenship)</li>
+            </ul>
+            <p className="text-gray-700">
+              While we may not be able to provide a quote for other types of cases, we will forward your information to an attorney in our database who may be able to assist you. Please check back as we are constantly expanding and adding new categories.
+            </p>
+            <div className="flex justify-end pt-4">
+              <Button onClick={handleClose} className="bg-blue-600 hover:bg-blue-700 text-white">
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
