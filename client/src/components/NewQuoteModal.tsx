@@ -494,10 +494,58 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       },
       inside_status: {
         id: 'inside_status',
-        kind: 'textarea',
-        prompt: '¿Sigue en estatus legal, o está fuera de estatus? (*En estatus* significa seguir las reglas de su visa y permanecer en los Estados Unidos por el período permitido en su I-94. *Fuera de estatus* significa que se ha quedado en los Estados Unidos más allá del tiempo permitido.) Si entró con inspección, ¿qué tipo de visa usó para entrar? Ejemplo: turista, estudiante, trabajo, o sin visa.',
+        kind: 'single',
+        prompt: '¿Cuál es su estatus legal actual en los Estados Unidos?',
+        options: [
+          { value: 'in_status', label: '¿Sigue en estatus legal? (*En estatus* significa seguir las reglas de su visa y permanecer en los Estados Unidos por el período permitido en su I-94.)' },
+          { value: 'out_status', label: '¿Está fuera de estatus? (*Fuera de estatus* significa que se ha quedado en los Estados Unidos más allá del tiempo permitido.)' }
+        ],
         required: true,
         visibleIf: (answers) => answers.location === 'inside',
+        next: (answers) => answers.inside_status === 'in_status' ? 'inside_status_in_status_visa' : 'inside_status_out_status_benefit'
+      },
+      inside_status_in_status_visa: {
+        id: 'inside_status_in_status_visa',
+        kind: 'textarea',
+        prompt: 'Si fue inspeccionado o entró a los Estados Unidos con una visa, por favor díganos qué tipo de visa o entrada utilizó (por ejemplo, turista, estudiante, trabajo, libertad condicional humanitaria).',
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside' && answers.inside_status === 'in_status',
+        next: () => 'inside_status_in_status_help'
+      },
+      inside_status_in_status_help: {
+        id: 'inside_status_in_status_help',
+        kind: 'textarea',
+        prompt: '¿Qué tipo de asistencia legal o ayuda de inmigración necesita?',
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside' && answers.inside_status === 'in_status',
+        next: () => 'inside_married_before'
+      },
+      inside_status_out_status_benefit: {
+        id: 'inside_status_out_status_benefit',
+        kind: 'confirm',
+        prompt: '¿Alguna vez ha solicitado un beneficio de inmigración?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside' && answers.inside_status === 'out_status',
+        next: (answers) => answers.inside_status_out_status_benefit === 'yes' ? 'inside_status_out_status_benefit_explain' : 'inside_status_out_status_help'
+      },
+      inside_status_out_status_benefit_explain: {
+        id: 'inside_status_out_status_benefit_explain',
+        kind: 'textarea',
+        prompt: 'Si la respuesta es sí, por favor proporcione una explicación',
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside' && answers.inside_status === 'out_status' && answers.inside_status_out_status_benefit === 'yes',
+        next: () => 'inside_status_out_status_help'
+      },
+      inside_status_out_status_help: {
+        id: 'inside_status_out_status_help',
+        kind: 'textarea',
+        prompt: '¿Qué tipo de asistencia legal o ayuda de inmigración necesita?',
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside' && answers.inside_status === 'out_status',
         next: () => 'inside_married_before'
       },
       inside_married_before: {
