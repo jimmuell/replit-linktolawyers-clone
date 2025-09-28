@@ -298,9 +298,21 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       },
       prior_immigration_benefit: {
         id: 'prior_immigration_benefit',
-        kind: 'textarea',
-        prompt: 'Has your fiance(e) applied for an immigration benefit before? If so, please briefly explain.',
+        kind: 'confirm',
+        prompt: 'Has your fiance(e) applied for an immigration benefit before?',
+        options: [
+          { value: 'yes', label: 'Yes' },
+          { value: 'no', label: 'No' }
+        ],
         required: true,
+        next: (answers) => answers.prior_immigration_benefit === 'yes' ? 'prior_immigration_explanation' : 'END'
+      },
+      prior_immigration_explanation: {
+        id: 'prior_immigration_explanation',
+        kind: 'textarea',
+        prompt: 'Please briefly explain what immigration benefit your fiance(e) applied for and what happened.',
+        required: true,
+        visibleIf: (answers) => answers.prior_immigration_benefit === 'yes',
         next: () => 'END'
       }
     }
