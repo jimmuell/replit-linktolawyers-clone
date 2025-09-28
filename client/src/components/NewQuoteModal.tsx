@@ -137,7 +137,7 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: 'Great! This is for people in the U.S. due to fear of being persecuted if they return to their home country. Is that correct?',
+        prompt: 'Great! This is for people in the U.S. due to fear of being persecuted if they return to their home country. Is that your situation?',
         options: [
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' }
