@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ClipboardList, ArrowLeft, ArrowRight } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 
 interface NewQuoteModalProps {
   isOpen: boolean;
@@ -391,6 +392,356 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
   }
 };
 
+// Spanish translations for all flow configurations
+const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
+  'family-based-immigrant-visa-immediate-relative': {
+    start: 'confirm',
+    nodes: {
+      confirm: {
+        id: 'confirm',
+        kind: 'confirm',
+        prompt: '¡Excelente! Esto es para personas que obtienen una tarjeta verde a través de un familiar ciudadano estadounidense o residente legal permanente. ¿Es esa su situación?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'relationship'
+      },
+      relationship: {
+        id: 'relationship',
+        kind: 'single',
+        prompt: '¿Cuál es su relación con el familiar que puede ayudarle?',
+        options: [
+          { value: 'spouse', label: 'Cónyuge (ciudadano estadounidense o residente legal permanente)' },
+          { value: 'parent', label: 'Padre/Madre (ciudadano estadounidense o residente legal permanente)' },
+          { value: 'child', label: 'Hijo/Hija (ciudadano estadounidense, 21 años o mayor)' },
+          { value: 'other', label: 'Otro' }
+        ],
+        required: true,
+        next: () => 'location'
+      },
+      location: {
+        id: 'location',
+        kind: 'single',
+        prompt: '¿Está usted dentro de los Estados Unidos ahora mismo, o fuera de los Estados Unidos?',
+        options: [
+          { value: 'inside', label: 'Dentro de los Estados Unidos' },
+          { value: 'outside', label: 'Fuera de los Estados Unidos' }
+        ],
+        required: true,
+        next: (answers) => answers.location === 'inside' ? 'inside_inspected' : 'outside_prior_benefit'
+      },
+      inside_inspected: {
+        id: 'inside_inspected',
+        kind: 'single',
+        prompt: 'Cuando llegó a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?',
+        options: [
+          { value: 'yes', label: 'Sí - Fui inspeccionado y admitido' },
+          { value: 'no', label: 'No - Entré sin ser inspeccionado' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside',
+        next: () => 'inside_status'
+      },
+      inside_status: {
+        id: 'inside_status',
+        kind: 'textarea',
+        prompt: '¿Sigue en estatus legal, o está fuera de estatus? (*En estatus* significa seguir las reglas de su visa y permanecer en los Estados Unidos por el período permitido en su I-94. *Fuera de estatus* significa que se ha quedado en los Estados Unidos más allá del tiempo permitido.) Si entró con inspección, ¿qué tipo de visa usó para entrar? Ejemplo: turista, estudiante, trabajo, o sin visa.',
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside',
+        next: () => 'inside_married_before'
+      },
+      inside_married_before: {
+        id: 'inside_married_before',
+        kind: 'confirm',
+        prompt: '¿Ha estado casado(a) antes?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.location === 'inside',
+        next: () => 'END'
+      },
+      outside_prior_benefit: {
+        id: 'outside_prior_benefit',
+        kind: 'textarea',
+        prompt: '¿Ha solicitado algún beneficio de inmigración antes? Si es así, ¿qué pasó?',
+        required: true,
+        visibleIf: (answers) => answers.location === 'outside',
+        next: () => 'outside_help_type'
+      },
+      outside_help_type: {
+        id: 'outside_help_type',
+        kind: 'textarea',
+        prompt: '¿Qué tipo de ayuda legal está buscando en este momento?',
+        required: true,
+        visibleIf: (answers) => answers.location === 'outside',
+        next: () => 'END'
+      }
+    }
+  },
+  'asylum-affirmative': {
+    start: 'confirm',
+    nodes: {
+      confirm: {
+        id: 'confirm',
+        kind: 'confirm',
+        prompt: '¡Excelente! Esto es para personas en los Estados Unidos debido al temor de ser perseguidas si regresan a su país de origen. ¿Es esa su situación?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'inspected'
+      },
+      inspected: {
+        id: 'inspected',
+        kind: 'single',
+        prompt: 'Cuando llegó a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?',
+        options: [
+          { value: 'yes', label: 'Sí - Fui inspeccionado y admitido' },
+          { value: 'no', label: 'No - Entré sin ser inspeccionado' }
+        ],
+        required: true,
+        next: () => 'entry_date'
+      },
+      entry_date: {
+        id: 'entry_date',
+        kind: 'text',
+        prompt: '¿Qué fecha entró? Por favor proporcione la fecha o su mejor estimación.',
+        required: true,
+        next: () => 'afraid_return'
+      },
+      afraid_return: {
+        id: 'afraid_return',
+        kind: 'textarea',
+        prompt: '¿Tiene miedo de regresar a su país de origen? Si es así, ¿puede decirme por qué?',
+        required: true,
+        next: () => 'immigration_court'
+      },
+      immigration_court: {
+        id: 'immigration_court',
+        kind: 'confirm',
+        prompt: '¿Ha sido puesto alguna vez en corte de inmigración o ha enfrentado procedimientos de deportación? ¿El gobierno de los Estados Unidos lo ha enviado a corte de inmigración o procedimientos de remoción (deportación)?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'END'
+      }
+    }
+  },
+  'removal-of-conditions': {
+    start: 'confirm',
+    nodes: {
+      confirm: {
+        id: 'confirm',
+        kind: 'confirm',
+        prompt: '¡Excelente! ¿Usted es un residente permanente condicional que obtuvo estatus a través del matrimonio?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'green_card_date'
+      },
+      green_card_date: {
+        id: 'green_card_date',
+        kind: 'text',
+        prompt: '¿Cuál es la fecha de inicio en su tarjeta verde?',
+        required: true,
+        next: () => 'marital_evidence'
+      },
+      marital_evidence: {
+        id: 'marital_evidence',
+        kind: 'single',
+        prompt: 'En una escala del 1-10, ¿cuánta evidencia matrimonial presentó con su solicitud original de tarjeta verde? (1 = muy poca y 10 = mucha).',
+        options: [
+          { value: '1', label: '1 - Muy poca' },
+          { value: '2', label: '2' },
+          { value: '3', label: '3' },
+          { value: '4', label: '4' },
+          { value: '5', label: '5' },
+          { value: '6', label: '6' },
+          { value: '7', label: '7' },
+          { value: '8', label: '8' },
+          { value: '9', label: '9' },
+          { value: '10', label: '10 - Mucha' }
+        ],
+        required: true,
+        next: () => 'filing_type'
+      },
+      filing_type: {
+        id: 'filing_type',
+        kind: 'single',
+        prompt: '¿Cómo presentará su solicitud? (seleccione una)',
+        options: [
+          { value: 'joint', label: 'Junto con mi cónyuge ("presentación conjunta")' },
+          { value: 'waiver', label: 'Por mi cuenta (exención)' }
+        ],
+        required: true,
+        next: () => 'marriage_situation'
+      },
+      marriage_situation: {
+        id: 'marriage_situation',
+        kind: 'single',
+        prompt: '¿Cuál es su situación matrimonial actual?',
+        options: [
+          { value: 'married_together', label: 'Casado(a) viviendo juntos' },
+          { value: 'married_apart', label: 'Casado(a) pero viviendo separados' },
+          { value: 'divorced', label: 'Divorciado(a)' },
+          { value: 'widow', label: 'Viudo(a)' }
+        ],
+        required: true,
+        next: () => 'END'
+      }
+    }
+  },
+  'k1-fiance-visa': {
+    start: 'confirm',
+    nodes: {
+      confirm: {
+        id: 'confirm',
+        kind: 'confirm',
+        prompt: '¡Excelente! ¿Usted es un ciudadano estadounidense solicitando para que su prometido(a) venga a los Estados Unidos para casarse dentro de 90 días de llegada?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'met_in_person'
+      },
+      met_in_person: {
+        id: 'met_in_person',
+        kind: 'confirm',
+        prompt: '¿Se han conocido usted y su prometido(a) en persona dentro de los últimos 2 años?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'married_before'
+      },
+      married_before: {
+        id: 'married_before',
+        kind: 'confirm',
+        prompt: '¿Han estado casados antes usted (el peticionario) o su prometido(a) (el beneficiario)?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'fiance_outside_us'
+      },
+      fiance_outside_us: {
+        id: 'fiance_outside_us',
+        kind: 'confirm',
+        prompt: '¿Está su prometido(a) fuera de los Estados Unidos?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'prior_immigration_benefit'
+      },
+      prior_immigration_benefit: {
+        id: 'prior_immigration_benefit',
+        kind: 'confirm',
+        prompt: '¿Ha solicitado su prometido(a) un beneficio de inmigración antes?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: (answers) => answers.prior_immigration_benefit === 'yes' ? 'prior_immigration_explanation' : 'END'
+      },
+      prior_immigration_explanation: {
+        id: 'prior_immigration_explanation',
+        kind: 'textarea',
+        prompt: 'Por favor explique brevemente qué beneficio de inmigración solicitó su prometido(a) y qué pasó.',
+        required: true,
+        visibleIf: (answers) => answers.prior_immigration_benefit === 'yes',
+        next: () => 'END'
+      }
+    }
+  },
+  'citizenship-naturalization-n400': {
+    start: 'green_card_how',
+    nodes: {
+      green_card_how: {
+        id: 'green_card_how',
+        kind: 'single',
+        prompt: '¿Cómo obtuvo su Tarjeta Verde? Por favor seleccione una:',
+        options: [
+          { value: 'family', label: 'Patrocinio familiar (a través de un ciudadano estadounidense o residente permanente)' },
+          { value: 'marriage', label: 'Matrimonio' },
+          { value: 'work', label: 'Trabajo' },
+          { value: 'asylum', label: 'Asilo' },
+          { value: 'other', label: 'Otro' }
+        ],
+        required: true,
+        next: () => 'green_card_date'
+      },
+      green_card_date: {
+        id: 'green_card_date',
+        kind: 'text',
+        prompt: '¿Cuál es la fecha de inicio en su tarjeta verde? Por favor comparta la fecha impresa en su tarjeta.',
+        required: true,
+        next: () => 'trips_over_6_months'
+      },
+      trips_over_6_months: {
+        id: 'trips_over_6_months',
+        kind: 'confirm',
+        prompt: 'Desde que obtuvo su tarjeta verde, ¿ha tomado viajes fuera de los Estados Unidos por más de 6 meses a la vez?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'lived_in_us_5_years'
+      },
+      lived_in_us_5_years: {
+        id: 'lived_in_us_5_years',
+        kind: 'confirm',
+        prompt: 'En los últimos 5 años, ¿ha vivido en los Estados Unidos al menos la mitad del tiempo?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        next: () => 'marriage_3_year_rule'
+      },
+      marriage_3_year_rule: {
+        id: 'marriage_3_year_rule',
+        kind: 'confirm',
+        prompt: 'Si está solicitando a través del matrimonio bajo la regla de 3 años: En los últimos 3 años, ¿ha vivido en los Estados Unidos al menos la mitad del tiempo mientras estuvo casado(a) y viviendo con su cónyuge ciudadano estadounidense?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' },
+          { value: 'not_applicable', label: 'No aplica - No estoy solicitando a través del matrimonio' }
+        ],
+        required: true,
+        next: () => 'END'
+      }
+    }
+  },
+  'other': {
+    start: 'other_assistance_type',
+    nodes: {
+      other_assistance_type: {
+        id: 'other_assistance_type',
+        kind: 'textarea',
+        prompt: '¿Qué tipo de asistencia legal o ayuda de inmigración necesita?',
+        required: true,
+        next: () => 'END'
+      }
+    }
+  }
+};
+
 export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>('basic-info');
   const [caseType, setCaseType] = useState<CaseType | ''>('');
@@ -406,6 +757,8 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showOtherCaseDialog, setShowOtherCaseDialog] = useState<boolean>(false);
 
+  const [location] = useLocation();
+  const isSpanish = location.startsWith('/es');
   const { toast } = useToast();
 
   // Case type options (exactly 5 as specified)
@@ -455,7 +808,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const checkCurrentQuestionValid = (): boolean => {
     if (!caseType || currentStep !== 'questionnaire') return true;
     
-    const flow = FLOW_CONFIG[caseType];
+    const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
     const currentQuestion = flow.nodes[currentNodeKey];
     
     if (!currentQuestion?.required) return true;
@@ -467,7 +820,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const validateCurrentQuestion = (): boolean => {
     if (!caseType || currentStep !== 'questionnaire') return true;
     
-    const flow = FLOW_CONFIG[caseType];
+    const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
     const currentQuestion = flow.nodes[currentNodeKey];
     
     if (!currentQuestion?.required) return true;
@@ -490,7 +843,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 
   const handleCaseTypeNext = () => {
     if (caseType) {
-      const flow = FLOW_CONFIG[caseType];
+      const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
       setCurrentNodeKey(flow.start);
       setNavigationHistory([]); // Reset navigation history for new flow
       setAnswers({}); // Clear previous answers to avoid stale data
@@ -502,7 +855,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const handleQuestionNext = () => {
     if (!validateCurrentQuestion() || !caseType) return;
     
-    const flow = FLOW_CONFIG[caseType];
+    const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
     const currentQuestion = flow.nodes[currentNodeKey];
     
     if (currentQuestion.next) {
@@ -544,7 +897,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
         setCurrentStep('questionnaire');
       } else if (caseType) {
         // If no history, go to the start of the flow
-        const flow = FLOW_CONFIG[caseType];
+        const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
         setCurrentNodeKey(flow.start);
         setCurrentStep('questionnaire');
       }
@@ -561,7 +914,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
       const transcript: Array<{ question: string; answer: string }> = [];
       
       if (caseType) {
-        const flow = FLOW_CONFIG[caseType];
+        const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
         // Create ordered transcript based on navigation history + current answers
         const questionOrder = [...navigationHistory, currentNodeKey];
         
@@ -674,7 +1027,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const renderQuestion = () => {
     if (!caseType) return null;
     
-    const flow = FLOW_CONFIG[caseType];
+    const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
     const currentQuestion = flow.nodes[currentNodeKey];
     
     if (!currentQuestion) return null;
