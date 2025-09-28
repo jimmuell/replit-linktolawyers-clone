@@ -8,7 +8,7 @@ import { IntakeModal } from "@/components/IntakeModal";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
 import { Link } from "wouter";
-import girlThinkingSpanishImage from "@assets/girl-final_spanish_1752931654981.png";
+import girlThinkingSpanishImage from "@assets/girl-thinking-spanish_1759069959323.jpg";
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
