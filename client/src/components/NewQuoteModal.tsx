@@ -238,7 +238,7 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: 'Great! You are a conditional permanent resident who obtained status through marriage?',
+        prompt: 'Great! You got your green card through marriage, and it\'s valid for 2 years (conditional green card), correct?',
         options: [
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' }
@@ -636,7 +636,7 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: '¡Excelente! ¿Usted es un residente permanente condicional que obtuvo estatus a través del matrimonio?',
+        prompt: '¡Excelente! Usted obtuvo su tarjeta verde a través del matrimonio, y es válida por 2 años (tarjeta verde condicional), ¿correcto?',
         options: [
           { value: 'yes', label: 'Sí' },
           { value: 'no', label: 'No' }
