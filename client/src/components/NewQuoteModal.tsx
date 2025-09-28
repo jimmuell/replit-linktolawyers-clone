@@ -1001,14 +1001,39 @@ While we may not be able to provide a quote for other types of cases, we will fo
     
     if (!currentQuestion?.required) return true;
     
+    const newErrors: Record<string, string> = {};
+    
+    // Validate main question
     const answer = answers[currentNodeKey];
     if (!answer || (typeof answer === 'string' && !answer.trim())) {
-      setErrors({ [currentNodeKey]: 'This field is required' });
-      return false;
+      newErrors[currentNodeKey] = 'This field is required';
     }
     
-    setErrors({});
-    return true;
+    // Validate conditional questions that are displayed inline
+    if (currentNodeKey === 'inside_status_out_status_benefit' && answer === 'yes') {
+      // Validate explanation field
+      const explainAnswer = answers['inside_status_out_status_benefit_explain'];
+      if (!explainAnswer || (typeof explainAnswer === 'string' && !explainAnswer.trim())) {
+        newErrors['inside_status_out_status_benefit_explain'] = 'This field is required';
+      }
+      
+      // Validate help field
+      const helpAnswer = answers['inside_status_out_status_help'];
+      if (!helpAnswer || (typeof helpAnswer === 'string' && !helpAnswer.trim())) {
+        newErrors['inside_status_out_status_help'] = 'This field is required';
+      }
+    }
+    
+    if (currentNodeKey === 'inside_status_in_status_visa' && answer) {
+      // Validate help field for in_status path
+      const helpAnswer = answers['inside_status_in_status_help'];
+      if (!helpAnswer || (typeof helpAnswer === 'string' && !helpAnswer.trim())) {
+        newErrors['inside_status_in_status_help'] = 'This field is required';
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleBasicInfoNext = () => {
@@ -1035,19 +1060,26 @@ While we may not be able to provide a quote for other types of cases, we will fo
     const currentQuestion = flow.nodes[currentNodeKey];
     
     if (currentQuestion.next) {
-      const nextKey = currentQuestion.next(answers);
       // Always track current node in navigation history
       setNavigationHistory(prev => [...prev, currentNodeKey]);
       
-      if (nextKey === 'END') {
-        // Special handling for "other" case type - show custom dialog instead of going to wrap-up
-        if (caseType === 'other') {
-          handleOtherCaseSubmission();
-        } else {
-          setCurrentStep('wrap-up');
-        }
+      // Special handling for conditional questions that are now rendered inline
+      if (currentNodeKey === 'inside_status_out_status_benefit' || currentNodeKey === 'inside_status_in_status_visa') {
+        // Skip to the married question since conditional questions are handled inline
+        setCurrentNodeKey('inside_married_before');
       } else {
-        setCurrentNodeKey(nextKey);
+        const nextKey = currentQuestion.next(answers);
+        
+        if (nextKey === 'END') {
+          // Special handling for "other" case type - show custom dialog instead of going to wrap-up
+          if (caseType === 'other') {
+            handleOtherCaseSubmission();
+          } else {
+            setCurrentStep('wrap-up');
+          }
+        } else {
+          setCurrentNodeKey(nextKey);
+        }
       }
     }
   };
@@ -1219,6 +1251,78 @@ While we may not be able to provide a quote for other types of cases, we will fo
       setErrors({});
     };
 
+    // Helper function to render conditional follow-up questions
+    const renderConditionalQuestions = () => {
+      const conditionalQuestions = [];
+      
+      // For inside_status_out_status_benefit question, show follow-ups inline
+      if (currentNodeKey === 'inside_status_out_status_benefit' && answer === 'yes') {
+        // Show explanation textarea
+        const explainAnswer = answers['inside_status_out_status_benefit_explain'];
+        const explainError = errors['inside_status_out_status_benefit_explain'];
+        
+        conditionalQuestions.push(
+          <div key="explanation" className="space-y-4 mt-6 p-4 bg-gray-50 rounded-lg border">
+            <Label className="text-lg font-medium">
+              {isSpanish 
+                ? 'Si la respuesta es sí, por favor proporcione una explicación' 
+                : 'If the answer is yes, please provide an explanation'}
+              <span className="text-red-500 ml-1">*</span>
+            </Label>
+            <Textarea
+              value={String(explainAnswer || '')}
+              onChange={(e) => setAnswers(prev => ({
+                ...prev,
+                'inside_status_out_status_benefit_explain': e.target.value
+              }))}
+              placeholder={isSpanish ? 'Ingrese su explicación' : 'Enter your explanation'}
+              rows={3}
+              data-testid="textarea-inside_status_out_status_benefit_explain"
+            />
+            {explainError && (
+              <p className="text-red-500 text-sm">{explainError}</p>
+            )}
+          </div>
+        );
+      }
+      
+      // Show assistance question for both in_status and out_status paths
+      if (currentNodeKey === 'inside_status_in_status_visa' || 
+          (currentNodeKey === 'inside_status_out_status_benefit' && answer)) {
+        const helpQuestionId = currentNodeKey === 'inside_status_in_status_visa' 
+          ? 'inside_status_in_status_help'
+          : 'inside_status_out_status_help';
+        const helpAnswer = answers[helpQuestionId];
+        const helpError = errors[helpQuestionId];
+        
+        conditionalQuestions.push(
+          <div key="help" className="space-y-4 mt-6 p-4 bg-gray-50 rounded-lg border">
+            <Label className="text-lg font-medium">
+              {isSpanish 
+                ? '¿Qué tipo de asistencia legal o ayuda de inmigración necesita?' 
+                : 'What type of legal assistance or immigration help do you need?'}
+              <span className="text-red-500 ml-1">*</span>
+            </Label>
+            <Textarea
+              value={String(helpAnswer || '')}
+              onChange={(e) => setAnswers(prev => ({
+                ...prev,
+                [helpQuestionId]: e.target.value
+              }))}
+              placeholder={isSpanish ? 'Describe el tipo de ayuda que necesita' : 'Describe the type of help you need'}
+              rows={3}
+              data-testid={`textarea-${helpQuestionId}`}
+            />
+            {helpError && (
+              <p className="text-red-500 text-sm">{helpError}</p>
+            )}
+          </div>
+        );
+      }
+      
+      return conditionalQuestions;
+    };
+
     return (
       <div className="space-y-4">
         <Label className="text-lg font-medium">
@@ -1290,6 +1394,9 @@ While we may not be able to provide a quote for other types of cases, we will fo
         {error && (
           <p className="text-red-500 text-sm">{error}</p>
         )}
+
+        {/* Render conditional follow-up questions */}
+        {renderConditionalQuestions()}
       </div>
     );
   };
