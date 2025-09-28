@@ -32,7 +32,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'citizenship-naturalization-n400';
+type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'citizenship-naturalization-n400' | 'other';
 
 type Step = 'basic-info' | 'case-type' | 'questionnaire' | 'wrap-up';
 
@@ -376,6 +376,18 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
         next: () => 'END'
       }
     }
+  },
+  'other': {
+    start: 'other_assistance_type',
+    nodes: {
+      other_assistance_type: {
+        id: 'other_assistance_type',
+        kind: 'textarea',
+        prompt: 'What type of legal assistance or immigration help do you need?',
+        required: true,
+        next: () => 'END'
+      }
+    }
   }
 };
 
@@ -392,6 +404,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showOtherCaseDialog, setShowOtherCaseDialog] = useState<boolean>(false);
 
   const { toast } = useToast();
 
@@ -416,6 +429,10 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     {
       value: 'citizenship-naturalization-n400' as CaseType,
       label: 'U.S. Citizenship ("Naturalization") - Applying to become a U.S. Citizen Naturalization / Citizenship'
+    },
+    {
+      value: 'other' as CaseType,
+      label: 'Other'
     }
   ];
 
@@ -494,7 +511,12 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
       setNavigationHistory(prev => [...prev, currentNodeKey]);
       
       if (nextKey === 'END') {
-        setCurrentStep('wrap-up');
+        // Special handling for "other" case type - show custom dialog instead of going to wrap-up
+        if (caseType === 'other') {
+          handleOtherCaseSubmission();
+        } else {
+          setCurrentStep('wrap-up');
+        }
       } else {
         setCurrentNodeKey(nextKey);
       }
@@ -599,6 +621,42 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     }
   };
 
+  const handleOtherCaseSubmission = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Save the submission to the database
+      const submissionData = {
+        firstName: basicInfo.fullName.split(' ')[0] || basicInfo.fullName,
+        lastName: basicInfo.fullName.split(' ').slice(1).join(' ') || '',
+        email: basicInfo.email,
+        caseType: 'other',
+        formResponses: {
+          answers,
+          additionalDetails,
+          submittedAt: new Date().toISOString()
+        }
+      };
+
+      await apiRequest('/api/structured-intakes', {
+        method: 'POST',
+        body: submissionData
+      });
+
+      // Show the custom dialog message
+      setShowOtherCaseDialog(true);
+    } catch (error) {
+      console.error('Error submitting other case intake:', error);
+      toast({
+        title: 'Submission Failed',
+        description: 'There was an error submitting your request. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleClose = () => {
     setCurrentStep('basic-info');
     setCaseType('');
@@ -609,6 +667,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     setErrors({});
     setNavigationHistory([]);
     setIsSubmitting(false);
+    setShowOtherCaseDialog(false);
     onClose();
   };
 
