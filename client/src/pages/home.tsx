@@ -405,7 +405,7 @@ export default function Home() {
             <div className="mb-8 lg:mb-0 flex flex-col h-full">
               <div className="flex-grow flex flex-col">
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                  Find Your Immigration Attorney
+                  See How Much Immigration Lawyers Charge for Your Case — Free & No Obligations
                 </h1>
                 <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-8 leading-relaxed">
                   Compare And Negotiate Legal Fees<br />
