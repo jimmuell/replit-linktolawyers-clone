@@ -459,7 +459,7 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: '¡Excelente! Esto es para personas que obtienen una tarjeta verde a través de un familiar ciudadano estadounidense o residente legal permanente. ¿Es esa su situación?',
+        prompt: '¡Excelente! Esto es para personas que obtienen una tarjeta verde a través de un familiar ciudadano estadounidense o residente legal permanente (como un cónyuge, padre/madre, o hijo/hija). ¿Es esa su situación?',
         options: [
           { value: 'yes', label: 'Sí' },
           { value: 'no', label: 'No' }
@@ -470,14 +470,25 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       relationship: {
         id: 'relationship',
         kind: 'single',
-        prompt: '¿Cuál es su relación con el familiar que puede ayudarle?',
+        prompt: '¿Cuál es su relación con la persona que lo patrocina y cuál es su estatus?',
         options: [
-          { value: 'spouse', label: 'Cónyuge (ciudadano estadounidense o residente legal permanente)' },
-          { value: 'parent', label: 'Padre/Madre (ciudadano estadounidense o residente legal permanente)' },
-          { value: 'child', label: 'Hijo/Hija (ciudadano estadounidense, 21 años o mayor)' },
-          { value: 'other', label: 'Otro' }
+          { value: 'spouse_citizen', label: 'Cónyuge (ciudadano estadounidense)' },
+          { value: 'spouse_lpr', label: 'Cónyuge (titular de tarjeta verde)' },
+          { value: 'parent_citizen', label: 'Padre/Madre (ciudadano estadounidense)' },
+          { value: 'parent_lpr', label: 'Padre/Madre (titular de tarjeta verde)' },
+          { value: 'child_citizen', label: 'Hijo/Hija, 21+ (ciudadano estadounidense)' },
+          { value: 'child_lpr', label: 'Hijo/Hija, 21+ (titular de tarjeta verde)' },
+          { value: 'other', label: 'Otro / No estoy seguro' }
         ],
         required: true,
+        next: (answers) => answers.relationship === 'other' ? 'relationship_other_details' : 'location'
+      },
+      relationship_other_details: {
+        id: 'relationship_other_details',
+        kind: 'textarea',
+        prompt: 'Por favor proporcione información adicional sobre la persona que lo patrocina.',
+        required: true,
+        visibleIf: (answers) => answers.relationship === 'other',
         next: () => 'location'
       },
       location: {
@@ -494,7 +505,7 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       inside_inspected: {
         id: 'inside_inspected',
         kind: 'single',
-        prompt: 'Cuando llegó a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?',
+        prompt: 'Cuando entró a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?',
         options: [
           { value: 'yes', label: 'Sí - Fui inspeccionado y admitido' },
           { value: 'no', label: 'No - Entré sin ser inspeccionado' }
