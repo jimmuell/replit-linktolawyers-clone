@@ -77,8 +77,8 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
 
           <div className="md:hidden flex items-center space-x-2">
             <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
-              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-4 py-2 text-sm" data-testid="button-language-toggle">
-                EN
+              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-3 py-2 text-xs" data-testid="button-language-toggle">
+                English
               </Button>
             </Link>
             <Button
