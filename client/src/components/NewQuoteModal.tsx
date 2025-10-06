@@ -391,7 +391,7 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       green_card_how: {
         id: 'green_card_how',
         kind: 'single',
-        prompt: 'How did you get your Green Card? Please select one:',
+        prompt: 'How did you get your green card? Please select one.',
         options: [
           { value: 'family', label: 'Family sponsorship (through a U.S. citizen or permanent resident)' },
           { value: 'marriage', label: 'Marriage' },
@@ -400,12 +400,79 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
           { value: 'other', label: 'Other' }
         ],
         required: true,
+        next: (answers) => answers.green_card_how === 'marriage' ? 'marriage_sponsor_type' : 'lived_in_us_5_years'
+      },
+      marriage_sponsor_type: {
+        id: 'marriage_sponsor_type',
+        kind: 'single',
+        prompt: 'Was your green card based on marriage to a:',
+        options: [
+          { value: 'usc_spouse', label: 'U.S. citizen spouse' },
+          { value: 'lpr_spouse', label: 'Lawful permanent resident (green card) spouse' },
+          { value: 'not_marriage', label: 'I didn\'t get my green card through marriage' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.green_card_how === 'marriage',
+        next: (answers) => {
+          if (answers.marriage_sponsor_type === 'usc_spouse') return 'still_married_usc';
+          return 'lived_in_us_5_years';
+        }
+      },
+      still_married_usc: {
+        id: 'still_married_usc',
+        kind: 'single',
+        prompt: 'Are you still married to the same U.S. citizen spouse who sponsored you?',
+        options: [
+          { value: 'yes_living_together', label: 'Yes, living together' },
+          { value: 'yes_not_living_together', label: 'Yes, but not living together' },
+          { value: 'no_divorced', label: 'No, divorced or separated' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.marriage_sponsor_type === 'usc_spouse',
+        next: (answers) => {
+          if (answers.still_married_usc === 'yes_living_together') return 'continuously_lived_with_spouse';
+          return 'lived_in_us_5_years';
+        }
+      },
+      continuously_lived_with_spouse: {
+        id: 'continuously_lived_with_spouse',
+        kind: 'confirm',
+        prompt: 'During those 3 years, have you continuously lived with your U.S. citizen spouse?',
+        options: [
+          { value: 'yes', label: 'Yes' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.still_married_usc === 'yes_living_together',
+        next: (answers) => answers.continuously_lived_with_spouse === 'yes' ? 'lived_in_us_3_years' : 'lived_in_us_5_years'
+      },
+      lived_in_us_3_years: {
+        id: 'lived_in_us_3_years',
+        kind: 'confirm',
+        prompt: 'In the last 3 years, have you lived in the U.S. for at least half of that time?',
+        options: [
+          { value: 'yes', label: 'Yes' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.continuously_lived_with_spouse === 'yes',
+        next: () => 'green_card_date'
+      },
+      lived_in_us_5_years: {
+        id: 'lived_in_us_5_years',
+        kind: 'confirm',
+        prompt: 'In the last 5 years, have you lived in the U.S. for at least half of that time?',
+        options: [
+          { value: 'yes', label: 'Yes' },
+          { value: 'no_not_yet', label: 'No / Not yet' }
+        ],
+        required: true,
         next: () => 'green_card_date'
       },
       green_card_date: {
         id: 'green_card_date',
         kind: 'text',
-        prompt: 'What is the start date on your green card? Please share the date printed on your card.',
+        prompt: 'What is the start date on your green card?',
         required: true,
         next: () => 'trips_over_6_months'
       },
@@ -416,29 +483,6 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
         options: [
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' }
-        ],
-        required: true,
-        next: () => 'lived_in_us_5_years'
-      },
-      lived_in_us_5_years: {
-        id: 'lived_in_us_5_years',
-        kind: 'confirm',
-        prompt: 'In the last 5 years, have you lived in the U.S. at least half the time?',
-        options: [
-          { value: 'yes', label: 'Yes' },
-          { value: 'no', label: 'No' }
-        ],
-        required: true,
-        next: () => 'marriage_3_year_rule'
-      },
-      marriage_3_year_rule: {
-        id: 'marriage_3_year_rule',
-        kind: 'confirm',
-        prompt: 'If you are applying through marriage on the 3-year rule: In the last 3 years, have you lived in the U.S. at least half the time while married and living with your U.S. citizen spouse?',
-        options: [
-          { value: 'yes', label: 'Yes' },
-          { value: 'no', label: 'No' },
-          { value: 'not_applicable', label: 'Not applicable - I am not applying through marriage' }
         ],
         required: true,
         next: () => 'END'
@@ -808,7 +852,7 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       green_card_how: {
         id: 'green_card_how',
         kind: 'single',
-        prompt: '¿Cómo obtuvo su Tarjeta Verde? Por favor seleccione una:',
+        prompt: '¿Cómo obtuvo su tarjeta verde? Por favor seleccione una.',
         options: [
           { value: 'family', label: 'Patrocinio familiar (a través de un ciudadano estadounidense o residente permanente)' },
           { value: 'marriage', label: 'Matrimonio' },
@@ -817,12 +861,79 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
           { value: 'other', label: 'Otro' }
         ],
         required: true,
+        next: (answers) => answers.green_card_how === 'marriage' ? 'marriage_sponsor_type' : 'lived_in_us_5_years'
+      },
+      marriage_sponsor_type: {
+        id: 'marriage_sponsor_type',
+        kind: 'single',
+        prompt: '¿Su tarjeta verde se basó en el matrimonio con un/una:',
+        options: [
+          { value: 'usc_spouse', label: 'Cónyuge ciudadano estadounidense' },
+          { value: 'lpr_spouse', label: 'Cónyuge residente permanente legal (tarjeta verde)' },
+          { value: 'not_marriage', label: 'No obtuve mi tarjeta verde a través del matrimonio' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.green_card_how === 'marriage',
+        next: (answers) => {
+          if (answers.marriage_sponsor_type === 'usc_spouse') return 'still_married_usc';
+          return 'lived_in_us_5_years';
+        }
+      },
+      still_married_usc: {
+        id: 'still_married_usc',
+        kind: 'single',
+        prompt: '¿Todavía está casado(a) con el mismo cónyuge ciudadano estadounidense que lo/la patrocinó?',
+        options: [
+          { value: 'yes_living_together', label: 'Sí, viviendo juntos' },
+          { value: 'yes_not_living_together', label: 'Sí, pero no viviendo juntos' },
+          { value: 'no_divorced', label: 'No, divorciado(a) o separado(a)' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.marriage_sponsor_type === 'usc_spouse',
+        next: (answers) => {
+          if (answers.still_married_usc === 'yes_living_together') return 'continuously_lived_with_spouse';
+          return 'lived_in_us_5_years';
+        }
+      },
+      continuously_lived_with_spouse: {
+        id: 'continuously_lived_with_spouse',
+        kind: 'confirm',
+        prompt: 'Durante esos 3 años, ¿ha vivido continuamente con su cónyuge ciudadano estadounidense?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.still_married_usc === 'yes_living_together',
+        next: (answers) => answers.continuously_lived_with_spouse === 'yes' ? 'lived_in_us_3_years' : 'lived_in_us_5_years'
+      },
+      lived_in_us_3_years: {
+        id: 'lived_in_us_3_years',
+        kind: 'confirm',
+        prompt: 'En los últimos 3 años, ¿ha vivido en los Estados Unidos al menos la mitad de ese tiempo?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no', label: 'No' }
+        ],
+        required: true,
+        visibleIf: (answers) => answers.continuously_lived_with_spouse === 'yes',
+        next: () => 'green_card_date'
+      },
+      lived_in_us_5_years: {
+        id: 'lived_in_us_5_years',
+        kind: 'confirm',
+        prompt: 'En los últimos 5 años, ¿ha vivido en los Estados Unidos al menos la mitad de ese tiempo?',
+        options: [
+          { value: 'yes', label: 'Sí' },
+          { value: 'no_not_yet', label: 'No / Todavía no' }
+        ],
+        required: true,
         next: () => 'green_card_date'
       },
       green_card_date: {
         id: 'green_card_date',
         kind: 'text',
-        prompt: '¿Cuál es la fecha de inicio en su tarjeta verde? Por favor comparta la fecha impresa en su tarjeta.',
+        prompt: '¿Cuál es la fecha de inicio en su tarjeta verde?',
         required: true,
         next: () => 'trips_over_6_months'
       },
@@ -833,29 +944,6 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
         options: [
           { value: 'yes', label: 'Sí' },
           { value: 'no', label: 'No' }
-        ],
-        required: true,
-        next: () => 'lived_in_us_5_years'
-      },
-      lived_in_us_5_years: {
-        id: 'lived_in_us_5_years',
-        kind: 'confirm',
-        prompt: 'En los últimos 5 años, ¿ha vivido en los Estados Unidos al menos la mitad del tiempo?',
-        options: [
-          { value: 'yes', label: 'Sí' },
-          { value: 'no', label: 'No' }
-        ],
-        required: true,
-        next: () => 'marriage_3_year_rule'
-      },
-      marriage_3_year_rule: {
-        id: 'marriage_3_year_rule',
-        kind: 'confirm',
-        prompt: 'Si está solicitando a través del matrimonio bajo la regla de 3 años: En los últimos 3 años, ¿ha vivido en los Estados Unidos al menos la mitad del tiempo mientras estuvo casado(a) y viviendo con su cónyuge ciudadano estadounidense?',
-        options: [
-          { value: 'yes', label: 'Sí' },
-          { value: 'no', label: 'No' },
-          { value: 'not_applicable', label: 'No aplica - No estoy solicitando a través del matrimonio' }
         ],
         required: true,
         next: () => 'END'
@@ -919,7 +1007,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
 • Visa de Prometido(a) (Visa K-1)
 • Remoción de Condiciones en una Tarjeta Verde Condicional de 2 Años (Tarjeta Verde Permanente)
 • Asilo o Protección contra la Persecución
-• Ciudadanía Estadounidense (Naturalización / Ciudadanía)
+• Ciudadanía Estadounidense (Naturalización)
 
 Aunque es posible que no podamos proporcionar una cotización para otros tipos de casos, enviaremos su información a un abogado en nuestra base de datos que pueda ayudarle. Por favor, vuelva a consultar ya que estamos expandiendo constantemente y agregando nuevas categorías.`,
     closeButton: 'Cerrar'
@@ -946,7 +1034,7 @@ Aunque es posible que no podamos proporcionar una cotización para otros tipos d
 • Fiancé(e) Visa (K-1 Visa)  
 • Removing Conditions on a 2-Year Conditional Green Card (Permanent Green Card)
 • Asylum or Protection from Persecution
-• U.S. Citizenship (Naturalization / Citizenship)
+• U.S. Citizenship (Naturalization)
 
 While we may not be able to provide a quote for other types of cases, we will forward your information to an attorney in our database who may be able to assist you. Please check back as we are constantly expanding and adding new categories.`,
     closeButton: 'Close'
@@ -997,7 +1085,7 @@ While we may not be able to provide a quote for other types of cases, we will fo
     },
     {
       value: 'citizenship-naturalization-n400' as CaseType,
-      label: 'U.S. Citizenship ("Naturalization") - Applying to become a U.S. Citizen Naturalization / Citizenship'
+      label: 'U.S. Citizenship ("Naturalization") - Applying to become a U.S. Citizen'
     },
     {
       value: 'other' as CaseType,
