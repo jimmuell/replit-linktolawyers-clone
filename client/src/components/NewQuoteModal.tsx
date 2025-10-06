@@ -886,6 +886,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
     fullName: 'Nombre Completo',
     email: 'Correo Electrónico',
     caseType: 'Tipo de Caso',
+    chooseClosestOption: 'Por favor, elija la opción más cercana:',
     additionalDetails: '¿Le gustaría agregar más detalles sobre su caso? Esto ayuda al abogado a entender mejor su caso.',
     additionalDetailsPlaceholder: 'Opcional: Comparta cualquier detalle adicional sobre su caso...',
     continueButton: 'Continuar',
@@ -912,6 +913,7 @@ Aunque es posible que no podamos proporcionar una cotización para otros tipos d
     fullName: 'Full Name',
     email: 'Email Address',
     caseType: 'Case Type',
+    chooseClosestOption: 'Please choose the closest option:',
     additionalDetails: 'Would you like to add any more details about your case? This helps the attorney understand your case better.',
     additionalDetailsPlaceholder: 'Optional: Share any additional details about your case...',
     continueButton: 'Continue',
@@ -1479,7 +1481,7 @@ While we may not be able to provide a quote for other types of cases, we will fo
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Please choose the closest option:</h2>
+              <h2 className="text-xl font-bold text-gray-900">{labels.chooseClosestOption}</h2>
             </div>
 
             <div className="space-y-4">
