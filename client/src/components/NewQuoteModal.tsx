@@ -197,7 +197,7 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: 'Great! This is for people in the U.S. due to fear of being persecuted if they return to their home country. Is that your situation?',
+        prompt: 'Great! This legal service is for people in the U.S. who fear persecution or harm if they return to their home country. Does this apply to you?',
         options: [
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' }
@@ -208,12 +208,20 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       inspected: {
         id: 'inspected',
         kind: 'single',
-        prompt: 'When you came to the U.S., were you inspected by a U.S. border officer?',
+        prompt: 'When you entered the U.S., were you inspected by a U.S. border officer?',
         options: [
           { value: 'yes', label: 'Yes - I was inspected and admitted' },
           { value: 'no', label: 'No - I entered without being inspected' }
         ],
         required: true,
+        next: (answers) => answers.inspected === 'yes' ? 'entry_description' : 'entry_date'
+      },
+      entry_description: {
+        id: 'entry_description',
+        kind: 'textarea',
+        prompt: 'Briefly describe how you entered the U.S. (e.g., tourist visa, student visa, humanitarian parole, or other status).',
+        required: true,
+        visibleIf: (answers) => answers.inspected === 'yes',
         next: () => 'entry_date'
       },
       entry_date: {
@@ -606,7 +614,7 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: '¡Excelente! Esto es para personas en los Estados Unidos debido al temor de ser perseguidas si regresan a su país de origen. ¿Es esa su situación?',
+        prompt: '¡Excelente! Este servicio legal es para personas en los Estados Unidos que temen persecución o daño si regresan a su país de origen. ¿Esto le aplica a usted?',
         options: [
           { value: 'yes', label: 'Sí' },
           { value: 'no', label: 'No' }
@@ -617,12 +625,20 @@ const FLOW_CONFIG_ES: Record<CaseType, Flow> = {
       inspected: {
         id: 'inspected',
         kind: 'single',
-        prompt: 'Cuando llegó a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?',
+        prompt: 'Cuando entró a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?',
         options: [
           { value: 'yes', label: 'Sí - Fui inspeccionado y admitido' },
           { value: 'no', label: 'No - Entré sin ser inspeccionado' }
         ],
         required: true,
+        next: (answers) => answers.inspected === 'yes' ? 'entry_description' : 'entry_date'
+      },
+      entry_description: {
+        id: 'entry_description',
+        kind: 'textarea',
+        prompt: 'Describa brevemente cómo entró a los Estados Unidos (por ejemplo, visa de turista, visa de estudiante, libertad condicional humanitaria, u otro estatus).',
+        required: true,
+        visibleIf: (answers) => answers.inspected === 'yes',
         next: () => 'entry_date'
       },
       entry_date: {
