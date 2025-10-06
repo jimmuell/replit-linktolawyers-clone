@@ -75,11 +75,17 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
             </Link>
           </div>
 
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            <Link href="/" className="text-gray-700 hover:text-primary transition-colors">
+              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-4 py-2 text-sm" data-testid="button-language-toggle">
+                EN
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              data-testid="button-mobile-menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -144,15 +150,6 @@ export default function NavbarSpanish({ activeSection, scrollToSection, setIsLog
               >
                 Ayuda
               </Link>
-
-              
-              <div className="pt-3 border-t border-gray-200">
-                <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full bg-black text-white hover:bg-gray-800 rounded-full">
-                    English
-                  </Button>
-                </Link>
-              </div>
             </div>
           </div>
         )}
