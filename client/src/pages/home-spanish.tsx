@@ -6,7 +6,7 @@ import LoginModal from "@/components/LoginModal";
 import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import { IntakeModal } from "@/components/IntakeModal";
 import NavbarSpanish from "@/components/NavbarSpanish";
-import SpanishLegalRequestForm from "@/components/SpanishLegalRequestForm";
+import { NewQuoteModal } from "@/components/NewQuoteModal";
 import { Link } from "wouter";
 import girlThinkingSpanishImage from "@assets/girl-thinking-spanish_1759069959323.jpg";
 
@@ -328,8 +328,8 @@ export default function HomeSpanish() {
         onClose={() => setIsTrackRequestModalOpen(false)} 
       />
 
-      {/* Spanish Legal Request Form */}
-      <SpanishLegalRequestForm
+      {/* New Quote Modal */}
+      <NewQuoteModal
         isOpen={isQuoteModalOpen}
         onClose={() => setIsQuoteModalOpen(false)}
       />
