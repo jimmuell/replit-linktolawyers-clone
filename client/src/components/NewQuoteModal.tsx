@@ -50,7 +50,7 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       confirm: {
         id: 'confirm',
         kind: 'confirm',
-        prompt: 'Great! This is for people getting a green card through a U.S. citizen or legal permanent resident family member. Is that your situation?',
+        prompt: 'Great! This is for people getting a green card through a U.S. citizen or legal permanent resident family member (such as a spouse, parent, or child). Is that your situation?',
         options: [
           { value: 'yes', label: 'Yes' },
           { value: 'no', label: 'No' }
@@ -61,14 +61,25 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       relationship: {
         id: 'relationship',
         kind: 'single',
-        prompt: 'What is your relationship to the family member who can help you?',
+        prompt: 'What is your relationship to the person sponsoring you, and their status?',
         options: [
-          { value: 'spouse', label: 'Spouse (U.S. citizen or LPR)' },
-          { value: 'parent', label: 'Parent (U.S. citizen or LPR)' },
-          { value: 'child', label: 'Child (U.S. citizen, 21 year or older)' },
-          { value: 'other', label: 'Other' }
+          { value: 'spouse_citizen', label: 'Spouse (U.S. citizen)' },
+          { value: 'spouse_lpr', label: 'Spouse (Green Card holder)' },
+          { value: 'parent_citizen', label: 'Parent (U.S. citizen)' },
+          { value: 'parent_lpr', label: 'Parent (Green Card holder)' },
+          { value: 'child_citizen', label: 'Child, 21+ (U.S. citizen)' },
+          { value: 'child_lpr', label: 'Child, 21+ (Green Card holder)' },
+          { value: 'other', label: 'Other / Not sure' }
         ],
         required: true,
+        next: (answers) => answers.relationship === 'other' ? 'relationship_other_details' : 'location'
+      },
+      relationship_other_details: {
+        id: 'relationship_other_details',
+        kind: 'textarea',
+        prompt: 'Please provide additional information on the person sponsoring you.',
+        required: true,
+        visibleIf: (answers) => answers.relationship === 'other',
         next: () => 'location'
       },
       location: {
@@ -85,7 +96,7 @@ const FLOW_CONFIG: Record<CaseType, Flow> = {
       inside_inspected: {
         id: 'inside_inspected',
         kind: 'single',
-        prompt: 'When you came to the U.S., were you inspected by a U.S. border officer?',
+        prompt: 'When you entered the U.S., were you inspected by a U.S. border officer?',
         options: [
           { value: 'yes', label: 'Yes - I was inspected and admitted' },
           { value: 'no', label: 'No - I entered without being inspected' }
@@ -941,7 +952,7 @@ While we may not be able to provide a quote for other types of cases, we will fo
   ] : [
     {
       value: 'family-based-immigrant-visa-immediate-relative' as CaseType,
-      label: 'Green Card through a Spouse or Family Member ("Family-Based Green Card") Family'
+      label: 'Green Card through a Spouse or Family Member ("Family-Based Green Card")'
     },
     {
       value: 'k1-fiance-visa' as CaseType,
