@@ -28,6 +28,9 @@ import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
 import girlThinkingImage from "@assets/girl-thinking-english_1759076159405.jpg";
+import { getTranslations } from "@/lib/translations";
+
+const t = getTranslations('en');
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
@@ -405,15 +408,15 @@ export default function Home() {
             <div className="mb-8 lg:mb-0 flex flex-col h-full">
               <div className="flex-grow flex flex-col">
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                  See How Much Immigration Lawyers Charge for Your Case — Free & No Obligations
+                  {t.landingPage.hero.title}
                 </h1>
                 <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-8 leading-relaxed">
-                  Quick, simple, and transparent — get personalized lawyer costs based on your case, with no obligations.
+                  {t.landingPage.hero.subtitle}
                 </h2>
                 
                 <div className="space-y-6 mb-8">
                   <p className="text-xl text-gray-600 max-w-lg">
-                    No hidden costs. No pressure. Transparent pricing upfront, so you know exactly what to expect. Our service is 100% free and comes with no obligations — connect with an immigration lawyer only if and when you're ready.
+                    {t.landingPage.hero.description}
                   </p>
                 </div>
               </div>
@@ -431,14 +434,14 @@ export default function Home() {
                   onClick={() => setIsNewQuoteModalOpen(true)}
                   data-testid="button-get-quote"
                 >
-                  See Immigration Lawyer Prices
+                  {t.landingPage.hero.primaryButton}
                 </Button>
                 <Button 
                   variant="outline"
                   className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsTrackRequestModalOpen(true)}
                 >
-                  Track Your Request
+                  {t.landingPage.hero.secondaryButton}
                 </Button>
               </div>
             </div>

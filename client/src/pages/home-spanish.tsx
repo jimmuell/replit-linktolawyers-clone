@@ -9,6 +9,9 @@ import NavbarSpanish from "@/components/NavbarSpanish";
 import { NewQuoteModal } from "@/components/NewQuoteModal";
 import { Link } from "wouter";
 import girlThinkingSpanishImage from "@assets/girl-thinking-spanish_1759069959323.jpg";
+import { getTranslations } from "@/lib/translations";
+
+const t = getTranslations('es');
 
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
@@ -90,15 +93,15 @@ export default function HomeSpanish() {
             <div className="mb-8 lg:mb-0 flex flex-col h-full">
               <div className="flex-grow flex flex-col">
                 <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-                  Ve Cuánto Cobran los Abogados de Inmigración por Tu Caso — Gratis y Sin Obligaciones
+                  {t.landingPage.hero.title}
                 </h1>
                 <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700 mb-8 leading-relaxed">
-                  Rápido, simple y transparente — obtén costos personalizados de abogados basados en tu caso, sin obligaciones.
+                  {t.landingPage.hero.subtitle}
                 </h2>
                 
                 <div className="space-y-6 mb-8">
                   <p className="text-xl text-gray-600 max-w-lg">
-                    Sin costos ocultos. Sin presión. Precios transparentes por adelantado, para que sepas exactamente qué esperar. Nuestro servicio es 100% gratuito y viene sin obligaciones — conéctate con un abogado de inmigración solo si y cuando estés listo.
+                    {t.landingPage.hero.description}
                   </p>
                 </div>
               </div>
@@ -116,14 +119,14 @@ export default function HomeSpanish() {
                   onClick={() => setIsQuoteModalOpen(true)}
                   data-testid="button-get-quote"
                 >
-                  Ver Precios de Abogados de Inmigración
+                  {t.landingPage.hero.primaryButton}
                 </Button>
                 <Button 
                   variant="outline"
                   className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsTrackRequestModalOpen(true)}
                 >
-                  Rastrea Tu Solicitud
+                  {t.landingPage.hero.secondaryButton}
                 </Button>
               </div>
             </div>
@@ -144,7 +147,7 @@ export default function HomeSpanish() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8" style={{ maxWidth: '1280px' }}>
           <div className="text-justify">
             <p className="text-lg text-gray-700 leading-relaxed">
-              Deja de pagar de más por servicios legales. Encontrar el abogado adecuado no debería ser complicado ni costarte un ojo de la cara. Estamos aquí para ayudarte a tomar una decisión inteligente y conectarte con abogados a un precio justo. Nuestra plataforma te permite comparar honorarios y negociar con firmas legales líderes a nivel local y nacional. Es crucial comparar firmas y costos antes de seleccionar un abogado. Comparar precios legales de múltiples firmas legales es la mejor manera de ahorrar. Compara honorarios de abogados sin complicaciones y evita gastos innecesarios. Tú tienes el control, sin consultas hasta que estés preparado para seguir adelante.
+              {t.landingPage.textBelowImage}
             </p>
           </div>
         </div>
