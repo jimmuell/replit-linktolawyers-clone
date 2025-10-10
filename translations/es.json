@@ -1,0 +1,305 @@
+{
+  "landingPage": {
+    "hero": {
+      "title": "Descubre Cuánto Cobran los Abogados de Inmigración por Tu Caso — Gratis y Sin Compromiso",
+      "subtitle": "Rápido, simple y transparente — obtén costos personalizados de abogados basados en tu caso, sin compromisos.",
+      "description": "Sin costos ocultos. Sin presión. Precios transparentes por adelantado, para que sepas exactamente qué esperar. Nuestro servicio es 100% gratuito y viene sin obligaciones — conéctate con un abogado de inmigración solo si y cuando estés listo.",
+      "primaryButton": "Ver Precios de Abogados de Inmigración",
+      "secondaryButton": "Rastrear Mi Solicitud"
+    },
+    "textBelow Image": "Deja de pagar de más por servicios legales. Encontrar el abogado adecuado no debería ser complicado ni costarte un ojo de la cara."
+  },
+  "quoteModal": {
+    "title": "Obtener Cotización",
+    "subtitle": "Complete nuestro formulario de admisión para ser emparejado con un abogado de inmigración experimentado",
+    "chooseClosestOption": "Por favor, elija la opción más cercana:",
+    "labels": {
+      "fullName": "Nombre Completo",
+      "email": "Correo Electrónico",
+      "caseType": "Tipo de Caso",
+      "additionalDetails": "¿Le gustaría agregar más detalles sobre su caso? Esto ayuda al abogado a entender mejor su caso.",
+      "additionalDetailsPlaceholder": "Opcional: Comparta cualquier detalle adicional sobre su caso...",
+      "continueButton": "Continuar",
+      "backButton": "Atrás",
+      "submitButton": "Enviar Solicitud",
+      "submittingButton": "Enviando...",
+      "cancelButton": "Cancelar",
+      "thankYou": "¡Gracias!",
+      "thankYouSubtitle": "Lo emparejaremos con un abogado experimentado que maneja este tipo de caso y se pondrán en contacto pronto.",
+      "legalDisclaimer": "Descargo de Responsabilidad Legal: Este asistente de IA proporciona solo información general y no constituye asesoramiento legal. Para asuntos legales específicos, consulte con un abogado de inmigración calificado.",
+      "otherDialogTitle": "¡Gracias por su interés!",
+      "otherDialogMessage": "Apreciamos su interés! Actualmente, proporcionamos servicios para estas categorías principales:\n• Green Card a través de un Cónyuge o Familiar (Green Card Basada en Familia)  \n• Visa de Prometido(a) (Visa K-1)\n• Remoción de Condiciones en una Green Card Condicional de 2 Años (Green Card Permanente)\n• Asilo o Protección contra la Persecución\n• Ciudadanía Estadounidense (Naturalización)\n\nAunque es posible que no podamos proporcionar una cotización para otros tipos de casos, enviaremos su información a un abogado en nuestra base de datos que pueda ayudarle. Por favor, vuelva a consultar ya que estamos expandiendo constantemente y agregando nuevas categorías.",
+      "closeButton": "Cerrar"
+    },
+    "caseTypeOptions": [
+      {
+        "value": "family-based-immigrant-visa-immediate-relative",
+        "label": "Green Card a través de un Cónyuge o Familiar (\"Green Card Basada en Familia\")"
+      },
+      {
+        "value": "k1-fiance-visa",
+        "label": "Visa de Prometido(a) (\"Visa K-1\")"
+      },
+      {
+        "value": "removal-of-conditions",
+        "label": "Hacer Permanente mi Green Card Condicional de 2 Años (\"Remoción de Condiciones\")"
+      },
+      {
+        "value": "asylum-affirmative",
+        "label": "Asilo o Protección contra la Persecución"
+      },
+      {
+        "value": "citizenship-naturalization-n400",
+        "label": "Ciudadanía Estadounidense (\"Naturalización\") - Solicitar para convertirse en Ciudadano Estadounidense"
+      },
+      {
+        "value": "other",
+        "label": "Otro"
+      }
+    ],
+    "flows": {
+      "family-based-immigrant-visa-immediate-relative": {
+        "confirm": {
+          "prompt": "¡Excelente! Esto es para personas que obtienen una green card a través de un familiar ciudadano estadounidense o residente legal permanente (como un cónyuge, padre/madre, o hijo/hija). ¿Es esa su situación?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "relationship": {
+          "prompt": "¿Cuál es su relación con la persona que lo patrocina y cuál es su estatus?",
+          "options": [
+            { "value": "spouse_citizen", "label": "Cónyuge (ciudadano estadounidense)" },
+            { "value": "spouse_lpr", "label": "Cónyuge (titular de green card)" },
+            { "value": "parent_citizen", "label": "Padre/Madre (ciudadano estadounidense)" },
+            { "value": "parent_lpr", "label": "Padre/Madre (titular de green card)" },
+            { "value": "child_citizen", "label": "Hijo/Hija, 21+ (ciudadano estadounidense)" },
+            { "value": "child_lpr", "label": "Hijo/Hija, 21+ (titular de green card)" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "relationship_other_details": {
+          "prompt": "Por favor proporcione información adicional sobre la persona que lo patrocina."
+        },
+        "location": {
+          "prompt": "¿Está usted dentro de los Estados Unidos ahora mismo, o fuera de los Estados Unidos?",
+          "options": [
+            { "value": "inside", "label": "Dentro de los Estados Unidos" },
+            { "value": "outside", "label": "Fuera de los Estados Unidos" }
+          ]
+        },
+        "inside_inspected": {
+          "prompt": "Cuando entró a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?",
+          "options": [
+            { "value": "yes", "label": "Sí - Fui inspeccionado y admitido" },
+            { "value": "no", "label": "No - Entré sin ser inspeccionado" }
+          ]
+        },
+        "inside_entry_status": {
+          "prompt": "¿Cómo entró a los Estados Unidos?",
+          "options": [
+            { "value": "tourist_visa", "label": "Visa de turista" },
+            { "value": "student_visa", "label": "Visa de estudiante" },
+            { "value": "work_visa", "label": "Visa de trabajo" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "inside_overstay": {
+          "prompt": "¿Ha permanecido en los Estados Unidos más allá de la fecha permitida en su visa o estatus de entrada?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "outside_prior_benefit": {
+          "prompt": "¿Ha solicitado algún beneficio de inmigración antes? Si es así, ¿qué pasó?"
+        },
+        "outside_help_type": {
+          "prompt": "¿Qué tipo de ayuda legal está buscando en este momento?"
+        }
+      },
+      "asylum-affirmative": {
+        "confirm": {
+          "prompt": "¡Excelente! Este servicio legal es para personas en los Estados Unidos que temen persecución o daño si regresan a su país de origen. ¿Esto le aplica a usted?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "inspected": {
+          "prompt": "Cuando entró a los Estados Unidos, ¿fue inspeccionado por un oficial fronterizo estadounidense?",
+          "options": [
+            { "value": "yes", "label": "Sí - Fui inspeccionado y admitido" },
+            { "value": "no", "label": "No - Entré sin ser inspeccionado" }
+          ]
+        },
+        "entry_description": {
+          "prompt": "Describa brevemente cómo entró a los Estados Unidos (por ejemplo, visa de turista, visa de estudiante, libertad condicional humanitaria, u otro estatus)."
+        },
+        "entry_date": {
+          "prompt": "¿Qué fecha entró? Por favor proporcione la fecha o su mejor estimación."
+        },
+        "afraid_return": {
+          "prompt": "¿Tiene miedo de regresar a su país de origen? Si es así, ¿puede decirme por qué?"
+        },
+        "immigration_court": {
+          "prompt": "¿Ha sido puesto alguna vez en corte de inmigración o ha enfrentado procedimientos de deportación? ¿El gobierno de los Estados Unidos lo ha enviado a corte de inmigración o procedimientos de remoción (deportación)?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        }
+      },
+      "removal-of-conditions": {
+        "confirm": {
+          "prompt": "¡Excelente! Usted obtuvo su green card a través del matrimonio, y es válida por 2 años (green card condicional), ¿correcto?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "green_card_date": {
+          "prompt": "¿Cuál es la fecha de inicio en su green card?"
+        },
+        "marital_evidence": {
+          "prompt": "En una escala del 1-10, ¿cuánta evidencia matrimonial presentó con su solicitud original de green card? (1 = muy poca y 10 = mucha).",
+          "options": [
+            { "value": "1", "label": "1 - Muy poca" },
+            { "value": "2", "label": "2" },
+            { "value": "3", "label": "3" },
+            { "value": "4", "label": "4" },
+            { "value": "5", "label": "5" },
+            { "value": "6", "label": "6" },
+            { "value": "7", "label": "7" },
+            { "value": "8", "label": "8" },
+            { "value": "9", "label": "9" },
+            { "value": "10", "label": "10 - Mucha" }
+          ]
+        },
+        "filing_type": {
+          "prompt": "¿Cómo presentará su solicitud? (seleccione una)",
+          "options": [
+            { "value": "joint", "label": "Junto con mi cónyuge (\"presentación conjunta\")" },
+            { "value": "waiver", "label": "Por mi cuenta (exención)" }
+          ]
+        },
+        "marriage_situation": {
+          "prompt": "¿Cuál es su situación matrimonial actual?",
+          "options": [
+            { "value": "married_together", "label": "Casado(a) viviendo juntos" },
+            { "value": "married_apart", "label": "Casado(a) pero viviendo separados" },
+            { "value": "divorced", "label": "Divorciado(a)" },
+            { "value": "widow", "label": "Viudo(a)" }
+          ]
+        }
+      },
+      "k1-fiance-visa": {
+        "confirm": {
+          "prompt": "¡Excelente! ¿Usted es un ciudadano estadounidense solicitando para que su prometido(a) venga a los Estados Unidos para casarse dentro de 90 días de llegada?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "met_in_person": {
+          "prompt": "¿Se han conocido en persona en los últimos 2 años?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "relationship_duration": {
+          "prompt": "¿Cuánto tiempo han estado en una relación?",
+          "options": [
+            { "value": "less_than_6_months", "label": "Menos de 6 meses" },
+            { "value": "6_months_to_1_year", "label": "6 meses a 1 año" },
+            { "value": "1_to_2_years", "label": "1 a 2 años" },
+            { "value": "more_than_2_years", "label": "Más de 2 años" }
+          ]
+        },
+        "fiance_location": {
+          "prompt": "¿Dónde se encuentra actualmente su prometido(a)?",
+          "options": [
+            { "value": "home_country", "label": "En su país de origen" },
+            { "value": "other_country", "label": "En otro país" },
+            { "value": "us", "label": "En los Estados Unidos" }
+          ]
+        },
+        "prior_immigration_benefit": {
+          "prompt": "¿Ha solicitado su prometido(a) un beneficio de inmigración antes?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "prior_immigration_explanation": {
+          "prompt": "Por favor explique brevemente qué beneficio de inmigración solicitó su prometido(a) y qué pasó."
+        }
+      },
+      "citizenship-naturalization-n400": {
+        "green_card_how": {
+          "prompt": "¿Cómo obtuvo su green card? Por favor seleccione una.",
+          "options": [
+            { "value": "family", "label": "Patrocinio familiar (a través de un ciudadano estadounidense o residente permanente)" },
+            { "value": "marriage", "label": "Matrimonio" },
+            { "value": "work", "label": "Trabajo" },
+            { "value": "asylum", "label": "Asilo" },
+            { "value": "other", "label": "Otro" }
+          ]
+        },
+        "marriage_sponsor_type": {
+          "prompt": "¿Su green card se basó en el matrimonio con un/una:",
+          "options": [
+            { "value": "usc_spouse", "label": "Cónyuge ciudadano estadounidense" },
+            { "value": "lpr_spouse", "label": "Cónyuge residente permanente legal (green card)" },
+            { "value": "not_marriage", "label": "No obtuve mi green card a través del matrimonio" }
+          ]
+        },
+        "still_married_usc": {
+          "prompt": "¿Todavía está casado(a) con el mismo cónyuge ciudadano estadounidense que lo/la patrocinó?",
+          "options": [
+            { "value": "yes_living_together", "label": "Sí, viviendo juntos" },
+            { "value": "yes_not_living_together", "label": "Sí, pero no viviendo juntos" },
+            { "value": "no_divorced", "label": "No, divorciado(a) o separado(a)" }
+          ]
+        },
+        "continuously_lived_with_spouse": {
+          "prompt": "Durante esos 3 años, ¿ha vivido continuamente con su cónyuge ciudadano estadounidense?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "lived_in_us_3_years": {
+          "prompt": "En los últimos 3 años, ¿ha vivido en los Estados Unidos al menos la mitad de ese tiempo?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "lived_in_us_5_years": {
+          "prompt": "En los últimos 5 años, ¿ha vivido en los Estados Unidos al menos la mitad de ese tiempo?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no_not_yet", "label": "No / Todavía no" }
+          ]
+        },
+        "green_card_date": {
+          "prompt": "¿Cuál es la fecha de inicio en su green card?"
+        },
+        "trips_over_6_months": {
+          "prompt": "Desde que obtuvo su green card, ¿ha tomado viajes fuera de los Estados Unidos por más de 6 meses a la vez?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        }
+      },
+      "other": {
+        "other_assistance_type": {
+          "prompt": "¿Qué tipo de asistencia legal o ayuda de inmigración necesita?"
+        }
+      }
+    }
+  }
+}
