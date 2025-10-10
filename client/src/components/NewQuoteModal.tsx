@@ -503,6 +503,15 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
           />
         )}
 
+        {currentQuestion.kind === 'date' && (
+          <Input
+            type="date"
+            value={String(answer || '')}
+            onChange={(e) => updateAnswer(e.target.value)}
+            data-testid={`input-date-${currentQuestion.id}`}
+          />
+        )}
+
         {error && (
           <p className="text-red-500 text-sm">{error}</p>
         )}
