@@ -267,7 +267,7 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           prompt: t.quoteModal.flows['citizenship-naturalization-n400'].green_card_how.prompt,
           options: t.quoteModal.flows['citizenship-naturalization-n400'].green_card_how.options,
           required: true,
-          next: (answers) => answers.green_card_how === 'marriage' ? 'marriage_sponsor_type' : 'green_card_date'
+          next: (answers) => answers.green_card_how === 'marriage' ? 'marriage_sponsor_type' : 'lived_in_us_5_years'
         },
         marriage_sponsor_type: {
           id: 'marriage_sponsor_type',
@@ -276,15 +276,7 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           options: t.quoteModal.flows['citizenship-naturalization-n400'].marriage_sponsor_type.options,
           required: true,
           visibleIf: (answers) => answers.green_card_how === 'marriage',
-          next: (answers) => {
-            if (answers.marriage_sponsor_type === 'usc_spouse') {
-              return 'still_married_usc';
-            } else if (answers.marriage_sponsor_type === 'lpr_spouse') {
-              return 'green_card_date';
-            } else {
-              return 'green_card_date';
-            }
-          }
+          next: (answers) => answers.marriage_sponsor_type === 'usc_spouse' ? 'still_married_usc' : 'lived_in_us_5_years'
         },
         still_married_usc: {
           id: 'still_married_usc',
@@ -293,13 +285,7 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           options: t.quoteModal.flows['citizenship-naturalization-n400'].still_married_usc.options,
           required: true,
           visibleIf: (answers) => answers.green_card_how === 'marriage' && answers.marriage_sponsor_type === 'usc_spouse',
-          next: (answers) => {
-            if (answers.still_married_usc === 'yes_living_together' || answers.still_married_usc === 'yes_not_living_together') {
-              return 'continuously_lived_with_spouse';
-            } else {
-              return 'green_card_date';
-            }
-          }
+          next: (answers) => answers.still_married_usc === 'yes_living_together' ? 'continuously_lived_with_spouse' : 'lived_in_us_5_years'
         },
         continuously_lived_with_spouse: {
           id: 'continuously_lived_with_spouse',
@@ -310,33 +296,8 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           visibleIf: (answers) => 
             answers.green_card_how === 'marriage' && 
             answers.marriage_sponsor_type === 'usc_spouse' && 
-            (answers.still_married_usc === 'yes_living_together' || answers.still_married_usc === 'yes_not_living_together'),
-          next: () => 'lived_in_us_3_years'
-        },
-        lived_in_us_3_years: {
-          id: 'lived_in_us_3_years',
-          kind: 'confirm',
-          prompt: t.quoteModal.flows['citizenship-naturalization-n400'].lived_in_us_3_years.prompt,
-          options: t.quoteModal.flows['citizenship-naturalization-n400'].lived_in_us_3_years.options,
-          required: true,
-          visibleIf: (answers) => 
-            answers.green_card_how === 'marriage' && 
-            answers.marriage_sponsor_type === 'usc_spouse' && 
-            (answers.still_married_usc === 'yes_living_together' || answers.still_married_usc === 'yes_not_living_together'),
-          next: (answers) => answers.lived_in_us_3_years === 'yes' ? 'trips_over_6_months' : 'END'
-        },
-        green_card_date: {
-          id: 'green_card_date',
-          kind: 'date',
-          prompt: t.quoteModal.flows['citizenship-naturalization-n400'].green_card_date.prompt,
-          required: true,
-          visibleIf: (answers) => {
-            if (answers.green_card_how !== 'marriage') return true;
-            if (answers.marriage_sponsor_type === 'lpr_spouse' || answers.marriage_sponsor_type === 'not_marriage') return true;
-            if (answers.still_married_usc === 'no_divorced') return true;
-            return false;
-          },
-          next: () => 'lived_in_us_5_years'
+            answers.still_married_usc === 'yes_living_together',
+          next: (answers) => answers.continuously_lived_with_spouse === 'yes' ? 'green_card_date' : 'lived_in_us_5_years'
         },
         lived_in_us_5_years: {
           id: 'lived_in_us_5_years',
@@ -345,12 +306,53 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           options: t.quoteModal.flows['citizenship-naturalization-n400'].lived_in_us_5_years.options,
           required: true,
           visibleIf: (answers) => {
+            // Show for non-marriage paths
             if (answers.green_card_how !== 'marriage') return true;
+            // Show for LPR spouse or "not marriage" option
             if (answers.marriage_sponsor_type === 'lpr_spouse' || answers.marriage_sponsor_type === 'not_marriage') return true;
-            if (answers.still_married_usc === 'no_divorced') return true;
+            // Show for USC spouse but not living together or divorced
+            if (answers.marriage_sponsor_type === 'usc_spouse' && answers.still_married_usc !== 'yes_living_together') return true;
+            // Show for USC spouse living together but not continuously
+            if (answers.still_married_usc === 'yes_living_together' && answers.continuously_lived_with_spouse === 'no') return true;
             return false;
           },
-          next: (answers) => answers.lived_in_us_5_years === 'yes' ? 'trips_over_6_months' : 'END'
+          next: (answers) => {
+            if (answers.lived_in_us_5_years === 'no_not_yet') return 'END';
+            // If came from continuously_lived_with_spouse=no path, ask 3-year question next
+            if (answers.still_married_usc === 'yes_living_together' && answers.continuously_lived_with_spouse === 'no') {
+              return 'lived_in_us_3_years';
+            }
+            // Otherwise go to green_card_date
+            return 'green_card_date';
+          }
+        },
+        lived_in_us_3_years: {
+          id: 'lived_in_us_3_years',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['citizenship-naturalization-n400'].lived_in_us_3_years.prompt,
+          options: t.quoteModal.flows['citizenship-naturalization-n400'].lived_in_us_3_years.options,
+          required: true,
+          visibleIf: (answers) => 
+            answers.still_married_usc === 'yes_living_together' && 
+            answers.continuously_lived_with_spouse === 'no' &&
+            answers.lived_in_us_5_years === 'yes',
+          next: (answers) => answers.lived_in_us_3_years === 'yes' ? 'green_card_date' : 'END'
+        },
+        green_card_date: {
+          id: 'green_card_date',
+          kind: 'date',
+          prompt: t.quoteModal.flows['citizenship-naturalization-n400'].green_card_date.prompt,
+          required: true,
+          visibleIf: (answers) => {
+            // Show for 3-year rule path (married to USC, living together, continuously)
+            if (answers.still_married_usc === 'yes_living_together' && answers.continuously_lived_with_spouse === 'yes') return true;
+            // Show for 5-year rule path when they answered yes to living in US
+            if (answers.lived_in_us_5_years === 'yes') return true;
+            // Show for 3-year question path when they answered yes
+            if (answers.lived_in_us_3_years === 'yes') return true;
+            return false;
+          },
+          next: () => 'trips_over_6_months'
         },
         trips_over_6_months: {
           id: 'trips_over_6_months',
