@@ -150,7 +150,7 @@ export default function HomeSpanish() {
       <div className="min-h-screen bg-white w-full">
 
       {/* Hero Section */}
-      <section id="home" className="bg-white py-12 lg:py-20">
+      <section id="home" className="bg-white pt-0 pb-12 lg:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-12 items-start min-h-[600px]">
             <div className="mb-8 lg:mb-0 flex flex-col h-full">
