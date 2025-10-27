@@ -428,39 +428,41 @@ export default function Home() {
         hideUserDropdown={true}
       />
       
-      {/* Language Alert Banner */}
-      {showLanguageAlert && (
-        <div className="bg-amber-50 border-b border-amber-200 my-2" data-testid="alert-language">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1">
-                <Bell className="w-6 h-6 text-amber-700 fill-amber-700 flex-shrink-0" />
-                <div className="text-base text-amber-900">
-                  {isMobile ? (
-                    <>
-                      <span className="font-semibold">Este sitio también está disponible en Español. Presione el botón de Español ubicado en el menú principal para traducir.</span>
-                      <span className="block mt-1 font-medium">(This site is also available in Spanish. Press the Spanish button located in the main menu to translate.)</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="font-semibold">Este sitio también está disponible en Español. Presione el botón de Español para traducir.</span>
-                      <span className="block mt-1 font-medium">(This site is also available in Spanish. Press the Español button to translate.)</span>
-                    </>
-                  )}
+      {/* Language Alert Banner - spacing maintained even when dismissed */}
+      <div className="my-2">
+        {showLanguageAlert && (
+          <div className="bg-amber-50 border-b border-amber-200" data-testid="alert-language">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1">
+                  <Bell className="w-6 h-6 text-amber-700 fill-amber-700 flex-shrink-0" />
+                  <div className="text-base text-amber-900">
+                    {isMobile ? (
+                      <>
+                        <span className="font-semibold">Este sitio también está disponible en Español. Presione el botón de Español ubicado en el menú principal para traducir.</span>
+                        <span className="block mt-1 font-medium">(This site is also available in Spanish. Press the Spanish button located in the main menu to translate.)</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-semibold">Este sitio también está disponible en Español. Presione el botón de Español para traducir.</span>
+                        <span className="block mt-1 font-medium">(This site is also available in Spanish. Press the Español button to translate.)</span>
+                      </>
+                    )}
+                  </div>
                 </div>
+                <button
+                  onClick={handleDismissAlert}
+                  className="text-amber-700 hover:text-amber-900 p-1 rounded hover:bg-amber-100 transition-colors flex-shrink-0"
+                  aria-label="Dismiss alert"
+                  data-testid="button-dismiss-alert"
+                >
+                  <X className="w-5 h-5" />
+                </button>
               </div>
-              <button
-                onClick={handleDismissAlert}
-                className="text-amber-700 hover:text-amber-900 p-1 rounded hover:bg-amber-100 transition-colors flex-shrink-0"
-                aria-label="Dismiss alert"
-                data-testid="button-dismiss-alert"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       
       <div className="min-h-screen bg-white w-full">
 
