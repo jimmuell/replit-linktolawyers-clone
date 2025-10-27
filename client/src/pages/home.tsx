@@ -83,17 +83,8 @@ export default function Home() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Check localStorage for alert dismissal
-  useEffect(() => {
-    const dismissed = localStorage.getItem('languageAlertDismissed');
-    if (dismissed === 'true') {
-      setShowLanguageAlert(false);
-    }
-  }, []);
-
   const handleDismissAlert = () => {
     setShowLanguageAlert(false);
-    localStorage.setItem('languageAlertDismissed', 'true');
   };
 
   const handleIntakeSubmit = (data: { fullName: string; email: string; caseTypes: string[]; language?: string }) => {
