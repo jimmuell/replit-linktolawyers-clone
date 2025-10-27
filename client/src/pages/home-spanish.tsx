@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp } from "lucide-react";
+import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Info, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
@@ -20,7 +20,21 @@ export default function HomeSpanish() {
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [showLanguageAlert, setShowLanguageAlert] = useState(true);
   const { user, logout } = useAuth();
+
+  // Check localStorage for alert dismissal
+  useEffect(() => {
+    const dismissed = localStorage.getItem('languageAlertDismissed');
+    if (dismissed === 'true') {
+      setShowLanguageAlert(false);
+    }
+  }, []);
+
+  const handleDismissAlert = () => {
+    setShowLanguageAlert(false);
+    localStorage.setItem('languageAlertDismissed', 'true');
+  };
 
   const handleIntakeSubmit = (data: { fullName: string; email: string; caseTypes: string[]; language?: string }) => {
     setIsIntakeModalOpen(false);
@@ -84,6 +98,31 @@ export default function HomeSpanish() {
         setIsLoginModalOpen={setIsLoginModalOpen}
         hideUserDropdown={true}
       />
+      
+      {/* Language Alert Banner */}
+      {showLanguageAlert && (
+        <div className="bg-blue-50 border-b border-blue-200 sticky top-16 z-40" data-testid="alert-language">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                <p className="text-sm text-blue-900">
+                  <span className="font-medium">Este sitio también está disponible en Español.</span> Presione el botón de Español para traducir.
+                </p>
+              </div>
+              <button
+                onClick={handleDismissAlert}
+                className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-100 transition-colors flex-shrink-0"
+                aria-label="Cerrar alerta"
+                data-testid="button-dismiss-alert"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="min-h-screen bg-white w-full">
 
       {/* Hero Section */}
