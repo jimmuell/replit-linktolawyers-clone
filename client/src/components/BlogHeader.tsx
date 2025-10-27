@@ -48,8 +48,10 @@ export default function BlogHeader({ title, showBackButton = false }: BlogHeader
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="md:hidden"
+                data-testid="button-mobile-menu"
               >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {isMobileMenuOpen ? <X className="w-4 h-4 mr-2" /> : null}
+                {isMobileMenuOpen ? 'Close' : 'Main Menu'}
               </Button>
             </div>
           </div>

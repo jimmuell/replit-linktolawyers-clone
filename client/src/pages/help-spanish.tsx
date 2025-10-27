@@ -90,8 +90,10 @@ export default function HelpSpanish() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
+                data-testid="button-mobile-menu"
               >
-                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {isMenuOpen ? <X className="w-4 h-4 mr-2" /> : null}
+                {isMenuOpen ? 'Cerrar' : 'Menú Principal'}
               </Button>
             </div>
           </div>
