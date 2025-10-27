@@ -106,9 +106,13 @@ export default function HomeSpanish() {
       />
       
       {/* Language Alert Banner - spacing maintained even when dismissed */}
-      <div className="my-2">
+      <div className={cn(isMobile ? "my-0" : "my-2")}>
         <div 
-          className={cn("border-b min-h-[77px]", showLanguageAlert ? "bg-amber-50 border-amber-200" : "border-transparent")} 
+          className={cn(
+            "border-b", 
+            isMobile ? "min-h-[10px]" : "min-h-[77px]",
+            showLanguageAlert ? "bg-amber-50 border-amber-200" : "border-transparent"
+          )} 
           data-testid="alert-language"
         >
           {showLanguageAlert && (
