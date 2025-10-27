@@ -430,7 +430,7 @@ export default function Home() {
       
       {/* Language Alert Banner */}
       {showLanguageAlert && (
-        <div className="bg-amber-50 border-b border-amber-200 my-4" data-testid="alert-language">
+        <div className="bg-amber-50 border-b border-amber-200 my-2" data-testid="alert-language">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">
