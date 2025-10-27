@@ -416,19 +416,19 @@ export default function Home() {
       
       {/* Language Alert Banner */}
       {showLanguageAlert && (
-        <div className="bg-blue-50 border-b border-blue-200 sticky top-16 z-40" data-testid="alert-language">
+        <div className="bg-amber-50 border-b border-amber-200 sticky top-16 z-40" data-testid="alert-language">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">
-                <Bell className="w-6 h-6 text-blue-600 flex-shrink-0" />
-                <div className="text-base text-blue-900">
+                <Bell className="w-6 h-6 text-amber-700 fill-amber-700 flex-shrink-0" />
+                <div className="text-base text-amber-900">
                   <span className="font-semibold">Este sitio también está disponible en Español. Presione el botón de Español para traducir.</span>
                   <span className="block mt-1 font-medium">This site is also available in Spanish. Press the Spanish button to translate.</span>
                 </div>
               </div>
               <button
                 onClick={handleDismissAlert}
-                className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-100 transition-colors flex-shrink-0"
+                className="text-amber-700 hover:text-amber-900 p-1 rounded hover:bg-amber-100 transition-colors flex-shrink-0"
                 aria-label="Dismiss alert"
                 data-testid="button-dismiss-alert"
               >
