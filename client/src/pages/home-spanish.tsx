@@ -21,7 +21,21 @@ export default function HomeSpanish() {
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [showLanguageAlert, setShowLanguageAlert] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
+
+  // Check for mobile view
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+    setIsMobile(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setIsMobile(e.matches);
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   // Check localStorage for alert dismissal
   useEffect(() => {
@@ -107,8 +121,17 @@ export default function HomeSpanish() {
               <div className="flex items-center gap-3 flex-1">
                 <Bell className="w-6 h-6 text-amber-700 fill-amber-700 flex-shrink-0" />
                 <div className="text-base text-amber-900">
-                  <span className="font-semibold">This site is also available in English. Press the English button to translate.</span>
-                  <span className="block mt-1 font-medium">(Este sitio también está disponible en Inglés. Presione el botón de Inglés para traducir.)</span>
+                  {isMobile ? (
+                    <>
+                      <span className="font-semibold">This site is also available in English. Press the English button located in the main menu to translate.</span>
+                      <span className="block mt-1 font-medium">(Este sitio también está disponible en Inglés. Presione el botón de Inglés ubicado en el menú principal para traducir.)</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-semibold">This site is also available in English. Press the English button to translate.</span>
+                      <span className="block mt-1 font-medium">(Este sitio también está disponible en Inglés. Presione el botón de Inglés para traducir.)</span>
+                    </>
+                  )}
                 </div>
               </div>
               <button
