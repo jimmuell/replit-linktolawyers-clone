@@ -423,7 +423,7 @@ export default function Home() {
                 <Bell className="w-6 h-6 text-amber-700 fill-amber-700 flex-shrink-0" />
                 <div className="text-base text-amber-900">
                   <span className="font-semibold">Este sitio también está disponible en Español. Presione el botón de Español para traducir.</span>
-                  <span className="block mt-1 font-medium">This site is also available in Spanish. Press the Spanish button to translate.</span>
+                  <span className="block mt-1 font-medium">(This site is also available in Spanish. Press the Spanish button to translate.)</span>
                 </div>
               </div>
               <button

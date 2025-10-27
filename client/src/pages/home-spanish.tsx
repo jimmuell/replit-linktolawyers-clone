@@ -106,9 +106,10 @@ export default function HomeSpanish() {
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1">
                 <Bell className="w-6 h-6 text-amber-700 fill-amber-700 flex-shrink-0" />
-                <p className="text-base text-amber-900">
-                  <span className="font-semibold">Este sitio también está disponible en Español.</span> Presione el botón de Español para traducir.
-                </p>
+                <div className="text-base text-amber-900">
+                  <span className="font-semibold">This site is also available in English. Press the English button to translate.</span>
+                  <span className="block mt-1 font-medium">(Este sitio también está disponible en Inglés. Presione el botón de Inglés para traducir.)</span>
+                </div>
               </div>
               <button
                 onClick={handleDismissAlert}
