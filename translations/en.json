@@ -60,14 +60,14 @@
     "flows": {
       "family-based-immigrant-visa-immediate-relative": {
         "confirm": {
-          "prompt": "Great! This is for people getting a green card through a U.S. citizen or lawful permanent resident family member (like a spouse, parent, or child). Is that your situation?",
+          "prompt": "Great! This is for people getting a green card through a U.S. citizen or lawful permanent resident family member (such as a spouse, parent, or child). Is that your situation?",
           "options": [
             { "value": "yes", "label": "Yes" },
             { "value": "no", "label": "No" }
           ]
         },
         "relationship": {
-          "prompt": "What is your relationship to the person sponsoring you and what is their status?",
+          "prompt": "What is your relationship to the person sponsoring you, and their status?",
           "options": [
             { "value": "spouse_citizen", "label": "Spouse (U.S. citizen)" },
             { "value": "spouse_lpr", "label": "Spouse (green card holder)" },

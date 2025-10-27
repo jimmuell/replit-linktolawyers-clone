@@ -60,14 +60,14 @@
     "flows": {
       "family-based-immigrant-visa-immediate-relative": {
         "confirm": {
-          "prompt": "¡Excelente! Esto es para personas que obtienen una green card a través de un familiar ciudadano estadounidense o residente legal permanente (como un cónyuge, padre/madre, o hijo/hija). ¿Es esa su situación?",
+          "prompt": "¡Excelente! Esto es para personas que obtienen una green card a través de un familiar ciudadano estadounidense o residente legal permanente (tal como un cónyuge, padre/madre, o hijo/hija). ¿Es esa su situación?",
           "options": [
             { "value": "yes", "label": "Sí" },
             { "value": "no", "label": "No" }
           ]
         },
         "relationship": {
-          "prompt": "¿Cuál es su relación con la persona que lo patrocina y cuál es su estatus?",
+          "prompt": "¿Cuál es su relación con la persona que lo patrocina, y cuál es su estatus?",
           "options": [
             { "value": "spouse_citizen", "label": "Cónyuge (ciudadano estadounidense)" },
             { "value": "spouse_lpr", "label": "Cónyuge (titular de green card)" },
