@@ -258,7 +258,7 @@ export default function IntakeModalSpanish({ isOpen, onClose, onStartChat }: Int
           {/* Legal Disclaimer */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              <strong>Legal Disclaimer:</strong> This AI assistant provides general information only and does not constitute legal advice. For specific legal matters, please consult with a qualified immigration attorney.
+              <strong>Descargo de Responsabilidad Legal:</strong> La información proporcionada en este sitio web y formulario no constituye asesoramiento legal. El uso de este sitio web o completar este formulario no crea una relación abogado-cliente. Toda la información que proporcione se mantiene confidencial y se utiliza para ayudar a proporcionar información útil sobre precios. Para obtener asesoramiento sobre su situación específica de inmigración, consulte a un abogado de inmigración calificado.
             </p>
           </div>
 
