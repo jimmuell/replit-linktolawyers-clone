@@ -142,19 +142,15 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
             </Link>
           </div>
 
-          <div className="md:hidden flex items-center space-x-2">
-            <Link href="/es" className="text-gray-700 hover:text-primary transition-colors">
-              <Button className="bg-black text-white hover:bg-gray-800 rounded-full px-3 py-2 text-xs" data-testid="button-language-toggle">
-                Español
-              </Button>
-            </Link>
+          <div className="md:hidden flex items-center">
             <Button
               variant="ghost"
-              size="icon"
+              size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               data-testid="button-mobile-menu"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? <X className="w-4 h-4 mr-2" /> : null}
+              {isMenuOpen ? 'Close' : 'Main Menu'}
             </Button>
           </div>
         </div>
@@ -233,6 +229,16 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 Help
               </Link>
 
+              
+              {/* Divider */}
+              <div className="border-t border-gray-200 my-3"></div>
+              
+              {/* Language Toggle */}
+              <Link href="/es" className="block w-full" onClick={() => setIsMenuOpen(false)}>
+                <Button className="w-full bg-black text-white hover:bg-gray-800 rounded-full" data-testid="button-language-toggle-mobile">
+                  Español
+                </Button>
+              </Link>
               
               {/* Divider */}
               <div className="border-t border-gray-200 my-3"></div>
