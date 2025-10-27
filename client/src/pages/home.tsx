@@ -421,8 +421,8 @@ export default function Home() {
       
       {/* Language Alert Banner - spacing maintained even when dismissed */}
       <div className="my-2">
-        {showLanguageAlert && (
-          <div className="bg-amber-50 border-b border-amber-200" data-testid="alert-language">
+        <div className={cn("border-b", showLanguageAlert ? "bg-amber-50 border-amber-200" : "border-transparent")} data-testid="alert-language">
+          {showLanguageAlert && (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">
@@ -451,8 +451,8 @@ export default function Home() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       <div className="min-h-screen bg-white w-full">

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Bell, X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
 import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
@@ -106,8 +107,8 @@ export default function HomeSpanish() {
       
       {/* Language Alert Banner - spacing maintained even when dismissed */}
       <div className="my-2">
-        {showLanguageAlert && (
-          <div className="bg-amber-50 border-b border-amber-200" data-testid="alert-language">
+        <div className={cn("border-b", showLanguageAlert ? "bg-amber-50 border-amber-200" : "border-transparent")} data-testid="alert-language">
+          {showLanguageAlert && (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1">
@@ -136,8 +137,8 @@ export default function HomeSpanish() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       <div className="min-h-screen bg-white w-full">
