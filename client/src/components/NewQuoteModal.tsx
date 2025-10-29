@@ -53,8 +53,8 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>('basic-info');
   const [caseType, setCaseType] = useState<CaseType | ''>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>({
-    fullName: '',
-    email: ''
+    fullName: 'Jim Mueller',
+    email: 'jimmuell@aol.com'
   });
   const [currentNodeKey, setCurrentNodeKey] = useState<string>('');
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
@@ -333,7 +333,7 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const handleClose = () => {
     setCurrentStep('basic-info');
     setCaseType('');
-    setBasicInfo({ fullName: '', email: '' });
+    setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com' });
     setCurrentNodeKey('');
     setAnswers({});
     setAdditionalDetails('');
