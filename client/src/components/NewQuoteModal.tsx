@@ -37,7 +37,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'citizenship-naturalization-n400' | 'other';
+type CaseType = 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'other';
 
 type Step = 'basic-info' | 'case-type' | 'questionnaire' | 'wrap-up';
 
