@@ -21,7 +21,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'citizenship-naturalization-n400' | 'other';
+type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'citizenship-naturalization-n400' | 'other';
 
 export function getTranslations(language: 'en' | 'es') {
   return language === 'es' ? esTranslations : enTranslations;
@@ -613,6 +613,89 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           kind: 'single',
           prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].current_location.prompt,
           options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].current_location.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'END'
+        }
+      }
+    },
+    'new-removal-of-conditions': {
+      start: 'confirm',
+      nodes: {
+        confirm: {
+          id: 'confirm',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].confirm.prompt,
+          options: t.quoteModal.flows['new-removal-of-conditions'].confirm.options,
+          required: true,
+          next: (answers) => answers.confirm === 'no' ? 'ineligible' : 'already_submitted'
+        },
+        ineligible: {
+          id: 'ineligible',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].ineligible.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'no',
+          next: () => 'END'
+        },
+        already_submitted: {
+          id: 'already_submitted',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].already_submitted.prompt,
+          options: t.quoteModal.flows['new-removal-of-conditions'].already_submitted.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.already_submitted === 'yes' ? 'if_submitted_how' : 'green_card_start_date'
+        },
+        if_submitted_how: {
+          id: 'if_submitted_how',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].if_submitted_how.prompt,
+          options: t.quoteModal.flows['new-removal-of-conditions'].if_submitted_how.options,
+          required: true,
+          visibleIf: (answers) => answers.already_submitted === 'yes',
+          next: () => 'green_card_start_date'
+        },
+        green_card_start_date: {
+          id: 'green_card_start_date',
+          kind: 'text',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].green_card_start_date.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'marital_evidence_scale'
+        },
+        marital_evidence_scale: {
+          id: 'marital_evidence_scale',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].marital_evidence_scale.prompt,
+          options: t.quoteModal.flows['new-removal-of-conditions'].marital_evidence_scale.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'filing_type'
+        },
+        filing_type: {
+          id: 'filing_type',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].filing_type.prompt,
+          options: t.quoteModal.flows['new-removal-of-conditions'].filing_type.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.filing_type === 'with_waiver' ? 'spouse_involvement' : answers.filing_type === 'joint_filing' ? 'marital_situation' : 'END'
+        },
+        spouse_involvement: {
+          id: 'spouse_involvement',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].spouse_involvement.prompt,
+          options: t.quoteModal.flows['new-removal-of-conditions'].spouse_involvement.options,
+          required: true,
+          visibleIf: (answers) => answers.filing_type === 'with_waiver',
+          next: () => 'marital_situation'
+        },
+        marital_situation: {
+          id: 'marital_situation',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-removal-of-conditions'].marital_situation.prompt,
+          options: t.quoteModal.flows['new-removal-of-conditions'].marital_situation.options,
           required: true,
           visibleIf: (answers) => answers.confirm === 'yes',
           next: () => 'END'
