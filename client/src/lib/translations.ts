@@ -21,7 +21,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'final-asylum-flow' | 'new-k1-fiance-visa' | 'citizenship-naturalization-n400' | 'other';
+type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'citizenship-naturalization-n400' | 'other';
 
 export function getTranslations(language: 'en' | 'es') {
   return language === 'es' ? esTranslations : enTranslations;
@@ -532,6 +532,89 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           prompt: t.quoteModal.flows['new-k1-fiance-visa'].fiance_prior_immigration_explanation.prompt,
           required: true,
           visibleIf: (answers) => answers.fiance_prior_immigration === 'yes',
+          next: () => 'END'
+        }
+      }
+    },
+    'new-k1-fiance-visa-beneficiary': {
+      start: 'confirm',
+      nodes: {
+        confirm: {
+          id: 'confirm',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].confirm.prompt,
+          options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].confirm.options,
+          required: true,
+          next: (answers) => answers.confirm === 'no' ? 'ineligible_not_beneficiary' : 'prior_immigration_benefit'
+        },
+        ineligible_not_beneficiary: {
+          id: 'ineligible_not_beneficiary',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].ineligible_not_beneficiary.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'no',
+          next: () => 'END'
+        },
+        prior_immigration_benefit: {
+          id: 'prior_immigration_benefit',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].prior_immigration_benefit.prompt,
+          options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].prior_immigration_benefit.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.prior_immigration_benefit === 'yes' ? 'prior_immigration_explanation' : 'married_before'
+        },
+        prior_immigration_explanation: {
+          id: 'prior_immigration_explanation',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].prior_immigration_explanation.prompt,
+          required: true,
+          visibleIf: (answers) => answers.prior_immigration_benefit === 'yes',
+          next: () => 'married_before'
+        },
+        married_before: {
+          id: 'married_before',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].married_before.prompt,
+          options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].married_before.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'age_gap'
+        },
+        age_gap: {
+          id: 'age_gap',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].age_gap.prompt,
+          options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].age_gap.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'met_in_person'
+        },
+        met_in_person: {
+          id: 'met_in_person',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].met_in_person.prompt,
+          options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].met_in_person.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'relationship_duration'
+        },
+        relationship_duration: {
+          id: 'relationship_duration',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].relationship_duration.prompt,
+          options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].relationship_duration.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'current_location'
+        },
+        current_location: {
+          id: 'current_location',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].current_location.prompt,
+          options: t.quoteModal.flows['new-k1-fiance-visa-beneficiary'].current_location.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
           next: () => 'END'
         }
       }
