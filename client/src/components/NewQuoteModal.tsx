@@ -92,11 +92,27 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   // UI labels from translation files
   const labels = getLabels(isSpanish ? 'es' : 'en');
 
-  // Case type options from translation files
-  const caseTypeOptions = getCaseTypeOptions(isSpanish ? 'es' : 'en').map(opt => ({
-    value: opt.value as CaseType,
-    label: opt.label
-  }));
+  // Case type options from translation files - filtered by role
+  const caseTypeOptions = getCaseTypeOptions(isSpanish ? 'es' : 'en')
+    .map(opt => ({
+      value: opt.value as CaseType,
+      label: opt.label
+    }))
+    .filter(opt => {
+      // If no role selected yet, show all options
+      if (!role) return true;
+      
+      // Filter based on role
+      if (role === 'beneficiary') {
+        // Hide petitioner-specific options
+        return !opt.value.includes('petitioner');
+      } else if (role === 'petitioner') {
+        // Hide beneficiary-specific options
+        return !opt.value.includes('beneficiary');
+      }
+      
+      return true;
+    });
 
   const validateBasicInfo = (): boolean => {
     const newErrors: Record<string, string> = {};
