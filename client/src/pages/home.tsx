@@ -41,6 +41,7 @@ export default function Home() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
+  const [testFlowData, setTestFlowData] = useState<{ fullName: string; email: string; caseType: string } | null>(null);
 
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
@@ -95,6 +96,11 @@ export default function Home() {
     const dataWithLanguage = { ...data, language: 'en' }; // Add English language for English modal
     const intakeData = encodeURIComponent(JSON.stringify(dataWithLanguage));
     window.location.href = `/chat?intake=${intakeData}`;
+  };
+
+  const handleTestFlowCaseTypeSelected = (data: { fullName: string; email: string; caseType: string }) => {
+    setTestFlowData(data);
+    setIsNewQuoteModalOpen(true);
   };
 
   // Redirect authenticated users to appropriate dashboard
@@ -1010,13 +1016,20 @@ export default function Home() {
       {/* New Quote Modal - Structured Form System */}
       <NewQuoteModal
         isOpen={isNewQuoteModalOpen}
-        onClose={() => setIsNewQuoteModalOpen(false)}
+        onClose={() => {
+          setIsNewQuoteModalOpen(false);
+          setTestFlowData(null);
+        }}
+        initialBasicInfo={testFlowData ? { fullName: testFlowData.fullName, email: testFlowData.email } : undefined}
+        initialCaseType={testFlowData?.caseType}
+        skipToQuestionnaire={!!testFlowData}
       />
 
       {/* Test Quote Modal - Beneficiary/Petitioner Flow */}
       <TestQuoteModal
         isOpen={isTestQuoteModalOpen}
         onClose={() => setIsTestQuoteModalOpen(false)}
+        onCaseTypeSelected={handleTestFlowCaseTypeSelected}
         language="en"
       />
 

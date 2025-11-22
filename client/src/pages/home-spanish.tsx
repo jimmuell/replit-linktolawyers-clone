@@ -23,6 +23,7 @@ export default function HomeSpanish() {
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [testFlowData, setTestFlowData] = useState<{ fullName: string; email: string; caseType: string } | null>(null);
   const [showLanguageAlert, setShowLanguageAlert] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
@@ -50,6 +51,11 @@ export default function HomeSpanish() {
     const dataWithLanguage = { ...data, language: 'es' }; // Add Spanish language for Spanish modal
     const intakeData = encodeURIComponent(JSON.stringify(dataWithLanguage));
     window.location.href = `/chat?intake=${intakeData}`;
+  };
+
+  const handleTestFlowCaseTypeSelected = (data: { fullName: string; email: string; caseType: string }) => {
+    setTestFlowData(data);
+    setIsQuoteModalOpen(true);
   };
 
   // Redirect authenticated users to dashboard
@@ -408,13 +414,20 @@ export default function HomeSpanish() {
       {/* New Quote Modal */}
       <NewQuoteModal
         isOpen={isQuoteModalOpen}
-        onClose={() => setIsQuoteModalOpen(false)}
+        onClose={() => {
+          setIsQuoteModalOpen(false);
+          setTestFlowData(null);
+        }}
+        initialBasicInfo={testFlowData ? { fullName: testFlowData.fullName, email: testFlowData.email } : undefined}
+        initialCaseType={testFlowData?.caseType}
+        skipToQuestionnaire={!!testFlowData}
       />
 
       {/* Test Quote Modal - Beneficiary/Petitioner Flow */}
       <TestQuoteModal
         isOpen={isTestQuoteModalOpen}
         onClose={() => setIsTestQuoteModalOpen(false)}
+        onCaseTypeSelected={handleTestFlowCaseTypeSelected}
         language="es"
       />
 

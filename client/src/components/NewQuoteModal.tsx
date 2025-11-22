@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,9 @@ import { buildFlowConfig, getCaseTypeOptions, getLabels } from '@/lib/translatio
 interface NewQuoteModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialBasicInfo?: { fullName: string; email: string };
+  initialCaseType?: string;
+  skipToQuestionnaire?: boolean;
 }
 
 // Type definitions for the questionnaire system
@@ -49,13 +52,15 @@ const FLOW_CONFIG = buildFlowConfig('en');
 // Spanish translations for all flow configurations
 const FLOW_CONFIG_ES = buildFlowConfig('es');
 
-export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
-  const [currentStep, setCurrentStep] = useState<Step>('basic-info');
-  const [caseType, setCaseType] = useState<CaseType | ''>('');
-  const [basicInfo, setBasicInfo] = useState<BasicInfo>({
-    fullName: 'Jim Mueller',
-    email: 'jimmuell@aol.com'
-  });
+export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false }: NewQuoteModalProps) {
+  const [currentStep, setCurrentStep] = useState<Step>(skipToQuestionnaire ? 'questionnaire' : 'basic-info');
+  const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
+  const [basicInfo, setBasicInfo] = useState<BasicInfo>(
+    initialBasicInfo || {
+      fullName: 'Jim Mueller',
+      email: 'jimmuell@aol.com'
+    }
+  );
   const [currentNodeKey, setCurrentNodeKey] = useState<string>('');
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
   const [additionalDetails, setAdditionalDetails] = useState<string>('');
@@ -67,6 +72,19 @@ export function NewQuoteModal({ isOpen, onClose }: NewQuoteModalProps) {
   const [location] = useLocation();
   const isSpanish = location.startsWith('/es');
   const { toast } = useToast();
+
+  // Initialize questionnaire when modal opens with prefilled data
+  useEffect(() => {
+    if (isOpen && skipToQuestionnaire && initialCaseType && caseType) {
+      const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType as CaseType];
+      if (flow && !currentNodeKey) {
+        setCurrentNodeKey(flow.start);
+        setNavigationHistory([]);
+        setAnswers({});
+        setErrors({});
+      }
+    }
+  }, [isOpen, skipToQuestionnaire, initialCaseType, caseType, isSpanish, currentNodeKey]);
 
   // UI labels from translation files
   const labels = getLabels(isSpanish ? 'es' : 'en');

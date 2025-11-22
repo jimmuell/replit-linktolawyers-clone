@@ -15,6 +15,7 @@ type UserType = "beneficiary" | "petitioner" | null;
 interface TestQuoteModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onCaseTypeSelected: (data: { fullName: string; email: string; caseType: string }) => void;
   language?: 'en' | 'es';
 }
 
@@ -43,7 +44,7 @@ const petitionerCaseTypes = [
   { value: "other", label: "New - Other" },
 ];
 
-export function TestQuoteModal({ isOpen, onClose, language = 'en' }: TestQuoteModalProps) {
+export function TestQuoteModal({ isOpen, onClose, onCaseTypeSelected, language = 'en' }: TestQuoteModalProps) {
   const [currentScreen, setCurrentScreen] = useState<"start" | "form" | "userType" | "caseType">("start");
   const [userType, setUserType] = useState<UserType>(null);
   const [selectedCaseType, setSelectedCaseType] = useState<string | null>(null);
@@ -78,11 +79,13 @@ export function TestQuoteModal({ isOpen, onClose, language = 'en' }: TestQuoteMo
 
   const handleCaseTypeSelect = (caseType: string) => {
     setSelectedCaseType(caseType);
-    console.log("Selected Case Type:", caseType);
-    console.log("User Type:", userType);
-    console.log("Form Data:", formData);
-    // TODO: Navigate to the actual flow based on case type
-    // For now, just log the selection
+    if (formData) {
+      onCaseTypeSelected({
+        fullName: formData.fullName,
+        email: formData.email,
+        caseType: caseType
+      });
+    }
     handleClose();
   };
 
