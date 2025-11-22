@@ -179,6 +179,13 @@ export default function HomeSpanish() {
                   ¡Haz Clic Para Cotización Gratuita!
                 </Button> */}
                 <Button 
+                  variant="outline"
+                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  data-testid="button-test"
+                >
+                  Test
+                </Button>
+                <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsQuoteModalOpen(true)}
                   data-testid="button-get-quote"

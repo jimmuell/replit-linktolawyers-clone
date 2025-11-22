@@ -493,6 +493,13 @@ export default function Home() {
                   Click For Free Quote!
                 </Button> */}
                 <Button 
+                  variant="outline"
+                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  data-testid="button-test"
+                >
+                  Test
+                </Button>
+                <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsNewQuoteModalOpen(true)}
                   data-testid="button-get-quote"
