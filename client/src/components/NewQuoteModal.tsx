@@ -102,13 +102,17 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       // If no role selected yet, show all options
       if (!role) return true;
       
+      // Define petitioner-only and beneficiary-only case types
+      const petitionerOnlyCaseTypes = ['new-k1-fiance-visa', 'new-family-based-green-card-petitioner'];
+      const beneficiaryOnlyCaseTypes = ['new-k1-fiance-visa-beneficiary', 'new-family-based-green-card-beneficiary'];
+      
       // Filter based on role
       if (role === 'beneficiary') {
         // Hide petitioner-specific options
-        return !opt.value.includes('petitioner');
+        return !petitionerOnlyCaseTypes.includes(opt.value);
       } else if (role === 'petitioner') {
         // Hide beneficiary-specific options
-        return !opt.value.includes('beneficiary');
+        return !beneficiaryOnlyCaseTypes.includes(opt.value);
       }
       
       return true;
