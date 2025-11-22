@@ -8,6 +8,7 @@ import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import { IntakeModal } from "@/components/IntakeModal";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import { NewQuoteModal } from "@/components/NewQuoteModal";
+import { TestQuoteModal } from "@/components/TestQuoteModal";
 import { Link } from "wouter";
 import girlThinkingSpanishImage from "@assets/girl-thinking-spanish_1759069959323.jpg";
 import { getTranslations } from "@/lib/translations";
@@ -17,6 +18,7 @@ const t = getTranslations('es');
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
+  const [isTestQuoteModalOpen, setIsTestQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
@@ -181,6 +183,7 @@ export default function HomeSpanish() {
                 <Button 
                   variant="outline"
                   className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsTestQuoteModalOpen(true)}
                   data-testid="button-test"
                 >
                   Test
@@ -406,6 +409,13 @@ export default function HomeSpanish() {
       <NewQuoteModal
         isOpen={isQuoteModalOpen}
         onClose={() => setIsQuoteModalOpen(false)}
+      />
+
+      {/* Test Quote Modal - Beneficiary/Petitioner Flow */}
+      <TestQuoteModal
+        isOpen={isTestQuoteModalOpen}
+        onClose={() => setIsTestQuoteModalOpen(false)}
+        language="es"
       />
 
       {/* Intake Modal */}

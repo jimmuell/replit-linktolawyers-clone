@@ -18,6 +18,7 @@ import { apiRequest } from "@/lib/queryClient";
 import LoginModal from "@/components/LoginModal";
 import { IntakeModal } from "@/components/IntakeModal";
 import { NewQuoteModal } from "@/components/NewQuoteModal";
+import { TestQuoteModal } from "@/components/TestQuoteModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
@@ -36,6 +37,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isNewQuoteModalOpen, setIsNewQuoteModalOpen] = useState(false);
+  const [isTestQuoteModalOpen, setIsTestQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
@@ -495,6 +497,7 @@ export default function Home() {
                 <Button 
                   variant="outline"
                   className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
+                  onClick={() => setIsTestQuoteModalOpen(true)}
                   data-testid="button-test"
                 >
                   Test
@@ -1008,6 +1011,13 @@ export default function Home() {
       <NewQuoteModal
         isOpen={isNewQuoteModalOpen}
         onClose={() => setIsNewQuoteModalOpen(false)}
+      />
+
+      {/* Test Quote Modal - Beneficiary/Petitioner Flow */}
+      <TestQuoteModal
+        isOpen={isTestQuoteModalOpen}
+        onClose={() => setIsTestQuoteModalOpen(false)}
+        language="en"
       />
 
       {/* Terms and Conditions Modal */}
