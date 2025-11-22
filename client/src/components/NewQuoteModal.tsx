@@ -384,7 +384,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   };
 
   const handleClose = () => {
-    setCurrentStep('basic-info');
+    setCurrentStep('welcome');
     setCaseType('');
     setRole('');
     setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com' });
@@ -396,6 +396,48 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     setIsSubmitting(false);
     setShowOtherCaseDialog(false);
     onClose();
+  };
+
+  // Get title and subtitle for current step
+  const getStepHeader = (): { title: string; subtitle?: string } => {
+    switch (currentStep) {
+      case 'welcome':
+        return {
+          title: isSpanish ? 'Bienvenido a LinkToLawyers' : 'Welcome to LinkToLawyers',
+          subtitle: isSpanish 
+            ? 'Obtenga precios personalizados de abogados para su caso de inmigración en solo unos pocos pasos.' 
+            : 'Get personalized attorney pricing for your immigration case in just a few steps.'
+        };
+      case 'basic-info':
+        return {
+          title: isSpanish ? 'Cuéntanos sobre ti' : 'Tell us about yourself'
+        };
+      case 'role-selection':
+        return {
+          title: isSpanish ? '¿Quién solicita esta cotización?' : 'Who is requesting this quote?',
+          subtitle: isSpanish 
+            ? '¿Eres la persona que está siendo patrocinada o la persona que patrocina?' 
+            : 'Are you the person being sponsored or the person sponsoring?'
+        };
+      case 'case-type':
+        return {
+          title: labels.chooseClosestOption,
+          subtitle: role ? (isSpanish 
+            ? `Seleccione su tipo de caso (${role === 'beneficiary' ? 'Beneficiario' : 'Peticionario'})` 
+            : `Select your case type (${role === 'beneficiary' ? 'Beneficiary' : 'Petitioner'})`)
+            : undefined
+        };
+      case 'questionnaire':
+        return {
+          title: labels.title
+        };
+      case 'wrap-up':
+        return {
+          title: labels.almostDone
+        };
+      default:
+        return { title: '' };
+    }
   };
 
   const renderQuestion = () => {
@@ -580,43 +622,20 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     switch (currentStep) {
       case 'welcome':
         return (
-          <div className="space-y-8 py-8">
-            <div className="text-center space-y-4">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {isSpanish ? 'Bienvenido a LinkToLawyers' : 'Welcome to LinkToLawyers'}
-              </h1>
-              <p className="text-gray-600 text-lg max-w-md mx-auto">
-                {isSpanish 
-                  ? 'Obtenga precios personalizados de abogados para su caso de inmigración en solo unos pocos pasos.' 
-                  : 'Get personalized attorney pricing for your immigration case in just a few steps.'}
-              </p>
-            </div>
-            
-            <div className="flex justify-center pt-4">
-              <Button 
-                onClick={() => setCurrentStep('basic-info')} 
-                className="bg-black hover:bg-gray-800 text-white px-12 py-6 text-lg"
-                data-testid="button-start"
-              >
-                {isSpanish ? 'Comenzar' : 'Start'}
-              </Button>
-            </div>
+          <div className="flex justify-center pt-8">
+            <Button 
+              onClick={() => setCurrentStep('basic-info')} 
+              className="bg-black hover:bg-gray-800 text-white px-12 py-6 text-lg"
+              data-testid="button-start"
+            >
+              {isSpanish ? 'Comenzar' : 'Start'}
+            </Button>
           </div>
         );
 
       case 'basic-info':
         return (
           <div className="space-y-6">
-            <div className="relative mb-6">
-              <Button variant="ghost" onClick={handleBack} className="absolute left-0 top-0 p-0 hover:bg-transparent" data-testid="button-back">
-                <ArrowLeft className="w-5 h-5 mr-2" /> 
-                {labels.backButton}
-              </Button>
-              <h2 className="text-xl font-bold text-gray-900 text-center">
-                {isSpanish ? 'Cuéntanos sobre ti' : 'Tell us about yourself'}
-              </h2>
-            </div>
-
             <div className="space-y-4">
               <div>
                 <Label htmlFor="fullName">{labels.fullName}</Label>
@@ -664,23 +683,6 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'role-selection':
         return (
           <div className="space-y-6">
-            <div className="relative mb-6">
-              <Button variant="ghost" onClick={handleBack} className="absolute left-0 top-0 p-0 hover:bg-transparent" data-testid="button-back">
-                <ArrowLeft className="w-5 h-5 mr-2" /> 
-                {labels.backButton}
-              </Button>
-              <div className="text-center">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {isSpanish ? '¿Quién solicita esta cotización?' : 'Who is requesting this quote?'}
-                </h2>
-                <p className="text-gray-600 mt-2">
-                  {isSpanish 
-                    ? '¿Eres la persona que está siendo patrocinada o la persona que patrocina?' 
-                    : 'Are you the person being sponsored or the person sponsoring?'}
-                </p>
-              </div>
-            </div>
-
             <div className="space-y-4">
               <RadioGroup value={role} onValueChange={(value) => setRole(value as Role)} className="space-y-3">
                 <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
@@ -721,23 +723,6 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'case-type':
         return (
           <div className="space-y-6">
-            <div className="relative mb-6">
-              <Button variant="ghost" onClick={handleBack} className="absolute left-0 top-0 p-0 hover:bg-transparent" data-testid="button-back">
-                <ArrowLeft className="w-5 h-5 mr-2" /> 
-                {labels.backButton}
-              </Button>
-              <div className="text-center">
-                <h2 className="text-xl font-bold text-gray-900">{labels.chooseClosestOption}</h2>
-                {role && (
-                  <p className="text-gray-600 mt-2">
-                    {isSpanish 
-                      ? `Seleccione su tipo de caso (${role === 'beneficiary' ? 'Beneficiario' : 'Peticionario'})` 
-                      : `Select your case type (${role === 'beneficiary' ? 'Beneficiary' : 'Petitioner'})`}
-                  </p>
-                )}
-              </div>
-            </div>
-
             <div className="space-y-3">
               <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value as CaseType)} className="space-y-3">
                 {caseTypeOptions.map((caseTypeOption) => (
@@ -831,15 +816,39 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     }
   };
 
+  const stepHeader = getStepHeader();
+  const showBackButton = currentStep !== 'welcome';
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className={`${currentStep === 'case-type' ? 'max-w-4xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto`}>
-          <DialogHeader className="sr-only">
-            <DialogTitle>{labels.title}</DialogTitle>
-            <DialogDescription>
-              {labels.subtitle}
-            </DialogDescription>
+          <DialogHeader>
+            <div className="flex items-start justify-between gap-4 pr-8">
+              <div className="flex-shrink-0 pt-1">
+                {showBackButton && (
+                  <Button 
+                    variant="ghost" 
+                    onClick={handleBack} 
+                    className="p-0 h-auto hover:bg-transparent text-gray-600 hover:text-gray-900"
+                    data-testid="button-back"
+                  >
+                    <ArrowLeft className="w-5 h-5 mr-2" /> 
+                    {labels.backButton}
+                  </Button>
+                )}
+              </div>
+              <div className="flex-1 text-center">
+                <DialogTitle className="text-xl font-bold text-gray-900">
+                  {stepHeader.title}
+                </DialogTitle>
+                {stepHeader.subtitle && (
+                  <DialogDescription className="text-gray-600 mt-2">
+                    {stepHeader.subtitle}
+                  </DialogDescription>
+                )}
+              </div>
+            </div>
           </DialogHeader>
           {renderStep()}
         </DialogContent>
