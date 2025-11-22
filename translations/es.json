@@ -49,6 +49,10 @@
         "label": "Asilo o Protección contra la Persecución"
       },
       {
+        "value": "final-asylum-flow",
+        "label": "Nuevo - Asilo o Protección contra la Persecución"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "Ciudadanía Estadounidense (\"Naturalización\") - Solicitar para convertirse en Ciudadano Estadounidense"
       },
@@ -289,6 +293,52 @@
         },
         "trips_over_6_months": {
           "prompt": "Desde que obtuvo su green card, ¿ha tomado viajes fuera de los Estados Unidos por más de 6 meses a la vez?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        }
+      },
+      "final-asylum-flow": {
+        "confirm": {
+          "prompt": "¡Excelente! Este servicio legal es para personas en los EE. UU. que temen persecución o daño si regresan a su país de origen. ¿Esto le aplica a usted?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_no_fear": {
+          "prompt": "El proceso de asilo de EE. UU. es para individuos que están físicamente en los Estados Unidos y temen regresar a su país de origen debido a persecución o un temor fundado de persecución.\n\nSegún su respuesta, es posible que no sea elegible para solicitar asilo. ¡Todavía podemos tratar de ayudar! Su información puede ser enviada a un abogado de inmigración en nuestra red que puede asesorarle sobre otras posibles opciones de inmigración."
+        },
+        "inspected": {
+          "prompt": "Cuando entró a los EE. UU., ¿fue inspeccionado por un oficial fronterizo de EE. UU.?",
+          "options": [
+            { "value": "yes", "label": "Fui inspeccionado y admitido" },
+            { "value": "no", "label": "Entré sin ser inspeccionado" }
+          ]
+        },
+        "entry_description": {
+          "prompt": "Describa brevemente cómo entró a los EE. UU. (por ejemplo, visa de turista, visa de estudiante, libertad condicional humanitaria, visa de empleo, visa J-1 u otro tipo de visa)"
+        },
+        "entry_date": {
+          "prompt": "¿Qué fecha entró o llegó a los EE. UU.? Por favor proporcione la fecha o su mejor estimación. Si no sabe la fecha, una fecha aproximada está bien."
+        },
+        "afraid_return": {
+          "prompt": "¿Tiene miedo de regresar a su país de origen? Si es así, ¿puede explicar por qué?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_no_fear_return": {
+          "prompt": "El proceso de asilo de EE. UU. es para individuos que están físicamente en los Estados Unidos y temen regresar a su país de origen debido a persecución o un temor fundado de persecución.\n\nSegún su respuesta, es posible que no sea elegible para solicitar asilo. ¡Todavía podemos tratar de ayudar! Su información puede ser enviada a un abogado de inmigración en nuestra red que puede asesorarle sobre otras posibles opciones de inmigración."
+        },
+        "fear_explanation": {
+          "prompt": "Si es así, por favor explique por qué tiene miedo de regresar a su país de origen.",
+          "description": "Por ejemplo: amenazas, violencia, persecución u otro daño."
+        },
+        "immigration_court": {
+          "prompt": "¿Alguna vez ha sido colocado en corte de inmigración o enfrentado procedimientos de expulsión (deportación)?",
           "options": [
             { "value": "yes", "label": "Sí" },
             { "value": "no", "label": "No" }

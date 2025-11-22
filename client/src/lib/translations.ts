@@ -21,7 +21,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'citizenship-naturalization-n400' | 'other';
+type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'final-asylum-flow' | 'citizenship-naturalization-n400' | 'other';
 
 export function getTranslations(language: 'en' | 'es') {
   return language === 'es' ? esTranslations : enTranslations;
@@ -360,6 +360,86 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           prompt: t.quoteModal.flows['citizenship-naturalization-n400'].trips_over_6_months.prompt,
           options: t.quoteModal.flows['citizenship-naturalization-n400'].trips_over_6_months.options,
           required: true,
+          next: () => 'END'
+        }
+      }
+    },
+    'final-asylum-flow': {
+      start: 'confirm',
+      nodes: {
+        confirm: {
+          id: 'confirm',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['final-asylum-flow'].confirm.prompt,
+          options: t.quoteModal.flows['final-asylum-flow'].confirm.options,
+          required: true,
+          next: (answers) => answers.confirm === 'no' ? 'ineligible_no_fear' : 'inspected'
+        },
+        ineligible_no_fear: {
+          id: 'ineligible_no_fear',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['final-asylum-flow'].ineligible_no_fear.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'no',
+          next: () => 'END'
+        },
+        inspected: {
+          id: 'inspected',
+          kind: 'single',
+          prompt: t.quoteModal.flows['final-asylum-flow'].inspected.prompt,
+          options: t.quoteModal.flows['final-asylum-flow'].inspected.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.inspected === 'yes' ? 'entry_description' : 'entry_date'
+        },
+        entry_description: {
+          id: 'entry_description',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['final-asylum-flow'].entry_description.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes' && answers.inspected === 'yes',
+          next: () => 'entry_date'
+        },
+        entry_date: {
+          id: 'entry_date',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['final-asylum-flow'].entry_date.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'afraid_return'
+        },
+        afraid_return: {
+          id: 'afraid_return',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['final-asylum-flow'].afraid_return.prompt,
+          options: t.quoteModal.flows['final-asylum-flow'].afraid_return.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.afraid_return === 'no' ? 'ineligible_no_fear_return' : 'fear_explanation'
+        },
+        ineligible_no_fear_return: {
+          id: 'ineligible_no_fear_return',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['final-asylum-flow'].ineligible_no_fear_return.prompt,
+          required: true,
+          visibleIf: (answers) => answers.afraid_return === 'no',
+          next: () => 'END'
+        },
+        fear_explanation: {
+          id: 'fear_explanation',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['final-asylum-flow'].fear_explanation.prompt,
+          required: true,
+          visibleIf: (answers) => answers.afraid_return === 'yes',
+          next: () => 'immigration_court'
+        },
+        immigration_court: {
+          id: 'immigration_court',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['final-asylum-flow'].immigration_court.prompt,
+          options: t.quoteModal.flows['final-asylum-flow'].immigration_court.options,
+          required: true,
+          visibleIf: (answers) => answers.afraid_return === 'yes',
           next: () => 'END'
         }
       }
