@@ -683,6 +683,13 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
           <div className="space-y-6">
             <div className="text-center mb-6">
               <h2 className="text-xl font-bold text-gray-900">{labels.chooseClosestOption}</h2>
+              {role && (
+                <p className="text-gray-600 mt-2">
+                  {isSpanish 
+                    ? `Seleccione su tipo de caso (${role === 'beneficiary' ? 'Beneficiario' : 'Peticionario'})` 
+                    : `Select your case type (${role === 'beneficiary' ? 'Beneficiary' : 'Petitioner'})`}
+                </p>
+              )}
             </div>
 
             <div className="space-y-4">
