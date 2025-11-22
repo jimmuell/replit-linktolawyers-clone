@@ -34,35 +34,35 @@
     "caseTypeOptions": [
       {
         "value": "final-asylum-flow",
-        "label": "New - Asylum or Protection From Persecution"
+        "label": "Asylum or Protection From Persecution"
       },
       {
         "value": "new-k1-fiance-visa",
-        "label": "New - Fianc\u00e9(e) Visa (K-1 visa) - Petitioner"
+        "label": "Fianc\u00e9(e) Visa (K-1 visa) - Petitioner"
       },
       {
         "value": "new-k1-fiance-visa-beneficiary",
-        "label": "New - Fianc\u00e9(e) Visa (K-1 visa) - Beneficiary"
+        "label": "Fianc\u00e9(e) Visa (K-1 visa) - Beneficiary"
       },
       {
         "value": "new-removal-of-conditions",
-        "label": "New - Removal of Conditions (Make My Green Card Permanent)"
+        "label": "Removal of Conditions (Make My Green Card Permanent)"
       },
       {
         "value": "new-family-based-green-card-petitioner",
-        "label": "New - Green Card through Family Member (Family-Based) - Petitioner"
+        "label": "Green Card through Family Member (Family-Based) - Petitioner"
       },
       {
         "value": "new-family-based-green-card-beneficiary",
-        "label": "New - Green Card through Family Member (Family-Based) - Beneficiary"
+        "label": "Green Card through Family Member (Family-Based) - Beneficiary"
       },
       {
         "value": "new-citizenship-naturalization",
-        "label": "New - U.S. Citizenship (Naturalization)"
+        "label": "U.S. Citizenship (Naturalization)"
       },
       {
         "value": "other",
-        "label": "New - Other"
+        "label": "Other"
       }
     ],
     "flows": {

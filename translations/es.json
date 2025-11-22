@@ -34,35 +34,35 @@
     "caseTypeOptions": [
       {
         "value": "final-asylum-flow",
-        "label": "Nuevo - Asilo o Protección contra la Persecución"
+        "label": "Asilo o Protección contra la Persecución"
       },
       {
         "value": "new-k1-fiance-visa",
-        "label": "Nuevo - Visa de Prometido(a) (K-1) - Peticionario"
+        "label": "Visa de Prometido(a) (K-1) - Peticionario"
       },
       {
         "value": "new-k1-fiance-visa-beneficiary",
-        "label": "Nuevo - Visa de Prometido(a) (K-1) - Beneficiario"
+        "label": "Visa de Prometido(a) (K-1) - Beneficiario"
       },
       {
         "value": "new-removal-of-conditions",
-        "label": "Nuevo - Eliminación de Condiciones (Hacer Mi Tarjeta Verde Permanente)"
+        "label": "Eliminación de Condiciones (Hacer Mi Tarjeta Verde Permanente)"
       },
       {
         "value": "new-family-based-green-card-petitioner",
-        "label": "Nuevo - Tarjeta Verde a través de Familiar (Basada en Familia) - Peticionario"
+        "label": "Tarjeta Verde a través de Familiar (Basada en Familia) - Peticionario"
       },
       {
         "value": "new-family-based-green-card-beneficiary",
-        "label": "Nuevo - Tarjeta Verde a través de Familiar (Basada en Familia) - Beneficiario"
+        "label": "Tarjeta Verde a través de Familiar (Basada en Familia) - Beneficiario"
       },
       {
         "value": "new-citizenship-naturalization",
-        "label": "Nuevo - Ciudadanía de EE.UU. (Naturalización)"
+        "label": "Ciudadanía de EE.UU. (Naturalización)"
       },
       {
         "value": "other",
-        "label": "Nuevo - Otro"
+        "label": "Otro"
       }
     ],
     "flows": {
