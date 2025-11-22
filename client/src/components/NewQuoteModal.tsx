@@ -607,15 +607,14 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'basic-info':
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <Button variant="ghost" onClick={handleBack} className="p-0 hover:bg-transparent" data-testid="button-back">
+            <div className="relative mb-6">
+              <Button variant="ghost" onClick={handleBack} className="absolute left-0 top-0 p-0 hover:bg-transparent" data-testid="button-back">
                 <ArrowLeft className="w-5 h-5 mr-2" /> 
                 {labels.backButton}
               </Button>
-              <h2 className="text-xl font-bold text-gray-900 flex-1 text-center">
+              <h2 className="text-xl font-bold text-gray-900 text-center">
                 {isSpanish ? 'Cuéntanos sobre ti' : 'Tell us about yourself'}
               </h2>
-              <div className="w-32"></div>
             </div>
 
             <div className="space-y-4">
@@ -665,22 +664,22 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'role-selection':
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <Button variant="ghost" onClick={handleBack} className="p-0 hover:bg-transparent" data-testid="button-back">
+            <div className="relative mb-6">
+              <Button variant="ghost" onClick={handleBack} className="absolute left-0 top-0 p-0 hover:bg-transparent" data-testid="button-back">
                 <ArrowLeft className="w-5 h-5 mr-2" /> 
                 {labels.backButton}
               </Button>
-              <h2 className="text-xl font-bold text-gray-900 flex-1 text-center">
-                {isSpanish ? '¿Quién solicita esta cotización?' : 'Who is requesting this quote?'}
-              </h2>
-              <div className="w-32"></div>
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {isSpanish ? '¿Quién solicita esta cotización?' : 'Who is requesting this quote?'}
+                </h2>
+                <p className="text-gray-600 mt-2">
+                  {isSpanish 
+                    ? '¿Eres la persona que está siendo patrocinada o la persona que patrocina?' 
+                    : 'Are you the person being sponsored or the person sponsoring?'}
+                </p>
+              </div>
             </div>
-
-            <p className="text-center text-gray-600">
-              {isSpanish 
-                ? '¿Eres la persona que está siendo patrocinada o la persona que patrocina?' 
-                : 'Are you the person being sponsored or the person sponsoring?'}
-            </p>
 
             <div className="space-y-4">
               <RadioGroup value={role} onValueChange={(value) => setRole(value as Role)} className="space-y-3">
@@ -722,22 +721,22 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'case-type':
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between mb-6">
-              <Button variant="ghost" onClick={handleBack} className="p-0 hover:bg-transparent" data-testid="button-back">
+            <div className="relative mb-6">
+              <Button variant="ghost" onClick={handleBack} className="absolute left-0 top-0 p-0 hover:bg-transparent" data-testid="button-back">
                 <ArrowLeft className="w-5 h-5 mr-2" /> 
                 {labels.backButton}
               </Button>
-              <h2 className="text-xl font-bold text-gray-900 flex-1 text-center">{labels.chooseClosestOption}</h2>
-              <div className="w-32"></div>
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-gray-900">{labels.chooseClosestOption}</h2>
+                {role && (
+                  <p className="text-gray-600 mt-2">
+                    {isSpanish 
+                      ? `Seleccione su tipo de caso (${role === 'beneficiary' ? 'Beneficiario' : 'Peticionario'})` 
+                      : `Select your case type (${role === 'beneficiary' ? 'Beneficiary' : 'Petitioner'})`}
+                  </p>
+                )}
+              </div>
             </div>
-
-            {role && (
-              <p className="text-center text-gray-600">
-                {isSpanish 
-                  ? `Seleccione su tipo de caso (${role === 'beneficiary' ? 'Beneficiario' : 'Peticionario'})` 
-                  : `Select your case type (${role === 'beneficiary' ? 'Beneficiary' : 'Petitioner'})`}
-              </p>
-            )}
 
             <div className="space-y-3">
               <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value as CaseType)} className="space-y-3">
