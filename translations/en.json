@@ -57,6 +57,10 @@
         "label": "New - Fianc\u00e9(e) Visa (K-1 visa) - Petitioner"
       },
       {
+        "value": "new-k1-fiance-visa-beneficiary",
+        "label": "New - Fianc\u00e9(e) Visa (K-1 visa) - Beneficiary"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "U.S. Citizenship (\"Naturalization\") - Applying to become a U.S. Citizen"
       },
@@ -417,6 +421,68 @@
         },
         "fiance_prior_immigration_explanation": {
           "prompt": "Please briefly explain what immigration benefit your fianc\u00e9(e) applied for and what happened."
+        }
+      },
+      "new-k1-fiance-visa-beneficiary": {
+        "confirm": {
+          "prompt": "You are the fianc\u00e9(e) coming to the U.S., and your U.S. citizen fianc\u00e9(e) is sponsoring you. You plan to get married within 90 days of arriving. Is that correct?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_not_beneficiary": {
+          "prompt": "The K-1 fianc\u00e9(e) visa is only for U.S. citizens petitioning for their fianc\u00e9(e) to come to the U.S. to get married within 90 days of arrival. Based on your answer, you may not be eligible for this visa."
+        },
+        "prior_immigration_benefit": {
+          "prompt": "Have you ever filed or applied for any U.S. immigration benefit?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "prior_immigration_explanation": {
+          "prompt": "If yes, please briefly explain the type of immigration benefit you applied for."
+        },
+        "married_before": {
+          "prompt": "Have you ever been married before?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "age_gap": {
+          "prompt": "Is there an age gap between you and your fianc\u00e9(e)?",
+          "options": [
+            { "value": "less_than_1_year", "label": "Yes, less than a year" },
+            { "value": "1_5_years", "label": "Yes, 1-5 years" },
+            { "value": "6_10_years", "label": "Yes, 6-10 years" },
+            { "value": "11_15_years", "label": "Yes, 11-15 years" },
+            { "value": "more_than_20_years", "label": "Yes, more than 20 years" }
+          ]
+        },
+        "met_in_person": {
+          "prompt": "Have you met in person within the last 2 years?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "relationship_duration": {
+          "prompt": "How long have you been in a relationship with your significant other?",
+          "options": [
+            { "value": "less_than_6_months", "label": "Less than 6 months" },
+            { "value": "6_months_to_1_year", "label": "6 months to 1 year" },
+            { "value": "1_to_2_years", "label": "1 to 2 years" },
+            { "value": "more_than_2_years", "label": "More than 2 years" }
+          ]
+        },
+        "current_location": {
+          "prompt": "Where are you currently located?",
+          "options": [
+            { "value": "inside_us", "label": "Inside the U.S." },
+            { "value": "outside_us", "label": "Outside the U.S." }
+          ]
         }
       },
       "other": {
