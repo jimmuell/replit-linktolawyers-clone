@@ -21,7 +21,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'citizenship-naturalization-n400' | 'other';
+type CaseType = 'family-based-immigrant-visa-immediate-relative' | 'k1-fiance-visa' | 'removal-of-conditions' | 'asylum-affirmative' | 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'citizenship-naturalization-n400' | 'other';
 
 export function getTranslations(language: 'en' | 'es') {
   return language === 'es' ? esTranslations : enTranslations;
@@ -870,6 +870,163 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           prompt: t.quoteModal.flows['new-family-based-green-card-petitioner'].beneficiary_application_description.prompt,
           required: true,
           visibleIf: (answers) => answers.beneficiary_applied_before === 'yes',
+          next: () => 'END'
+        }
+      }
+    },
+    'new-family-based-green-card-beneficiary': {
+      start: 'confirm',
+      nodes: {
+        confirm: {
+          id: 'confirm',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].confirm.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].confirm.options,
+          required: true,
+          next: (answers) => answers.confirm === 'no' ? 'ineligible' : 'relationship'
+        },
+        ineligible: {
+          id: 'ineligible',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].ineligible.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'no',
+          next: () => 'END'
+        },
+        relationship: {
+          id: 'relationship',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].relationship.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].relationship.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'sponsor_status'
+        },
+        sponsor_status: {
+          id: 'sponsor_status',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].sponsor_status.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].sponsor_status.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'sponsored_before'
+        },
+        sponsored_before: {
+          id: 'sponsored_before',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].sponsored_before.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].sponsored_before.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.sponsored_before === 'yes' ? 'sponsored_before_description' : 'applied_before'
+        },
+        sponsored_before_description: {
+          id: 'sponsored_before_description',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].sponsored_before_description.prompt,
+          required: true,
+          visibleIf: (answers) => answers.sponsored_before === 'yes',
+          next: () => 'applied_before'
+        },
+        applied_before: {
+          id: 'applied_before',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].applied_before.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].applied_before.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.applied_before === 'yes' ? 'applied_before_description' : 'location'
+        },
+        applied_before_description: {
+          id: 'applied_before_description',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].applied_before_description.prompt,
+          required: true,
+          visibleIf: (answers) => answers.applied_before === 'yes',
+          next: () => 'location'
+        },
+        location: {
+          id: 'location',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].location.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].location.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => {
+            if (answers.location === 'outside_us') return 'immigration_court';
+            if (answers.location === 'inside_us') return 'border_inspection';
+            return 'immigration_court';
+          }
+        },
+        border_inspection: {
+          id: 'border_inspection',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].border_inspection.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].border_inspection.options,
+          required: true,
+          visibleIf: (answers) => answers.location === 'inside_us',
+          next: (answers) => answers.border_inspection === 'yes_inspected' ? 'entry_visa_type' : 'times_entered_illegally'
+        },
+        times_entered_illegally: {
+          id: 'times_entered_illegally',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].times_entered_illegally.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].times_entered_illegally.options,
+          required: true,
+          visibleIf: (answers) => answers.border_inspection === 'no_not_inspected',
+          next: () => 'immigration_court'
+        },
+        entry_visa_type: {
+          id: 'entry_visa_type',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].entry_visa_type.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].entry_visa_type.options,
+          required: true,
+          visibleIf: (answers) => answers.border_inspection === 'yes_inspected',
+          next: () => 'visa_violations'
+        },
+        visa_violations: {
+          id: 'visa_violations',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].visa_violations.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].visa_violations.options,
+          required: true,
+          visibleIf: (answers) => answers.border_inspection === 'yes_inspected',
+          next: () => 'immigration_court'
+        },
+        immigration_court: {
+          id: 'immigration_court',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].immigration_court.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].immigration_court.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'marital_status'
+        },
+        marital_status: {
+          id: 'marital_status',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].marital_status.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].marital_status.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: () => 'criminal_history'
+        },
+        criminal_history: {
+          id: 'criminal_history',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].criminal_history.prompt,
+          options: t.quoteModal.flows['new-family-based-green-card-beneficiary'].criminal_history.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.criminal_history === 'yes' ? 'criminal_details' : 'END'
+        },
+        criminal_details: {
+          id: 'criminal_details',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].criminal_details.prompt,
+          required: true,
+          visibleIf: (answers) => answers.criminal_history === 'yes',
           next: () => 'END'
         }
       }
