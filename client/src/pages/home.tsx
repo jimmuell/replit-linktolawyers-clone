@@ -18,7 +18,6 @@ import { apiRequest } from "@/lib/queryClient";
 import LoginModal from "@/components/LoginModal";
 import { IntakeModal } from "@/components/IntakeModal";
 import { NewQuoteModal } from "@/components/NewQuoteModal";
-import { TestQuoteModal } from "@/components/TestQuoteModal";
 import HierarchicalCaseTypeSelect from "@/components/HierarchicalCaseTypeSelect";
 import EmailPreviewModal from "@/components/EmailPreviewModal";
 import TrackRequestModal from "@/components/TrackRequestModal";
@@ -37,11 +36,9 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isNewQuoteModalOpen, setIsNewQuoteModalOpen] = useState(false);
-  const [isTestQuoteModalOpen, setIsTestQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
-  const [testFlowData, setTestFlowData] = useState<{ fullName: string; email: string; caseType: string } | null>(null);
 
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
@@ -96,11 +93,6 @@ export default function Home() {
     const dataWithLanguage = { ...data, language: 'en' }; // Add English language for English modal
     const intakeData = encodeURIComponent(JSON.stringify(dataWithLanguage));
     window.location.href = `/chat?intake=${intakeData}`;
-  };
-
-  const handleTestFlowCaseTypeSelected = (data: { fullName: string; email: string; caseType: string }) => {
-    setTestFlowData(data);
-    setIsNewQuoteModalOpen(true);
   };
 
   // Redirect authenticated users to appropriate dashboard
@@ -493,21 +485,6 @@ export default function Home() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                {/* Hidden - AI Agent flow button for intake - when pressed opens the AI chatbot intake workflow */}
-                {/* <Button 
-                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsIntakeModalOpen(true)}
-                >
-                  Click For Free Quote!
-                </Button> */}
-                <Button 
-                  variant="outline"
-                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsTestQuoteModalOpen(true)}
-                  data-testid="button-test"
-                >
-                  Test
-                </Button>
                 <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsNewQuoteModalOpen(true)}
@@ -1016,21 +993,7 @@ export default function Home() {
       {/* New Quote Modal - Structured Form System */}
       <NewQuoteModal
         isOpen={isNewQuoteModalOpen}
-        onClose={() => {
-          setIsNewQuoteModalOpen(false);
-          setTestFlowData(null);
-        }}
-        initialBasicInfo={testFlowData ? { fullName: testFlowData.fullName, email: testFlowData.email } : undefined}
-        initialCaseType={testFlowData?.caseType}
-        skipToQuestionnaire={!!testFlowData}
-      />
-
-      {/* Test Quote Modal - Beneficiary/Petitioner Flow */}
-      <TestQuoteModal
-        isOpen={isTestQuoteModalOpen}
-        onClose={() => setIsTestQuoteModalOpen(false)}
-        onCaseTypeSelected={handleTestFlowCaseTypeSelected}
-        language="en"
+        onClose={() => setIsNewQuoteModalOpen(false)}
       />
 
       {/* Terms and Conditions Modal */}

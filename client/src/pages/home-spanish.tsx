@@ -8,7 +8,6 @@ import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import { IntakeModal } from "@/components/IntakeModal";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import { NewQuoteModal } from "@/components/NewQuoteModal";
-import { TestQuoteModal } from "@/components/TestQuoteModal";
 import { Link } from "wouter";
 import girlThinkingSpanishImage from "@assets/girl-thinking-spanish_1759069959323.jpg";
 import { getTranslations } from "@/lib/translations";
@@ -18,12 +17,10 @@ const t = getTranslations('es');
 export default function HomeSpanish() {
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
-  const [isTestQuoteModalOpen, setIsTestQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
-  const [testFlowData, setTestFlowData] = useState<{ fullName: string; email: string; caseType: string } | null>(null);
   const [showLanguageAlert, setShowLanguageAlert] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
@@ -51,11 +48,6 @@ export default function HomeSpanish() {
     const dataWithLanguage = { ...data, language: 'es' }; // Add Spanish language for Spanish modal
     const intakeData = encodeURIComponent(JSON.stringify(dataWithLanguage));
     window.location.href = `/chat?intake=${intakeData}`;
-  };
-
-  const handleTestFlowCaseTypeSelected = (data: { fullName: string; email: string; caseType: string }) => {
-    setTestFlowData(data);
-    setIsQuoteModalOpen(true);
   };
 
   // Redirect authenticated users to dashboard
@@ -179,21 +171,6 @@ export default function HomeSpanish() {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                {/* Hidden - AI Agent flow button for intake - when pressed opens the AI chatbot intake workflow */}
-                {/* <Button 
-                  className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsIntakeModalOpen(true)}
-                >
-                  ¡Haz Clic Para Cotización Gratuita!
-                </Button> */}
-                <Button 
-                  variant="outline"
-                  className="border-black text-black hover:bg-gray-50 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
-                  onClick={() => setIsTestQuoteModalOpen(true)}
-                  data-testid="button-test"
-                >
-                  Test
-                </Button>
                 <Button 
                   className="bg-black text-white hover:bg-gray-800 rounded-full px-8 py-6 text-lg w-full sm:w-auto"
                   onClick={() => setIsQuoteModalOpen(true)}
@@ -414,21 +391,7 @@ export default function HomeSpanish() {
       {/* New Quote Modal */}
       <NewQuoteModal
         isOpen={isQuoteModalOpen}
-        onClose={() => {
-          setIsQuoteModalOpen(false);
-          setTestFlowData(null);
-        }}
-        initialBasicInfo={testFlowData ? { fullName: testFlowData.fullName, email: testFlowData.email } : undefined}
-        initialCaseType={testFlowData?.caseType}
-        skipToQuestionnaire={!!testFlowData}
-      />
-
-      {/* Test Quote Modal - Beneficiary/Petitioner Flow */}
-      <TestQuoteModal
-        isOpen={isTestQuoteModalOpen}
-        onClose={() => setIsTestQuoteModalOpen(false)}
-        onCaseTypeSelected={handleTestFlowCaseTypeSelected}
-        language="es"
+        onClose={() => setIsQuoteModalOpen(false)}
       />
 
       {/* Intake Modal */}
