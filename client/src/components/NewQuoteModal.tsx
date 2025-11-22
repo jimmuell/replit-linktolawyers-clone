@@ -39,7 +39,9 @@ type Flow = {
 
 type CaseType = 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'other';
 
-type Step = 'basic-info' | 'case-type' | 'questionnaire' | 'wrap-up';
+type Step = 'basic-info' | 'role-selection' | 'case-type' | 'questionnaire' | 'wrap-up';
+
+type Role = 'beneficiary' | 'petitioner' | '';
 
 interface BasicInfo {
   fullName: string;
@@ -55,6 +57,7 @@ const FLOW_CONFIG_ES = buildFlowConfig('es');
 export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false }: NewQuoteModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>(skipToQuestionnaire ? 'questionnaire' : 'basic-info');
   const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
+  const [role, setRole] = useState<Role>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>(
     initialBasicInfo || {
       fullName: 'Jim Mueller',
@@ -168,6 +171,12 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
 
   const handleBasicInfoNext = () => {
     if (validateBasicInfo()) {
+      setCurrentStep('role-selection');
+    }
+  };
+
+  const handleRoleSelectionNext = () => {
+    if (role) {
       setCurrentStep('case-type');
     }
   };
@@ -215,8 +224,10 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   };
 
   const handleBack = () => {
-    if (currentStep === 'case-type') {
+    if (currentStep === 'role-selection') {
       setCurrentStep('basic-info');
+    } else if (currentStep === 'case-type') {
+      setCurrentStep('role-selection');
     } else if (currentStep === 'questionnaire') {
       // Use navigation history for accurate back navigation
       if (navigationHistory.length > 0) {
@@ -586,6 +597,58 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
 
             <div className="flex justify-end">
               <Button onClick={handleBasicInfoNext} disabled={!basicInfo.fullName || !basicInfo.email} data-testid="button-continue">
+                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'role-selection':
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <ClipboardList className="w-8 h-8 text-yellow-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">
+                {isSpanish ? 'Obtener Cotización' : 'Get Your Legal Quote'}
+              </h2>
+              <p className="text-gray-600 mt-2">
+                {isSpanish ? '¿Quién solicita esta cotización de precios legales?' : 'Who is requesting this legal price quote?'}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <RadioGroup value={role} onValueChange={(value) => setRole(value as Role)} className="space-y-3">
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                  <RadioGroupItem value="beneficiary" id="beneficiary" className="mt-1" data-testid="radio-beneficiary" />
+                  <Label htmlFor="beneficiary" className="flex-1 cursor-pointer">
+                    <div className="font-medium text-gray-900">
+                      {isSpanish 
+                        ? 'Soy la persona que está siendo patrocinada y estoy completando esta solicitud de cotización (beneficiario)' 
+                        : 'I am the person being sponsored and I am filling out this quote request (beneficiary)'}
+                    </div>
+                  </Label>
+                </div>
+
+                <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                  <RadioGroupItem value="petitioner" id="petitioner" className="mt-1" data-testid="radio-petitioner" />
+                  <Label htmlFor="petitioner" className="flex-1 cursor-pointer">
+                    <div className="font-medium text-gray-900">
+                      {isSpanish 
+                        ? 'Soy la persona que está patrocinando y completando esta solicitud de cotización (peticionario)' 
+                        : 'I am the person sponsoring and filling out this quote request (petitioner)'}
+                    </div>
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="flex justify-between space-x-3 pt-4">
+              <Button variant="outline" onClick={handleBack} data-testid="button-back">
+                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
+              </Button>
+              <Button onClick={handleRoleSelectionNext} disabled={!role} data-testid="button-continue">
                 {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
