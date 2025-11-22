@@ -838,8 +838,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className={`${getModalWidth()} max-h-[90vh] overflow-y-auto`}>
           <DialogHeader>
-            <div className="flex items-start justify-between gap-4 pr-8">
-              <div className="flex-shrink-0 pt-1">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-shrink-0 pt-1 min-w-[80px]">
                 {showBackButton && (
                   <Button 
                     variant="ghost" 
@@ -861,6 +861,9 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
                     {stepHeader.subtitle}
                   </DialogDescription>
                 )}
+              </div>
+              <div className="flex-shrink-0 min-w-[80px]">
+                {/* Spacer to balance the back button and ensure title centering */}
               </div>
             </div>
           </DialogHeader>
