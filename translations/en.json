@@ -69,6 +69,10 @@
         "label": "New - Green Card through Family Member (Family-Based) - Petitioner"
       },
       {
+        "value": "new-family-based-green-card-beneficiary",
+        "label": "New - Green Card through Family Member (Family-Based) - Beneficiary"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "U.S. Citizenship (\"Naturalization\") - Applying to become a U.S. Citizen"
       },
@@ -561,6 +565,126 @@
             { "value": "divorced", "label": "Divorced" },
             { "value": "widower", "label": "Widow(er)" }
           ]
+        }
+      },
+      "new-family-based-green-card-beneficiary": {
+        "confirm": {
+          "prompt": "Great! This is for people getting a green card through a U.S. citizen or lawful permanent resident family member (like a spouse, parent, sibling or child). Is that your situation?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible": {
+          "prompt": "This is for people getting a green card through a U.S. citizen or lawful permanent resident family member (like a spouse, parent, or child). Based on your answer, you may not be applying for a family petition.\n\nWe can still help! Your information can be sent to an immigration attorney in our network, who can review your situation and discuss other options."
+        },
+        "relationship": {
+          "prompt": "What is your relationship to the person who is sponsoring you?\n\nSelect the option that best describes your relationship.",
+          "options": [
+            { "value": "spouse", "label": "Spouse - The person sponsoring me is my husband or wife" },
+            { "value": "parent", "label": "Parent - The person sponsoring me is my parent" },
+            { "value": "child", "label": "Child - The person sponsoring me is my adult child (21 or older)" },
+            { "value": "sibling", "label": "Sibling - The person sponsoring me is my brother or sister" },
+            { "value": "stepparent_stepchild", "label": "Stepparent / Stepchild - The person sponsoring me is my stepparent or stepchild" },
+            { "value": "other", "label": "Other / Not sure" }
+          ]
+        },
+        "sponsor_status": {
+          "prompt": "What is the current U.S. immigration status of the person sponsoring you?\n\n(Select one)",
+          "options": [
+            { "value": "us_citizen", "label": "U.S. Citizen" },
+            { "value": "green_card_holder", "label": "Green Card Holder (Lawful Permanent Resident)" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "sponsored_before": {
+          "prompt": "Has the person sponsoring you ever sponsored you before?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "sponsored_before_description": {
+          "prompt": "If you were sponsored before, can you briefly explain the situation?"
+        },
+        "applied_before": {
+          "prompt": "Have you ever applied for any U.S. immigration benefit (such as a visa or a green card)?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "applied_before_description": {
+          "prompt": "Please briefly explain what type of immigration benefit you applied for.\n\n(Example: visitor visa, employment visa, student visa, J1, etc)"
+        },
+        "location": {
+          "prompt": "Where are you currently located?",
+          "options": [
+            { "value": "inside_us", "label": "Inside the U.S." },
+            { "value": "outside_us", "label": "Outside the U.S." }
+          ]
+        },
+        "border_inspection": {
+          "prompt": "If you are currently in the U.S., when you entered were you inspected by a U.S. border officer (CBP)?",
+          "options": [
+            { "value": "yes_inspected", "label": "Yes - I was inspected and admitted" },
+            { "value": "no_not_inspected", "label": "No - I entered without being inspected" }
+          ]
+        },
+        "times_entered_illegally": {
+          "prompt": "If you entered the U.S. without being inspected by a U.S. border officer (CBP), how many times did this happen?",
+          "options": [
+            { "value": "once", "label": "Once" },
+            { "value": "more_than_once", "label": "More than once" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "entry_visa_type": {
+          "prompt": "How did you enter the United States?\n\n(Choose the option that best describes your entry.)",
+          "options": [
+            { "value": "tourist_visa", "label": "Tourist Visa (B1/B2 visa)" },
+            { "value": "student_visa", "label": "Student Visa (F-1 visa)" },
+            { "value": "employment_visa", "label": "Employment Visa" },
+            { "value": "j1_visa", "label": "J1 visa" },
+            { "value": "other", "label": "Other / not sure" }
+          ]
+        },
+        "visa_violations": {
+          "prompt": "Have you ever stayed in the U.S. longer than you were allowed to stay or violated the terms of your visa?\n\n(This means staying past the date on your I-94 or working without permission or doing anything your visa does not allow).",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "immigration_court": {
+          "prompt": "Have you ever been in immigration court or removal proceedings?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "marital_status": {
+          "prompt": "Are you currently married or have you been married in the past?",
+          "options": [
+            { "value": "never_married", "label": "No, never married" },
+            { "value": "previously_married", "label": "Yes, married before - ended in divorce, annulment or spouse passed away" },
+            { "value": "currently_married", "label": "Yes, currently married" }
+          ]
+        },
+        "criminal_history": {
+          "prompt": "Have you ever committed a crime or offense that might make you ineligible for a U.S. immigration benefit?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "criminal_details": {
+          "prompt": "If yes, please briefly explain what happened:"
         }
       },
       "new-family-based-green-card-petitioner": {
