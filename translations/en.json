@@ -65,6 +65,10 @@
         "label": "New - Removal of Conditions (Make My Green Card Permanent)"
       },
       {
+        "value": "new-family-based-green-card-petitioner",
+        "label": "New - Green Card through Family Member (Family-Based) - Petitioner"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "U.S. Citizenship (\"Naturalization\") - Applying to become a U.S. Citizen"
       },
@@ -557,6 +561,140 @@
             { "value": "divorced", "label": "Divorced" },
             { "value": "widower", "label": "Widow(er)" }
           ]
+        }
+      },
+      "new-family-based-green-card-petitioner": {
+        "confirm": {
+          "prompt": "Great! This is for people getting a green card through a U.S. citizen or lawful permanent resident family member (like a spouse, parent, sibling or child). Is that your situation?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible": {
+          "prompt": "This is for people getting a green card through a U.S. citizen or lawful permanent resident family member (like a spouse, parent, or child). Based on your answer, you may not be applying for a family petition.\n\nWe can still help! Your information can be sent to an immigration attorney in our network, who can review your situation and discuss other options."
+        },
+        "relationship": {
+          "prompt": "What is your relationship to the person you're sponsoring?\n\nSelect the option that best describes your relationship. This information helps the attorney understand your situation and guide you properly.",
+          "options": [
+            { "value": "spouse", "label": "Spouse - I am married to the person I'm sponsoring" },
+            { "value": "parent", "label": "Parent - I am the parent of the person I'm sponsoring" },
+            { "value": "child", "label": "Child - I am the adult child (21 years or older) of the person I'm sponsoring" },
+            { "value": "sibling", "label": "Sibling - I am the sibling (brother/sister) of the person I'm sponsoring" },
+            { "value": "stepparent", "label": "Stepparent - I am the stepparent of the person I'm sponsoring (stepchild, under 21 years old)" },
+            { "value": "other", "label": "Other / Not Sure" }
+          ]
+        },
+        "status": {
+          "prompt": "What is your current U.S. immigration legal status (this refers to you - the petitioner sponsoring your relative)?",
+          "options": [
+            { "value": "us_citizen", "label": "I am a U.S. citizen" },
+            { "value": "green_card_holder", "label": "I am a lawful permanent resident (green card holder)" },
+            { "value": "other", "label": "Other / Not Sure" }
+          ]
+        },
+        "citizenship_method": {
+          "prompt": "How did you obtain U.S. citizenship?",
+          "options": [
+            { "value": "born_in_us", "label": "I was born in the U.S." },
+            { "value": "naturalization", "label": "I became a U.S. citizen through naturalization" }
+          ]
+        },
+        "green_card_method_naturalized": {
+          "prompt": "If naturalized, how did you obtain your green card?",
+          "options": [
+            { "value": "marriage", "label": "Marriage to a U.S. citizen or green card holder" },
+            { "value": "family", "label": "Family sponsorship (other than marriage, e.g. parent, sibling, adult child of U.S. citizen)" },
+            { "value": "employment", "label": "Employment" },
+            { "value": "asylum", "label": "Asylum" },
+            { "value": "other", "label": "Other / Not sure" }
+          ]
+        },
+        "green_card_method_lpr": {
+          "prompt": "How did you obtain your green card? (Select the option that best describes your situation)",
+          "options": [
+            { "value": "marriage", "label": "Marriage to a U.S. citizen or green card holder" },
+            { "value": "family", "label": "Family (other than marriage, e.g. parent, sibling, adult child of U.S. citizen)" },
+            { "value": "employment", "label": "Employment" },
+            { "value": "asylum", "label": "Asylum" },
+            { "value": "other", "label": "Other / Not sure" }
+          ]
+        },
+        "sponsored_before": {
+          "prompt": "Have you ever sponsored someone or applied for an immigration benefit for someone before?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "sponsorship_description": {
+          "prompt": "If yes, please briefly describe."
+        },
+        "location": {
+          "prompt": "Is the person you are sponsoring currently inside or outside the U.S.?",
+          "options": [
+            { "value": "inside_us", "label": "Inside the U.S." },
+            { "value": "outside_us", "label": "Outside the U.S." }
+          ]
+        },
+        "border_inspection": {
+          "prompt": "If the person you are sponsoring is currently in the U.S., were they inspected by a U.S. border officer when they entered?",
+          "options": [
+            { "value": "yes_inspected", "label": "Yes - they were inspected and admitted" },
+            { "value": "no_not_inspected", "label": "No - they entered without being inspected" }
+          ]
+        },
+        "times_entered_illegally": {
+          "prompt": "If the person you are sponsoring has entered the U.S. without being inspected by a U.S. border officer, how many times did this happen?",
+          "options": [
+            { "value": "once", "label": "Once" },
+            { "value": "more_than_once", "label": "More than once" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "entry_visa_type": {
+          "prompt": "How did the person you are sponsoring enter the U.S.?",
+          "options": [
+            { "value": "tourist_visa", "label": "Tourist Visa (B1/B2 visa)" },
+            { "value": "student_visa", "label": "Student Visa (F-1 visa)" },
+            { "value": "employment_visa", "label": "Employment Visa" },
+            { "value": "j1_visa", "label": "J1 visa" },
+            { "value": "other", "label": "Other / Not sure" }
+          ]
+        },
+        "visa_violations": {
+          "prompt": "Has the person you are sponsoring ever stayed in the U.S. longer than you were allowed or violated the terms of your visa?\n\n(This means staying past the date on your I-94 / entry papers, working without permission or doing anything your visa did not allow)",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "immigration_court": {
+          "prompt": "Has the person you are sponsoring ever been in immigration court or removal proceedings?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "beneficiary_marital_status": {
+          "prompt": "Is the person you are sponsoring currently married, or have they been married in the past?",
+          "options": [
+            { "value": "never_married", "label": "No, never married" },
+            { "value": "previously_married", "label": "Yes, married before - ended in divorce, annulment, or spouse passed away" },
+            { "value": "currently_married", "label": "Yes, currently married" }
+          ]
+        },
+        "beneficiary_applied_before": {
+          "prompt": "Has the person you are sponsoring ever applied for an immigration benefit?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "beneficiary_application_description": {
+          "prompt": "Please briefly explain the immigration benefit that they've applied for."
         }
       },
       "other": {
