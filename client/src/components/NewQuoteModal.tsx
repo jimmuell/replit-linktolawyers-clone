@@ -39,7 +39,7 @@ type Flow = {
 
 type CaseType = 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'other';
 
-type Step = 'basic-info' | 'role-selection' | 'case-type' | 'questionnaire' | 'wrap-up';
+type Step = 'welcome' | 'basic-info' | 'role-selection' | 'case-type' | 'questionnaire' | 'wrap-up';
 
 type Role = 'beneficiary' | 'petitioner' | '';
 
@@ -55,7 +55,7 @@ const FLOW_CONFIG = buildFlowConfig('en');
 const FLOW_CONFIG_ES = buildFlowConfig('es');
 
 export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false }: NewQuoteModalProps) {
-  const [currentStep, setCurrentStep] = useState<Step>(skipToQuestionnaire ? 'questionnaire' : 'basic-info');
+  const [currentStep, setCurrentStep] = useState<Step>(skipToQuestionnaire ? 'questionnaire' : 'welcome');
   const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
   const [role, setRole] = useState<Role>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>(
@@ -244,7 +244,9 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   };
 
   const handleBack = () => {
-    if (currentStep === 'role-selection') {
+    if (currentStep === 'basic-info') {
+      setCurrentStep('welcome');
+    } else if (currentStep === 'role-selection') {
       setCurrentStep('basic-info');
     } else if (currentStep === 'case-type') {
       setCurrentStep('role-selection');
@@ -576,26 +578,56 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
 
   const renderStep = () => {
     switch (currentStep) {
+      case 'welcome':
+        return (
+          <div className="space-y-8 py-8">
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl font-bold text-gray-900">
+                {isSpanish ? 'Bienvenido a LinkToLawyers' : 'Welcome to LinkToLawyers'}
+              </h1>
+              <p className="text-gray-600 text-lg max-w-md mx-auto">
+                {isSpanish 
+                  ? 'Obtenga precios personalizados de abogados para su caso de inmigración en solo unos pocos pasos.' 
+                  : 'Get personalized attorney pricing for your immigration case in just a few steps.'}
+              </p>
+            </div>
+            
+            <div className="flex justify-center pt-4">
+              <Button 
+                onClick={() => setCurrentStep('basic-info')} 
+                className="bg-black hover:bg-gray-800 text-white px-12 py-6 text-lg"
+                data-testid="button-start"
+              >
+                {isSpanish ? 'Comenzar' : 'Start'}
+              </Button>
+            </div>
+          </div>
+        );
+
       case 'basic-info':
         return (
           <div className="space-y-6">
-            <div className="text-center mb-6">
-              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                <ClipboardList className="w-8 h-8 text-yellow-600" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">Get Your Legal Quote</h2>
-              <p className="text-gray-600 mt-2">Tell us about yourself to get started</p>
+            <div className="flex items-center justify-between mb-6">
+              <Button variant="ghost" onClick={handleBack} className="p-0 hover:bg-transparent" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5 mr-2" /> 
+                {labels.backButton}
+              </Button>
+              <h2 className="text-xl font-bold text-gray-900 flex-1 text-center">
+                {isSpanish ? 'Cuéntanos sobre ti' : 'Tell us about yourself'}
+              </h2>
+              <div className="w-32"></div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="fullName">{labels.fullName} <span className="text-red-500">*</span></Label>
+                <Label htmlFor="fullName">{labels.fullName}</Label>
                 <Input
                   id="fullName"
                   value={basicInfo.fullName}
                   onChange={(e) => setBasicInfo(prev => ({ ...prev, fullName: e.target.value }))}
-                  placeholder="Enter your full name"
+                  placeholder="John Doe"
                   data-testid="input-full-name"
+                  className="mt-1"
                 />
                 {errors.fullName && (
                   <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
@@ -603,14 +635,15 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
               </div>
 
               <div>
-                <Label htmlFor="email">{labels.email} <span className="text-red-500">*</span></Label>
+                <Label htmlFor="email">{labels.email}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={basicInfo.email}
                   onChange={(e) => setBasicInfo(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="Enter your email address"
+                  placeholder="example@email.com"
                   data-testid="input-email"
+                  className="mt-1"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -618,28 +651,36 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Button onClick={handleBasicInfoNext} disabled={!basicInfo.fullName || !basicInfo.email} data-testid="button-continue">
-                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+            <Button 
+              onClick={handleBasicInfoNext} 
+              disabled={!basicInfo.fullName || !basicInfo.email} 
+              className="w-full bg-black hover:bg-gray-800 text-white py-6"
+              data-testid="button-continue"
+            >
+              {labels.continueButton}
+            </Button>
           </div>
         );
 
       case 'role-selection':
         return (
           <div className="space-y-6">
-            <div className="text-center mb-6">
-              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                <ClipboardList className="w-8 h-8 text-yellow-600" />
-              </div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {isSpanish ? 'Obtener Cotización' : 'Get Your Legal Quote'}
+            <div className="flex items-center justify-between mb-6">
+              <Button variant="ghost" onClick={handleBack} className="p-0 hover:bg-transparent" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5 mr-2" /> 
+                {labels.backButton}
+              </Button>
+              <h2 className="text-xl font-bold text-gray-900 flex-1 text-center">
+                {isSpanish ? '¿Quién solicita esta cotización?' : 'Who is requesting this quote?'}
               </h2>
-              <p className="text-gray-600 mt-2">
-                {isSpanish ? '¿Quién solicita esta cotización de precios legales?' : 'Who is requesting this legal price quote?'}
-              </p>
+              <div className="w-32"></div>
             </div>
+
+            <p className="text-center text-gray-600">
+              {isSpanish 
+                ? '¿Eres la persona que está siendo patrocinada o la persona que patrocina?' 
+                : 'Are you the person being sponsored or the person sponsoring?'}
+            </p>
 
             <div className="space-y-4">
               <RadioGroup value={role} onValueChange={(value) => setRole(value as Role)} className="space-y-3">
@@ -667,33 +708,39 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
               </RadioGroup>
             </div>
 
-            <div className="flex justify-between space-x-3 pt-4">
-              <Button variant="outline" onClick={handleBack} data-testid="button-back">
-                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
-              </Button>
-              <Button onClick={handleRoleSelectionNext} disabled={!role} data-testid="button-continue">
-                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+            <Button 
+              onClick={handleRoleSelectionNext} 
+              disabled={!role} 
+              className="w-full bg-black hover:bg-gray-800 text-white py-6"
+              data-testid="button-continue"
+            >
+              {labels.continueButton}
+            </Button>
           </div>
         );
 
       case 'case-type':
         return (
           <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">{labels.chooseClosestOption}</h2>
-              {role && (
-                <p className="text-gray-600 mt-2">
-                  {isSpanish 
-                    ? `Seleccione su tipo de caso (${role === 'beneficiary' ? 'Beneficiario' : 'Peticionario'})` 
-                    : `Select your case type (${role === 'beneficiary' ? 'Beneficiary' : 'Petitioner'})`}
-                </p>
-              )}
+            <div className="flex items-center justify-between mb-6">
+              <Button variant="ghost" onClick={handleBack} className="p-0 hover:bg-transparent" data-testid="button-back">
+                <ArrowLeft className="w-5 h-5 mr-2" /> 
+                {labels.backButton}
+              </Button>
+              <h2 className="text-xl font-bold text-gray-900 flex-1 text-center">{labels.chooseClosestOption}</h2>
+              <div className="w-32"></div>
             </div>
 
-            <div className="space-y-4">
-              <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value as CaseType)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {role && (
+              <p className="text-center text-gray-600">
+                {isSpanish 
+                  ? `Seleccione su tipo de caso (${role === 'beneficiary' ? 'Beneficiario' : 'Peticionario'})` 
+                  : `Select your case type (${role === 'beneficiary' ? 'Beneficiary' : 'Petitioner'})`}
+              </p>
+            )}
+
+            <div className="space-y-3">
+              <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value as CaseType)} className="space-y-3">
                 {caseTypeOptions.map((caseTypeOption) => (
                   <div key={caseTypeOption.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                     <RadioGroupItem value={caseTypeOption.value} id={caseTypeOption.value} className="mt-1" data-testid={`radio-${caseTypeOption.value}`} />
@@ -705,14 +752,14 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
               </RadioGroup>
             </div>
 
-            <div className="flex justify-between space-x-3 pt-4">
-              <Button variant="outline" onClick={handleBack} data-testid="button-back">
-                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
-              </Button>
-              <Button onClick={handleCaseTypeNext} disabled={!caseType} data-testid="button-continue">
-                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
+            <Button 
+              onClick={handleCaseTypeNext} 
+              disabled={!caseType} 
+              className="w-full bg-black hover:bg-gray-800 text-white py-6"
+              data-testid="button-continue"
+            >
+              {labels.continueButton}
+            </Button>
           </div>
         );
 
