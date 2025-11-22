@@ -65,6 +65,10 @@
         "label": "Nuevo - Eliminación de Condiciones (Hacer Mi Tarjeta Verde Permanente)"
       },
       {
+        "value": "new-family-based-green-card-petitioner",
+        "label": "Nuevo - Tarjeta Verde a través de Familiar (Basada en Familia) - Peticionario"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "Ciudadanía Estadounidense (\"Naturalización\") - Solicitar para convertirse en Ciudadano Estadounidense"
       },
@@ -557,6 +561,140 @@
             { "value": "divorced", "label": "Divorciado" },
             { "value": "widower", "label": "Viudo(a)" }
           ]
+        }
+      },
+      "new-family-based-green-card-petitioner": {
+        "confirm": {
+          "prompt": "¡Excelente! Esto es para personas que obtienen una tarjeta verde a través de un familiar ciudadano estadounidense o residente permanente legal (como un cónyuge, padre, hermano o hijo). ¿Es esa su situación?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible": {
+          "prompt": "Esto es para personas que obtienen una tarjeta verde a través de un familiar ciudadano estadounidense o residente permanente legal (como un cónyuge, padre o hijo). Según su respuesta, es posible que no esté solicitando una petición familiar.\n\n¡Aún podemos ayudar! Su información puede ser enviada a un abogado de inmigración en nuestra red, quien puede revisar su situación y discutir otras opciones."
+        },
+        "relationship": {
+          "prompt": "¿Cuál es su relación con la persona que está patrocinando?\n\nSeleccione la opción que mejor describa su relación. Esta información ayuda al abogado a comprender su situación y guiarlo adecuadamente.",
+          "options": [
+            { "value": "spouse", "label": "Cónyuge - Estoy casado(a) con la persona que estoy patrocinando" },
+            { "value": "parent", "label": "Padre/Madre - Soy el padre/madre de la persona que estoy patrocinando" },
+            { "value": "child", "label": "Hijo(a) - Soy el hijo(a) adulto (21 años o más) de la persona que estoy patrocinando" },
+            { "value": "sibling", "label": "Hermano(a) - Soy el hermano(a) de la persona que estoy patrocinando" },
+            { "value": "stepparent", "label": "Padrastro/Madrastra - Soy el padrastro/madrastra de la persona que estoy patrocinando (hijastro(a), menor de 21 años)" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "status": {
+          "prompt": "¿Cuál es su estatus legal de inmigración actual en los EE. UU. (esto se refiere a usted - el peticionario que patrocina a su familiar)?",
+          "options": [
+            { "value": "us_citizen", "label": "Soy ciudadano estadounidense" },
+            { "value": "green_card_holder", "label": "Soy residente permanente legal (titular de tarjeta verde)" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "citizenship_method": {
+          "prompt": "¿Cómo obtuvo la ciudadanía estadounidense?",
+          "options": [
+            { "value": "born_in_us", "label": "Nací en los Estados Unidos" },
+            { "value": "naturalization", "label": "Me convertí en ciudadano estadounidense a través de la naturalización" }
+          ]
+        },
+        "green_card_method_naturalized": {
+          "prompt": "Si se naturalizó, ¿cómo obtuvo su tarjeta verde?",
+          "options": [
+            { "value": "marriage", "label": "Matrimonio con un ciudadano estadounidense o titular de tarjeta verde" },
+            { "value": "family", "label": "Patrocinio familiar (que no sea matrimonio, por ejemplo, padre, hermano, hijo adulto de ciudadano estadounidense)" },
+            { "value": "employment", "label": "Empleo" },
+            { "value": "asylum", "label": "Asilo" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "green_card_method_lpr": {
+          "prompt": "¿Cómo obtuvo su tarjeta verde? (Seleccione la opción que mejor describa su situación)",
+          "options": [
+            { "value": "marriage", "label": "Matrimonio con un ciudadano estadounidense o titular de tarjeta verde" },
+            { "value": "family", "label": "Familia (que no sea matrimonio, por ejemplo, padre, hermano, hijo adulto de ciudadano estadounidense)" },
+            { "value": "employment", "label": "Empleo" },
+            { "value": "asylum", "label": "Asilo" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "sponsored_before": {
+          "prompt": "¿Alguna vez ha patrocinado a alguien o solicitado un beneficio de inmigración para alguien antes?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "sponsorship_description": {
+          "prompt": "En caso afirmativo, describa brevemente."
+        },
+        "location": {
+          "prompt": "¿La persona que está patrocinando se encuentra actualmente dentro o fuera de los Estados Unidos?",
+          "options": [
+            { "value": "inside_us", "label": "Dentro de los Estados Unidos" },
+            { "value": "outside_us", "label": "Fuera de los Estados Unidos" }
+          ]
+        },
+        "border_inspection": {
+          "prompt": "Si la persona que está patrocinando se encuentra actualmente en los Estados Unidos, ¿fue inspeccionada por un oficial fronterizo estadounidense cuando entró?",
+          "options": [
+            { "value": "yes_inspected", "label": "Sí - fue inspeccionado y admitido" },
+            { "value": "no_not_inspected", "label": "No - entró sin ser inspeccionado" }
+          ]
+        },
+        "times_entered_illegally": {
+          "prompt": "Si la persona que está patrocinando ha entrado a los Estados Unidos sin ser inspeccionada por un oficial fronterizo estadounidense, ¿cuántas veces sucedió esto?",
+          "options": [
+            { "value": "once", "label": "Una vez" },
+            { "value": "more_than_once", "label": "Más de una vez" },
+            { "value": "not_sure", "label": "No estoy seguro" }
+          ]
+        },
+        "entry_visa_type": {
+          "prompt": "¿Cómo entró a los Estados Unidos la persona que está patrocinando?",
+          "options": [
+            { "value": "tourist_visa", "label": "Visa de turista (visa B1/B2)" },
+            { "value": "student_visa", "label": "Visa de estudiante (visa F-1)" },
+            { "value": "employment_visa", "label": "Visa de empleo" },
+            { "value": "j1_visa", "label": "Visa J1" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "visa_violations": {
+          "prompt": "¿La persona que está patrocinando alguna vez permaneció en los Estados Unidos más tiempo del permitido o violó los términos de su visa?\n\n(Esto significa quedarse más allá de la fecha en sus papeles de entrada/I-94, trabajar sin permiso o hacer algo que su visa no permitía)",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "No estoy seguro" }
+          ]
+        },
+        "immigration_court": {
+          "prompt": "¿La persona que está patrocinando alguna vez ha estado en corte de inmigración o procedimientos de deportación?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" },
+            { "value": "not_sure", "label": "No estoy seguro" }
+          ]
+        },
+        "beneficiary_marital_status": {
+          "prompt": "¿La persona que está patrocinando está actualmente casada, o ha estado casada en el pasado?",
+          "options": [
+            { "value": "never_married", "label": "No, nunca casado" },
+            { "value": "previously_married", "label": "Sí, casado antes - terminó en divorcio, anulación, o el cónyuge falleció" },
+            { "value": "currently_married", "label": "Sí, actualmente casado" }
+          ]
+        },
+        "beneficiary_applied_before": {
+          "prompt": "¿La persona que está patrocinando alguna vez ha solicitado un beneficio de inmigración?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "beneficiary_application_description": {
+          "prompt": "Por favor, explique brevemente el beneficio de inmigración que solicitaron."
         }
       },
       "other": {
