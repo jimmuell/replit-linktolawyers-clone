@@ -61,6 +61,10 @@
         "label": "New - Fianc\u00e9(e) Visa (K-1 visa) - Beneficiary"
       },
       {
+        "value": "new-removal-of-conditions",
+        "label": "New - Removal of Conditions (Make My Green Card Permanent)"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "U.S. Citizenship (\"Naturalization\") - Applying to become a U.S. Citizen"
       },
@@ -482,6 +486,76 @@
           "options": [
             { "value": "inside_us", "label": "Inside the U.S." },
             { "value": "outside_us", "label": "Outside the U.S." }
+          ]
+        }
+      },
+      "new-removal-of-conditions": {
+        "confirm": {
+          "prompt": "Great! You got your green card through marriage and it's valid for 2 years (conditional green card), correct?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible": {
+          "prompt": "Green cards based on marriage can be conditional (valid for 2 years) or permanent (valid for 10 years). Based on your answer, you may not have a conditional green card."
+        },
+        "already_submitted": {
+          "prompt": "Have you already submitted your application to remove the conditions on your green card? (Form I-751)",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "if_submitted_how": {
+          "prompt": "If yes, did you file it together with your spouse or on your own?",
+          "options": [
+            { "value": "together_with_spouse", "label": "Together with my spouse" },
+            { "value": "on_my_own", "label": "On my own" },
+            { "value": "not_sure", "label": "Not sure" }
+          ]
+        },
+        "green_card_start_date": {
+          "prompt": "What is the start date on your green card? An approximate month / year is fine."
+        },
+        "marital_evidence_scale": {
+          "prompt": "On a scale of 1-10, how much marital evidence did you submit with your original green card application? (1= very little and 10 = a lot)",
+          "options": [
+            { "value": "1", "label": "1 - very little" },
+            { "value": "2", "label": "2" },
+            { "value": "3", "label": "3" },
+            { "value": "4", "label": "4" },
+            { "value": "5", "label": "5" },
+            { "value": "6", "label": "6" },
+            { "value": "7", "label": "7" },
+            { "value": "8", "label": "8" },
+            { "value": "9", "label": "9" },
+            { "value": "10", "label": "10 - A lot" }
+          ]
+        },
+        "filing_type": {
+          "prompt": "How will you file your application?",
+          "options": [
+            { "value": "joint_filing", "label": "Together with my spouse (\"joint filing\")" },
+            { "value": "with_waiver", "label": "On my own (\"with waiver\")" },
+            { "value": "not_sure_yet", "label": "Not sure yet" }
+          ]
+        },
+        "spouse_involvement": {
+          "prompt": "How involved will your spouse be in your case?",
+          "options": [
+            { "value": "fully_involved", "label": "Fully involved - will help provide documents and cooperate with the process" },
+            { "value": "somewhat_involved", "label": "Somewhat involved - may help with some things, but not fully sure yet" },
+            { "value": "not_involved", "label": "Not involved - will not help or provide any documents" }
+          ]
+        },
+        "marital_situation": {
+          "prompt": "What is your current marital situation?",
+          "options": [
+            { "value": "married_living_together", "label": "Married living together" },
+            { "value": "married_living_apart", "label": "Married, but living apart" },
+            { "value": "divorced", "label": "Divorced" },
+            { "value": "widower", "label": "Widow(er)" }
           ]
         }
       },

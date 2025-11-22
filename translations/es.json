@@ -61,6 +61,10 @@
         "label": "Nuevo - Visa de Prometido(a) (K-1) - Beneficiario"
       },
       {
+        "value": "new-removal-of-conditions",
+        "label": "Nuevo - Eliminación de Condiciones (Hacer Mi Tarjeta Verde Permanente)"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "Ciudadanía Estadounidense (\"Naturalización\") - Solicitar para convertirse en Ciudadano Estadounidense"
       },
@@ -482,6 +486,76 @@
           "options": [
             { "value": "inside_us", "label": "Dentro de los Estados Unidos" },
             { "value": "outside_us", "label": "Fuera de los Estados Unidos" }
+          ]
+        }
+      },
+      "new-removal-of-conditions": {
+        "confirm": {
+          "prompt": "¡Excelente! ¿Obtuvo su tarjeta verde a través del matrimonio y es válida por 2 años (tarjeta verde condicional), correcto?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible": {
+          "prompt": "Las tarjetas verdes basadas en matrimonio pueden ser condicionales (válidas por 2 años) o permanentes (válidas por 10 años). Según su respuesta, es posible que no tenga una tarjeta verde condicional."
+        },
+        "already_submitted": {
+          "prompt": "¿Ya ha presentado su solicitud para eliminar las condiciones de su tarjeta verde? (Formulario I-751)",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "if_submitted_how": {
+          "prompt": "En caso afirmativo, ¿lo presentó junto con su cónyuge o por su cuenta?",
+          "options": [
+            { "value": "together_with_spouse", "label": "Junto con mi cónyuge" },
+            { "value": "on_my_own", "label": "Por mi cuenta" },
+            { "value": "not_sure", "label": "No estoy seguro" }
+          ]
+        },
+        "green_card_start_date": {
+          "prompt": "¿Cuál es la fecha de inicio en su tarjeta verde? Un mes / año aproximado está bien."
+        },
+        "marital_evidence_scale": {
+          "prompt": "En una escala de 1 a 10, ¿cuánta evidencia matrimonial presentó con su solicitud original de tarjeta verde? (1= muy poco y 10 = mucho)",
+          "options": [
+            { "value": "1", "label": "1 - muy poco" },
+            { "value": "2", "label": "2" },
+            { "value": "3", "label": "3" },
+            { "value": "4", "label": "4" },
+            { "value": "5", "label": "5" },
+            { "value": "6", "label": "6" },
+            { "value": "7", "label": "7" },
+            { "value": "8", "label": "8" },
+            { "value": "9", "label": "9" },
+            { "value": "10", "label": "10 - Mucho" }
+          ]
+        },
+        "filing_type": {
+          "prompt": "¿Cómo presentará su solicitud?",
+          "options": [
+            { "value": "joint_filing", "label": "Junto con mi cónyuge (\"presentación conjunta\")" },
+            { "value": "with_waiver", "label": "Por mi cuenta (\"con exención\")" },
+            { "value": "not_sure_yet", "label": "Aún no estoy seguro" }
+          ]
+        },
+        "spouse_involvement": {
+          "prompt": "¿Qué tan involucrado estará su cónyuge en su caso?",
+          "options": [
+            { "value": "fully_involved", "label": "Totalmente involucrado - ayudará a proporcionar documentos y cooperará con el proceso" },
+            { "value": "somewhat_involved", "label": "Algo involucrado - puede ayudar con algunas cosas, pero aún no está completamente seguro" },
+            { "value": "not_involved", "label": "No involucrado - no ayudará ni proporcionará ningún documento" }
+          ]
+        },
+        "marital_situation": {
+          "prompt": "¿Cuál es su situación matrimonial actual?",
+          "options": [
+            { "value": "married_living_together", "label": "Casado viviendo juntos" },
+            { "value": "married_living_apart", "label": "Casado, pero viviendo separados" },
+            { "value": "divorced", "label": "Divorciado" },
+            { "value": "widower", "label": "Viudo(a)" }
           ]
         }
       },
