@@ -818,11 +818,25 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
 
   const stepHeader = getStepHeader();
   const showBackButton = currentStep !== 'welcome';
+  
+  // Determine modal width based on step
+  const getModalWidth = () => {
+    // First 3 modals are 30% wider (max-w-xl instead of max-w-md)
+    if (currentStep === 'welcome' || currentStep === 'basic-info' || currentStep === 'role-selection') {
+      return 'max-w-xl';
+    }
+    // Case type modal is extra wide
+    if (currentStep === 'case-type') {
+      return 'max-w-4xl';
+    }
+    // Default width for questionnaire and wrap-up
+    return 'max-w-md';
+  };
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className={`${currentStep === 'case-type' ? 'max-w-4xl' : 'max-w-md'} max-h-[90vh] overflow-y-auto`}>
+        <DialogContent className={`${getModalWidth()} max-h-[90vh] overflow-y-auto`}>
           <DialogHeader>
             <div className="flex items-start justify-between gap-4 pr-8">
               <div className="flex-shrink-0 pt-1">
