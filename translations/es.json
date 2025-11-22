@@ -53,6 +53,10 @@
         "label": "Nuevo - Asilo o Protección contra la Persecución"
       },
       {
+        "value": "new-k1-fiance-visa",
+        "label": "Nuevo - Visa de Prometido(a) (K-1) - Peticionario"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "Ciudadanía Estadounidense (\"Naturalización\") - Solicitar para convertirse en Ciudadano Estadounidense"
       },
@@ -343,6 +347,76 @@
             { "value": "yes", "label": "Sí" },
             { "value": "no", "label": "No" }
           ]
+        }
+      },
+      "new-k1-fiance-visa": {
+        "confirm": {
+          "prompt": "¡Excelente! ¿Usted es ciudadano estadounidense solicitando que su prometido(a) venga a los EE. UU. para casarse dentro de 90 días de su llegada?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_not_citizen": {
+          "prompt": "La visa K-1 de prometido(a) es solo para ciudadanos estadounidenses que solicitan que su prometido(a) venga a los EE. UU. para casarse dentro de 90 días de su llegada. Según su respuesta, es posible que no sea elegible para esta visa.\n\n¡Aún podemos intentar ayudar! Su información puede ser dirigida a un abogado de inmigración en nuestra red que pueda asesorarlo sobre otras opciones posibles."
+        },
+        "applied_before": {
+          "prompt": "¿Ha solicitado traer a un prometido(a) o cónyuge a los EE. UU. antes?",
+          "options": [
+            { "value": "no", "label": "No" },
+            { "value": "yes", "label": "Sí" }
+          ]
+        },
+        "married_before": {
+          "prompt": "¿Ha estado casado(a) antes?",
+          "options": [
+            { "value": "no", "label": "No" },
+            { "value": "yes", "label": "Sí" }
+          ]
+        },
+        "age_gap": {
+          "prompt": "¿Hay una diferencia de edad entre usted y su prometido(a)?",
+          "options": [
+            { "value": "less_than_1_year", "label": "Menos de 1 año" },
+            { "value": "1_5_years", "label": "Sí, 1-5 años" },
+            { "value": "6_10_years", "label": "Sí, 6-10 años" },
+            { "value": "11_15_years", "label": "Sí, 11-15 años" },
+            { "value": "more_than_20_years", "label": "Sí, más de 20 años" }
+          ]
+        },
+        "met_in_person": {
+          "prompt": "¿Se han conocido en persona en los últimos 2 años?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "relationship_duration": {
+          "prompt": "¿Cuánto tiempo han estado en una relación con su pareja?",
+          "options": [
+            { "value": "less_than_6_months", "label": "Menos de 6 meses" },
+            { "value": "6_months_to_1_year", "label": "6 meses a 1 año" },
+            { "value": "1_to_2_years", "label": "1 a 2 años" },
+            { "value": "more_than_2_years", "label": "Más de 2 años" }
+          ]
+        },
+        "fiance_location": {
+          "prompt": "¿Dónde se encuentra actualmente su prometido(a)?",
+          "options": [
+            { "value": "home_country", "label": "En su país de origen" },
+            { "value": "another_country", "label": "En otro país" },
+            { "value": "united_states", "label": "En los Estados Unidos" }
+          ]
+        },
+        "fiance_prior_immigration": {
+          "prompt": "¿Su prometido(a) ha solicitado algún beneficio de inmigración antes?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "fiance_prior_immigration_explanation": {
+          "prompt": "Por favor, explique brevemente qué beneficio de inmigración solicitó su prometido(a) y qué sucedió."
         }
       },
       "other": {

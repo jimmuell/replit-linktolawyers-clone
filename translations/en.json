@@ -53,6 +53,10 @@
         "label": "New - Asylum or Protection From Persecution"
       },
       {
+        "value": "new-k1-fiance-visa",
+        "label": "New - Fianc\u00e9(e) Visa (K-1 visa) - Petitioner"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "U.S. Citizenship (\"Naturalization\") - Applying to become a U.S. Citizen"
       },
@@ -343,6 +347,76 @@
             { "value": "yes", "label": "Yes" },
             { "value": "no", "label": "No" }
           ]
+        }
+      },
+      "new-k1-fiance-visa": {
+        "confirm": {
+          "prompt": "Great! You are a U.S. citizen petitioning for your fianc\u00e9(e) to come to the U.S. to get married within 90 days of arrival?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_not_citizen": {
+          "prompt": "The K-1 fianc\u00e9(e) visa is only for U.S. citizens petitioning for their fianc\u00e9(e) to come to the U.S. to get married within 90 days of arrival. Based on your answer, you may not be eligible for this visa.\n\nWe can still try to help! Your information can be routed to an immigration attorney in our network who may be able to advise you on other possible options."
+        },
+        "applied_before": {
+          "prompt": "Have you ever applied to bring a fianc\u00e9(e) or spouse to the U.S. before?",
+          "options": [
+            { "value": "no", "label": "No" },
+            { "value": "yes", "label": "Yes" }
+          ]
+        },
+        "married_before": {
+          "prompt": "Have you ever been married before?",
+          "options": [
+            { "value": "no", "label": "No" },
+            { "value": "yes", "label": "Yes" }
+          ]
+        },
+        "age_gap": {
+          "prompt": "Is there an age gap between you and your fianc\u00e9(e)?",
+          "options": [
+            { "value": "less_than_1_year", "label": "Less than 1 year" },
+            { "value": "1_5_years", "label": "Yes, 1-5 years" },
+            { "value": "6_10_years", "label": "Yes, 6-10 years" },
+            { "value": "11_15_years", "label": "Yes, 11-15 years" },
+            { "value": "more_than_20_years", "label": "Yes, more than 20 years" }
+          ]
+        },
+        "met_in_person": {
+          "prompt": "Have you met in person within the last 2 years?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "relationship_duration": {
+          "prompt": "How long have you been in a relationship with your significant other?",
+          "options": [
+            { "value": "less_than_6_months", "label": "Less than 6 months" },
+            { "value": "6_months_to_1_year", "label": "6 months to 1 year" },
+            { "value": "1_to_2_years", "label": "1 to 2 years" },
+            { "value": "more_than_2_years", "label": "More than 2 years" }
+          ]
+        },
+        "fiance_location": {
+          "prompt": "Where is your fianc\u00e9(e) currently located?",
+          "options": [
+            { "value": "home_country", "label": "In their home country" },
+            { "value": "another_country", "label": "In another country" },
+            { "value": "united_states", "label": "In the United States" }
+          ]
+        },
+        "fiance_prior_immigration": {
+          "prompt": "Has your fianc\u00e9(e) ever applied for an immigration benefit before?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "fiance_prior_immigration_explanation": {
+          "prompt": "Please briefly explain what immigration benefit your fianc\u00e9(e) applied for and what happened."
         }
       },
       "other": {
