@@ -49,6 +49,10 @@
         "label": "Asylum or Protection From Persecution"
       },
       {
+        "value": "final-asylum-flow",
+        "label": "New - Asylum or Protection From Persecution"
+      },
+      {
         "value": "citizenship-naturalization-n400",
         "label": "U.S. Citizenship (\"Naturalization\") - Applying to become a U.S. Citizen"
       },
@@ -289,6 +293,52 @@
         },
         "trips_over_6_months": {
           "prompt": "Since getting your green card, have you taken any trips outside the U.S. for more than 6 months at one time?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        }
+      },
+      "final-asylum-flow": {
+        "confirm": {
+          "prompt": "Great! This legal service is for people in the U.S. who fear persecution or harm if they return to their home country. Does this apply to you?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_no_fear": {
+          "prompt": "The U.S. asylum process is for individuals who are physically in the United States and fear returning to their home country due to persecution or a well-founded fear of persecution.\n\nBased on your answer, you may not be eligible to apply for asylum. We can still try to help! Your information can be routed to an immigration attorney in our network who may be able to advise you on other possible immigration options."
+        },
+        "inspected": {
+          "prompt": "When you entered the U.S., were you inspected by a U.S. border officer?",
+          "options": [
+            { "value": "yes", "label": "I was inspected and admitted" },
+            { "value": "no", "label": "I entered without being inspected" }
+          ]
+        },
+        "entry_description": {
+          "prompt": "Briefly describe how you entered the U.S. (e.g. tourist visa, student visa, humanitarian parole, employment visa, J-1 visa or another type of visa)"
+        },
+        "entry_date": {
+          "prompt": "What date did you enter or arrive in the U.S.? Please provide the date or your best guess. If you don't know the date, an approximate date is fine."
+        },
+        "afraid_return": {
+          "prompt": "Are you afraid to return back to your home country? If yes, can you please explain why.",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_no_fear_return": {
+          "prompt": "The U.S. asylum process is for individuals who are physically in the United States and fear returning to their home country due to persecution or a well-founded fear of persecution.\n\nBased on your answer, you may not be eligible to apply for asylum. We can still try to help! Your information can be routed to an immigration attorney in our network who may be able to advise you on other possible immigration options."
+        },
+        "fear_explanation": {
+          "prompt": "If yes, please explain why you are afraid to return to your home country.",
+          "description": "For example: threats, violence, persecution, or other harm."
+        },
+        "immigration_court": {
+          "prompt": "Have you ever been placed in immigration court or faced removal (deportation) proceedings?",
           "options": [
             { "value": "yes", "label": "Yes" },
             { "value": "no", "label": "No" }
