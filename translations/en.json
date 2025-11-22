@@ -57,6 +57,10 @@
         "label": "New - Green Card through Family Member (Family-Based) - Beneficiary"
       },
       {
+        "value": "new-citizenship-naturalization",
+        "label": "New - U.S. Citizenship (Naturalization)"
+      },
+      {
         "value": "other",
         "label": "New - Other"
       }
@@ -562,6 +566,73 @@
         },
         "beneficiary_application_description": {
           "prompt": "Please briefly explain the immigration benefit that they've applied for."
+        }
+      },
+      "new-citizenship-naturalization": {
+        "confirm": {
+          "prompt": "Great! Are you applying to become a U.S. citizen (naturalization)?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_not_applying": {
+          "prompt": "U.S. citizenship (naturalization) is for green card holders who meet certain requirements. Based on your answer, you may not be applying for citizenship.\n\nWe can still help! Your information can be sent to an immigration attorney in our network, who can review your situation and discuss other options."
+        },
+        "green_card_how": {
+          "prompt": "How did you obtain your green card? Please select the option that best applies.",
+          "options": [
+            { "value": "marriage", "label": "Marriage to a U.S. citizen or green card holder" },
+            { "value": "family", "label": "Family (other than marriage, e.g. parent, sibling, adult child of U.S. citizen)" },
+            { "value": "employment", "label": "Employment" },
+            { "value": "asylum", "label": "Asylum" },
+            { "value": "other", "label": "Other / Not sure" }
+          ]
+        },
+        "marriage_sponsor_type": {
+          "prompt": "Was your green card based on marriage to a:",
+          "options": [
+            { "value": "usc_spouse", "label": "U.S. citizen spouse" },
+            { "value": "lpr_spouse", "label": "Lawful permanent resident (green card) spouse" }
+          ]
+        },
+        "still_married_usc": {
+          "prompt": "Are you still married to the same U.S. citizen spouse who sponsored you?",
+          "options": [
+            { "value": "yes_living_together", "label": "Yes, living together" },
+            { "value": "yes_not_living_together", "label": "Yes, but not living together" },
+            { "value": "divorced", "label": "No, divorced or separated" }
+          ]
+        },
+        "lived_in_us_5_years": {
+          "prompt": "In the last 5 years, have you lived in the U.S. at least half the time?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No / Not Yet" }
+          ]
+        },
+        "ineligible_no_5_years": {
+          "prompt": "To qualify for citizenship, you generally need to have lived in the United States for at least half of the past 5 years.\n\nBased on your answer, you may not yet meet the residency requirement. However, we can still connect you with an immigration attorney who can review your case and discuss when you might be eligible."
+        },
+        "lived_in_us_3_years": {
+          "prompt": "In the last 3 years, have you lived in the U.S. at least half the time?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No / Not Yet" }
+          ]
+        },
+        "ineligible_no_3_years": {
+          "prompt": "To qualify for citizenship based on marriage to a U.S. citizen, you generally need to have lived in the United States for at least half of the past 3 years.\n\nBased on your answer, you may not yet meet the residency requirement. However, we can still connect you with an immigration attorney who can review your case and discuss when you might be eligible."
+        },
+        "green_card_date": {
+          "prompt": "What is the start date on your green card? If you're not sure, your best estimate of the month / year is fine."
+        },
+        "trips_over_6_months": {
+          "prompt": "In the past 5 years, have you taken any trips outside the U.S. that lasted 6 months or longer?",
+          "options": [
+            { "value": "yes", "label": "Yes" },
+            { "value": "no", "label": "No" }
+          ]
         }
       },
       "other": {

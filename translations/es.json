@@ -57,6 +57,10 @@
         "label": "Nuevo - Tarjeta Verde a través de Familiar (Basada en Familia) - Beneficiario"
       },
       {
+        "value": "new-citizenship-naturalization",
+        "label": "Nuevo - Ciudadanía de EE.UU. (Naturalización)"
+      },
+      {
         "value": "other",
         "label": "Nuevo - Otro"
       }
@@ -562,6 +566,73 @@
         },
         "beneficiary_application_description": {
           "prompt": "Por favor, explique brevemente el beneficio de inmigración que solicitaron."
+        }
+      },
+      "new-citizenship-naturalization": {
+        "confirm": {
+          "prompt": "¡Excelente! ¿Está solicitando convertirse en ciudadano estadounidense (naturalización)?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
+        },
+        "ineligible_not_applying": {
+          "prompt": "La ciudadanía de EE.UU. (naturalización) es para titulares de tarjeta verde que cumplen ciertos requisitos. Según su respuesta, es posible que no esté solicitando la ciudadanía.\n\n¡Todavía podemos ayudar! Su información puede ser enviada a un abogado de inmigración en nuestra red, quien puede revisar su situación y discutir otras opciones."
+        },
+        "green_card_how": {
+          "prompt": "¿Cómo obtuvo su tarjeta verde? Por favor seleccione la opción que mejor se aplique.",
+          "options": [
+            { "value": "marriage", "label": "Matrimonio con un ciudadano estadounidense o titular de tarjeta verde" },
+            { "value": "family", "label": "Familia (que no sea matrimonio, p. ej. padre, hermano, hijo adulto de ciudadano estadounidense)" },
+            { "value": "employment", "label": "Empleo" },
+            { "value": "asylum", "label": "Asilo" },
+            { "value": "other", "label": "Otro / No estoy seguro" }
+          ]
+        },
+        "marriage_sponsor_type": {
+          "prompt": "¿Su tarjeta verde se basó en el matrimonio con un:",
+          "options": [
+            { "value": "usc_spouse", "label": "Cónyuge ciudadano estadounidense" },
+            { "value": "lpr_spouse", "label": "Cónyuge residente permanente legal (tarjeta verde)" }
+          ]
+        },
+        "still_married_usc": {
+          "prompt": "¿Todavía está casado con el mismo cónyuge ciudadano estadounidense que lo patrocinó?",
+          "options": [
+            { "value": "yes_living_together", "label": "Sí, viviendo juntos" },
+            { "value": "yes_not_living_together", "label": "Sí, pero no viviendo juntos" },
+            { "value": "divorced", "label": "No, divorciado o separado" }
+          ]
+        },
+        "lived_in_us_5_years": {
+          "prompt": "En los últimos 5 años, ¿ha vivido en los EE. UU. al menos la mitad del tiempo?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No / Todavía no" }
+          ]
+        },
+        "ineligible_no_5_years": {
+          "prompt": "Para calificar para la ciudadanía, generalmente necesita haber vivido en los Estados Unidos durante al menos la mitad de los últimos 5 años.\n\nSegún su respuesta, es posible que aún no cumpla con el requisito de residencia. Sin embargo, aún podemos conectarlo con un abogado de inmigración que puede revisar su caso y discutir cuándo podría ser elegible."
+        },
+        "lived_in_us_3_years": {
+          "prompt": "En los últimos 3 años, ¿ha vivido en los EE. UU. al menos la mitad del tiempo?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No / Todavía no" }
+          ]
+        },
+        "ineligible_no_3_years": {
+          "prompt": "Para calificar para la ciudadanía basada en el matrimonio con un ciudadano estadounidense, generalmente necesita haber vivido en los Estados Unidos durante al menos la mitad de los últimos 3 años.\n\nSegún su respuesta, es posible que aún no cumpla con el requisito de residencia. Sin embargo, aún podemos conectarlo con un abogado de inmigración que puede revisar su caso y discutir cuándo podría ser elegible."
+        },
+        "green_card_date": {
+          "prompt": "¿Cuál es la fecha de inicio en su tarjeta verde? Si no está seguro, su mejor estimación del mes / año está bien."
+        },
+        "trips_over_6_months": {
+          "prompt": "En los últimos 5 años, ¿ha realizado viajes fuera de los EE. UU. que duraron 6 meses o más?",
+          "options": [
+            { "value": "yes", "label": "Sí" },
+            { "value": "no", "label": "No" }
+          ]
         }
       },
       "other": {

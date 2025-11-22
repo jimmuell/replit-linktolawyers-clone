@@ -21,7 +21,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'other';
+type CaseType = 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'new-citizenship-naturalization' | 'other';
 
 export function getTranslations(language: 'en' | 'es') {
   return language === 'es' ? esTranslations : enTranslations;
@@ -694,6 +694,121 @@ export function buildFlowConfig(language: 'en' | 'es'): Record<CaseType, Flow> {
           prompt: t.quoteModal.flows['new-family-based-green-card-beneficiary'].criminal_details.prompt,
           required: true,
           visibleIf: (answers) => answers.criminal_history === 'yes',
+          next: () => 'END'
+        }
+      }
+    },
+    'new-citizenship-naturalization': {
+      start: 'confirm',
+      nodes: {
+        confirm: {
+          id: 'confirm',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].confirm.prompt,
+          options: t.quoteModal.flows['new-citizenship-naturalization'].confirm.options,
+          required: true,
+          next: (answers) => answers.confirm === 'no' ? 'ineligible_not_applying' : 'green_card_how'
+        },
+        ineligible_not_applying: {
+          id: 'ineligible_not_applying',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].ineligible_not_applying.prompt,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'no',
+          next: () => 'END'
+        },
+        green_card_how: {
+          id: 'green_card_how',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].green_card_how.prompt,
+          options: t.quoteModal.flows['new-citizenship-naturalization'].green_card_how.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes',
+          next: (answers) => answers.green_card_how === 'marriage' ? 'marriage_sponsor_type' : 'lived_in_us_5_years'
+        },
+        marriage_sponsor_type: {
+          id: 'marriage_sponsor_type',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].marriage_sponsor_type.prompt,
+          options: t.quoteModal.flows['new-citizenship-naturalization'].marriage_sponsor_type.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes' && answers.green_card_how === 'marriage',
+          next: (answers) => answers.marriage_sponsor_type === 'usc_spouse' ? 'still_married_usc' : 'lived_in_us_5_years'
+        },
+        still_married_usc: {
+          id: 'still_married_usc',
+          kind: 'single',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].still_married_usc.prompt,
+          options: t.quoteModal.flows['new-citizenship-naturalization'].still_married_usc.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes' && answers.green_card_how === 'marriage' && answers.marriage_sponsor_type === 'usc_spouse',
+          next: (answers) => answers.still_married_usc === 'yes_living_together' ? 'lived_in_us_3_years' : 'lived_in_us_5_years'
+        },
+        lived_in_us_5_years: {
+          id: 'lived_in_us_5_years',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].lived_in_us_5_years.prompt,
+          options: t.quoteModal.flows['new-citizenship-naturalization'].lived_in_us_5_years.options,
+          required: true,
+          visibleIf: (answers) => {
+            if (answers.confirm !== 'yes') return false;
+            if (answers.green_card_how !== 'marriage') return true;
+            if (answers.marriage_sponsor_type === 'lpr_spouse') return true;
+            if (answers.marriage_sponsor_type === 'usc_spouse' && answers.still_married_usc !== 'yes_living_together') return true;
+            return false;
+          },
+          next: (answers) => answers.lived_in_us_5_years === 'no' ? 'ineligible_no_5_years' : 'green_card_date'
+        },
+        ineligible_no_5_years: {
+          id: 'ineligible_no_5_years',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].ineligible_no_5_years.prompt,
+          required: true,
+          visibleIf: (answers) => answers.lived_in_us_5_years === 'no',
+          next: () => 'END'
+        },
+        lived_in_us_3_years: {
+          id: 'lived_in_us_3_years',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].lived_in_us_3_years.prompt,
+          options: t.quoteModal.flows['new-citizenship-naturalization'].lived_in_us_3_years.options,
+          required: true,
+          visibleIf: (answers) => answers.confirm === 'yes' && answers.green_card_how === 'marriage' && answers.marriage_sponsor_type === 'usc_spouse' && answers.still_married_usc === 'yes_living_together',
+          next: (answers) => answers.lived_in_us_3_years === 'no' ? 'ineligible_no_3_years' : 'green_card_date'
+        },
+        ineligible_no_3_years: {
+          id: 'ineligible_no_3_years',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].ineligible_no_3_years.prompt,
+          required: true,
+          visibleIf: (answers) => answers.lived_in_us_3_years === 'no',
+          next: () => 'END'
+        },
+        green_card_date: {
+          id: 'green_card_date',
+          kind: 'textarea',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].green_card_date.prompt,
+          required: true,
+          visibleIf: (answers) => {
+            if (answers.confirm !== 'yes') return false;
+            if (answers.lived_in_us_5_years === 'yes') return true;
+            if (answers.lived_in_us_3_years === 'yes') return true;
+            return false;
+          },
+          next: () => 'trips_over_6_months'
+        },
+        trips_over_6_months: {
+          id: 'trips_over_6_months',
+          kind: 'confirm',
+          prompt: t.quoteModal.flows['new-citizenship-naturalization'].trips_over_6_months.prompt,
+          options: t.quoteModal.flows['new-citizenship-naturalization'].trips_over_6_months.options,
+          required: true,
+          visibleIf: (answers) => {
+            if (answers.confirm !== 'yes') return false;
+            if (answers.lived_in_us_5_years === 'yes') return true;
+            if (answers.lived_in_us_3_years === 'yes') return true;
+            return false;
+          },
           next: () => 'END'
         }
       }
