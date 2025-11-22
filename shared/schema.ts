@@ -413,6 +413,7 @@ export const structuredIntakes = pgTable("structured_intakes", {
   lastName: varchar("last_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   caseType: varchar("case_type", { length: 50 }).notNull(), // 'family', 'asylum', 'naturalization'
+  role: varchar("role", { length: 20 }), // 'beneficiary', 'petitioner'
   formResponses: text("form_responses").notNull(), // JSON string of form responses
   attorneyIntakeSummary: text("attorney_intake_summary"), // Generated summary from prompt format
   status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, completed, assigned

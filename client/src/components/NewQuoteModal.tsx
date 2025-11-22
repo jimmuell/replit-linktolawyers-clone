@@ -290,6 +290,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         lastName: basicInfo.fullName.split(' ').slice(1).join(' ') || '',
         email: basicInfo.email,
         caseType,
+        role,
         formResponses: {
           answers,
           additionalDetails,
@@ -333,6 +334,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         lastName: basicInfo.fullName.split(' ').slice(1).join(' ') || '',
         email: basicInfo.email,
         caseType: 'other',
+        role,
         formResponses: {
           answers,
           additionalDetails,
@@ -362,6 +364,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   const handleClose = () => {
     setCurrentStep('basic-info');
     setCaseType('');
+    setRole('');
     setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com' });
     setCurrentNodeKey('');
     setAnswers({});
