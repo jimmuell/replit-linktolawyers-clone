@@ -1,5 +1,4 @@
 import { Storage, File } from "@google-cloud/storage";
-import { Response } from "express";
 import { randomUUID } from "crypto";
 import {
   ObjectAclPolicy,
@@ -8,6 +7,7 @@ import {
   getObjectAclPolicy,
   setObjectAclPolicy,
 } from "./objectAcl.js";
+import type { StorageProvider, StorageObjectDescriptor } from "./storageTypes.js";
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
@@ -39,7 +39,7 @@ export class ObjectNotFoundError extends Error {
 }
 
 // The object storage service is used to interact with the object storage service.
-export class ObjectStorageService {
+export class ObjectStorageService implements StorageProvider {
   constructor() {}
 
   // Gets the public object search paths.
@@ -94,41 +94,6 @@ export class ObjectStorageService {
     return null;
   }
 
-  // Downloads an object to the response.
-  async downloadObject(file: File, res: Response, cacheTtlSec: number = 3600) {
-    try {
-      // Get file metadata
-      const [metadata] = await file.getMetadata();
-      // Get the ACL policy for the object.
-      const aclPolicy = await getObjectAclPolicy(file);
-      const isPublic = aclPolicy?.visibility === "public";
-      // Set appropriate headers
-      res.set({
-        "Content-Type": metadata.contentType || "application/octet-stream",
-        "Content-Length": metadata.size,
-        "Cache-Control": `${
-          isPublic ? "public" : "private"
-        }, max-age=${cacheTtlSec}`,
-      });
-
-      // Stream the file to the response
-      const stream = file.createReadStream();
-
-      stream.on("error", (err) => {
-        console.error("Stream error:", err);
-        if (!res.headersSent) {
-          res.status(500).json({ error: "Error streaming file" });
-        }
-      });
-
-      stream.pipe(res);
-    } catch (error) {
-      console.error("Error downloading file:", error);
-      if (!res.headersSent) {
-        res.status(500).json({ error: "Error downloading file" });
-      }
-    }
-  }
 
   // Gets the upload URL for an object entity.
   async getObjectEntityUploadURL(): Promise<string> {
@@ -155,7 +120,7 @@ export class ObjectStorageService {
   }
 
   // Gets the object entity file from the object path.
-  async getObjectEntityFile(objectPath: string): Promise<File> {
+  async getObjectEntityFile(objectPath: string): Promise<StorageObjectDescriptor> {
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
@@ -178,7 +143,20 @@ export class ObjectStorageService {
     if (!exists) {
       throw new ObjectNotFoundError();
     }
-    return objectFile;
+
+    // Get metadata and ACL policy
+    const [metadata] = await objectFile.getMetadata();
+    const aclPolicy = await getObjectAclPolicy(objectFile);
+
+    return {
+      kind: "replit",
+      file: objectFile,
+      metadata: {
+        contentType: metadata.contentType,
+        size: typeof metadata.size === 'string' ? parseInt(metadata.size, 10) : metadata.size,
+        aclPolicy: aclPolicy || undefined,
+      },
+    };
   }
 
   normalizeObjectEntityPath(
@@ -216,24 +194,30 @@ export class ObjectStorageService {
       return normalizedPath;
     }
 
-    const objectFile = await this.getObjectEntityFile(normalizedPath);
-    await setObjectAclPolicy(objectFile, aclPolicy);
+    const descriptor = await this.getObjectEntityFile(normalizedPath);
+    if (descriptor.kind === "replit") {
+      await setObjectAclPolicy(descriptor.file, aclPolicy);
+    }
     return normalizedPath;
   }
 
   // Checks if the user can access the object entity.
   async canAccessObjectEntity({
     userId,
-    objectFile,
+    descriptor,
     requestedPermission,
   }: {
     userId?: string;
-    objectFile: File;
+    descriptor: StorageObjectDescriptor;
     requestedPermission?: ObjectPermission;
   }): Promise<boolean> {
+    if (descriptor.kind !== "replit") {
+      return false;
+    }
+
     return canAccessObject({
       userId,
-      objectFile,
+      objectFile: descriptor.file,
       requestedPermission: requestedPermission ?? ObjectPermission.READ,
     });
   }

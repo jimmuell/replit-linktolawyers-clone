@@ -13,6 +13,10 @@ import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
 import { setSession, getSession, removeSession, requireAuth, requireRole } from "./middleware/auth";
 import attorneyReferralsRouter from "./routes/attorney-referrals";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { LocalFileStorageService, ObjectNotFoundError as LocalObjectNotFoundError } from "./localFileStorage";
+import { getStorageService } from "./storageFactory";
+import { isReplitEnvironment } from "./env";
+import { streamStorageObject, buildPublicObjectUrl } from "./storageTypes";
 
 // Multer configuration for file uploads
 const upload = multer({
@@ -1857,25 +1861,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/images/:imagePath(*)", async (req, res) => {
     try {
       const imagePath = `/objects/${req.params.imagePath}`;
-      const objectStorageService = new ObjectStorageService();
-      const objectFile = await objectStorageService.getObjectEntityFile(imagePath);
+      const storageService = getStorageService();
+      const descriptor = await storageService.getObjectEntityFile(imagePath);
       
       // Set aggressive caching for images
+      const etag = `"${Date.now()}"`;
       res.set({
-        'Cache-Control': 'public, max-age=31536000, immutable', // 1 year
-        'ETag': `"${Date.now()}"`, // Simple ETag based on timestamp
+        'ETag': etag,
         'Vary': 'Accept-Encoding'
       });
 
       // Check if client has cached version
-      if (req.headers['if-none-match'] === res.get('ETag')) {
+      if (req.headers['if-none-match'] === etag) {
         return res.sendStatus(304);
       }
 
-      await objectStorageService.downloadObject(objectFile, res);
+      // Use the unified streaming helper - handles both Replit and local storage
+      await streamStorageObject(descriptor, res, 31536000); // 1 year cache
     } catch (error) {
       console.error('Image serving error:', error);
-      res.status(404).json({ error: 'Image not found' });
+      if (error instanceof ObjectNotFoundError || error instanceof LocalObjectNotFoundError) {
+        return res.status(404).json({ error: 'Image not found' });
+      }
+      res.status(500).json({ error: 'Failed to serve image' });
     }
   });
   
@@ -1905,7 +1913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get alt text from form data for SEO and accessibility
       const altText = req.body.altText?.trim() || '';
 
-      const objectStorageService = new ObjectStorageService();
+      const storageService = getStorageService();
       
       // Generate organized filename with timestamp and random suffix for uniqueness
       const timestamp = Date.now();
@@ -1913,44 +1921,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const sanitizedName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
       const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase() || 'jpg';
       
-      // Get upload URL
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      
-      // Upload the file to object storage (signed URLs don't allow custom headers)
-      const uploadResponse = await fetch(uploadURL, {
-        method: 'PUT',
-        body: req.file.buffer,
-        headers: {
-          'Content-Type': req.file.mimetype,
-        },
-      });
+      let objectPath: string;
 
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text().catch(() => 'Unknown error');
-        console.error('Object storage upload failed:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          error: errorText,
-          fileSize: req.file.size,
-          fileName: req.file.originalname
+      // ACL policy for uploaded images
+      const aclPolicy = {
+        owner: "admin",
+        visibility: "public" as const,
+      };
+
+      if (isReplitEnvironment()) {
+        // Replit environment: use signed URL upload
+        const uploadURL = await storageService.getObjectEntityUploadURL();
+        
+        const uploadResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: req.file.buffer,
+          headers: {
+            'Content-Type': req.file.mimetype,
+          },
         });
-        throw new Error(`Upload to storage failed: ${uploadResponse.status} - ${uploadResponse.statusText}`);
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text().catch(() => 'Unknown error');
+          console.error('Object storage upload failed:', {
+            status: uploadResponse.status,
+            statusText: uploadResponse.statusText,
+            error: errorText,
+            fileSize: req.file.size,
+            fileName: req.file.originalname
+          });
+          throw new Error(`Upload to storage failed: ${uploadResponse.status} - ${uploadResponse.statusText}`);
+        }
+
+        objectPath = await storageService.trySetObjectEntityAclPolicy(uploadURL, aclPolicy);
+      } else {
+        // Local environment: save directly to filesystem
+        if (storageService instanceof LocalFileStorageService) {
+          const relativePath = `uploads/${timestamp}-${randomSuffix}.${fileExtension}`;
+          objectPath = await storageService.saveUploadedFile(
+            relativePath,
+            req.file.buffer,
+            req.file.mimetype,
+            aclPolicy
+          );
+        } else {
+          throw new Error("Storage service mismatch in local environment");
+        }
       }
 
-      // Set ACL policy to make image publicly accessible
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        uploadURL,
-        {
-          owner: "admin",
-          visibility: "public", // Blog images should be publicly accessible
-        }
-      );
-
-      // Return a path that points to our image serving endpoint
-      const imageUrl = `/images${objectPath.replace('/objects', '')}`;
+      // Return a consistent URL using the helper
+      const imageUrl = buildPublicObjectUrl(objectPath);
       
       // Log successful upload for monitoring and analytics
-      console.log(`Image uploaded successfully: ${sanitizedName}`, {
+      console.log(`Image uploaded successfully: ${sanitizedName} [${isReplitEnvironment() ? 'Replit' : 'Local'}]`, {
         size: `${Math.round(req.file.size / 1024 * 100) / 100}KB`,
         type: req.file.mimetype,
         hasAltText: Boolean(altText),
@@ -1965,13 +1988,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           size: req.file.size,
           type: req.file.mimetype,
           altText: altText || null,
-          dimensions: null // Could be enhanced with image analysis
+          dimensions: null
         }
       });
     } catch (error) {
       console.error('Upload error:', error);
       
-      // Provide more specific error messages
       let errorMessage = 'Failed to upload image. Please try again.';
       if (error instanceof Error) {
         if (error.message.includes('network') || error.message.includes('fetch')) {
@@ -1990,8 +2012,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get upload URL for blog images (admin only)
   app.post("/api/images/upload", requireAuth, requireAdmin, async (req, res) => {
     try {
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const storageService = getStorageService();
+      const uploadURL = await storageService.getObjectEntityUploadURL();
       res.json({ uploadURL });
     } catch (error) {
       console.error('Error getting upload URL:', error);
@@ -2007,12 +2029,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "imageURL is required" });
       }
 
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+      const storageService = getStorageService();
+      const objectPath = await storageService.trySetObjectEntityAclPolicy(
         imageURL,
         {
           owner: req.user?.id?.toString() || "admin",
-          visibility: "public", // Blog images should be publicly accessible
+          visibility: "public",
         }
       );
 
@@ -2020,23 +2042,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error setting image policy:", error);
       res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Serve uploaded images (public)
-  app.get("/images/:objectPath(*)", async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
-    try {
-      const objectFile = await objectStorageService.getObjectEntityFile(
-        `/objects/${req.params.objectPath}`,
-      );
-      objectStorageService.downloadObject(objectFile, res);
-    } catch (error) {
-      console.error("Error serving image:", error);
-      if (error instanceof ObjectNotFoundError) {
-        return res.sendStatus(404);
-      }
-      return res.sendStatus(500);
     }
   });
 
