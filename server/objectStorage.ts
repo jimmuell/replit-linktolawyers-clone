@@ -1,6 +1,8 @@
 import { Storage, File } from "@google-cloud/storage";
 import { Response } from "express";
 import { randomUUID } from "crypto";
+import * as fs from "fs";
+import * as path from "path";
 import {
   ObjectAclPolicy,
   ObjectPermission,
@@ -10,9 +12,27 @@ import {
 } from "./objectAcl.js";
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
+const LOCAL_STORAGE_DIR = "public/uploads";
 
-// The object storage client is used to interact with the object storage service.
-export const objectStorageClient = new Storage({
+export function isLocalStorageMode(): boolean {
+  if (process.env.USE_LOCAL_STORAGE === 'true') {
+    return true;
+  }
+  if (!process.env.REPL_ID) {
+    return true;
+  }
+  return false;
+}
+
+function ensureLocalStorageDir(): void {
+  const uploadsDir = path.resolve(LOCAL_STORAGE_DIR);
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log(`Created local storage directory: ${uploadsDir}`);
+  }
+}
+
+const objectStorageClient = !isLocalStorageMode() ? new Storage({
   credentials: {
     audience: "replit",
     subject_token_type: "access_token",
@@ -28,7 +48,9 @@ export const objectStorageClient = new Storage({
     universe_domain: "googleapis.com",
   },
   projectId: "",
-});
+}) : null;
+
+export { objectStorageClient };
 
 export class ObjectNotFoundError extends Error {
   constructor() {
@@ -38,12 +60,22 @@ export class ObjectNotFoundError extends Error {
   }
 }
 
-// The object storage service is used to interact with the object storage service.
 export class ObjectStorageService {
-  constructor() {}
+  private isLocal: boolean;
 
-  // Gets the public object search paths.
+  constructor() {
+    this.isLocal = isLocalStorageMode();
+    if (this.isLocal) {
+      ensureLocalStorageDir();
+      console.log('ObjectStorageService: Running in local storage mode');
+    }
+  }
+
   getPublicObjectSearchPaths(): Array<string> {
+    if (this.isLocal) {
+      return [LOCAL_STORAGE_DIR];
+    }
+    
     const pathsStr = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";
     const paths = Array.from(
       new Set(
@@ -62,8 +94,11 @@ export class ObjectStorageService {
     return paths;
   }
 
-  // Gets the private object directory.
   getPrivateObjectDir(): string {
+    if (this.isLocal) {
+      return LOCAL_STORAGE_DIR;
+    }
+    
     const dir = process.env.PRIVATE_OBJECT_DIR || "";
     if (!dir) {
       throw new Error(
@@ -74,17 +109,16 @@ export class ObjectStorageService {
     return dir;
   }
 
-  // Search for a public object from the search paths.
   async searchPublicObject(filePath: string): Promise<File | null> {
+    if (this.isLocal) {
+      return null;
+    }
+    
     for (const searchPath of this.getPublicObjectSearchPaths()) {
       const fullPath = `${searchPath}/${filePath}`;
-
-      // Full path format: /<bucket_name>/<object_name>
       const { bucketName, objectName } = parseObjectPath(fullPath);
-      const bucket = objectStorageClient.bucket(bucketName);
+      const bucket = objectStorageClient!.bucket(bucketName);
       const file = bucket.file(objectName);
-
-      // Check if file exists
       const [exists] = await file.exists();
       if (exists) {
         return file;
@@ -94,15 +128,11 @@ export class ObjectStorageService {
     return null;
   }
 
-  // Downloads an object to the response.
   async downloadObject(file: File, res: Response, cacheTtlSec: number = 3600) {
     try {
-      // Get file metadata
       const [metadata] = await file.getMetadata();
-      // Get the ACL policy for the object.
       const aclPolicy = await getObjectAclPolicy(file);
       const isPublic = aclPolicy?.visibility === "public";
-      // Set appropriate headers
       res.set({
         "Content-Type": metadata.contentType || "application/octet-stream",
         "Content-Length": metadata.size,
@@ -111,7 +141,6 @@ export class ObjectStorageService {
         }, max-age=${cacheTtlSec}`,
       });
 
-      // Stream the file to the response
       const stream = file.createReadStream();
 
       stream.on("error", (err) => {
@@ -130,8 +159,60 @@ export class ObjectStorageService {
     }
   }
 
-  // Gets the upload URL for an object entity.
+  async downloadLocalFile(filePath: string, res: Response, cacheTtlSec: number = 3600) {
+    try {
+      const fullPath = path.resolve(filePath);
+      
+      if (!fs.existsSync(fullPath)) {
+        throw new ObjectNotFoundError();
+      }
+
+      const stats = fs.statSync(fullPath);
+      const ext = path.extname(fullPath).toLowerCase();
+      
+      const mimeTypes: Record<string, string> = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.svg': 'image/svg+xml',
+      };
+
+      res.set({
+        "Content-Type": mimeTypes[ext] || "application/octet-stream",
+        "Content-Length": stats.size,
+        "Cache-Control": `public, max-age=${cacheTtlSec}`,
+      });
+
+      const stream = fs.createReadStream(fullPath);
+      
+      stream.on("error", (err) => {
+        console.error("Stream error:", err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Error streaming file" });
+        }
+      });
+
+      stream.pipe(res);
+    } catch (error) {
+      console.error("Error downloading local file:", error);
+      if (!res.headersSent) {
+        if (error instanceof ObjectNotFoundError) {
+          res.status(404).json({ error: "File not found" });
+        } else {
+          res.status(500).json({ error: "Error downloading file" });
+        }
+      }
+    }
+  }
+
   async getObjectEntityUploadURL(): Promise<string> {
+    if (this.isLocal) {
+      const objectId = randomUUID();
+      return `local://${LOCAL_STORAGE_DIR}/${objectId}`;
+    }
+    
     const privateObjectDir = this.getPrivateObjectDir();
     if (!privateObjectDir) {
       throw new Error(
@@ -145,7 +226,6 @@ export class ObjectStorageService {
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
 
-    // Sign URL for PUT method with TTL
     return signObjectURL({
       bucketName,
       objectName,
@@ -154,8 +234,24 @@ export class ObjectStorageService {
     });
   }
 
-  // Gets the object entity file from the object path.
+  async uploadLocalFile(buffer: Buffer, mimeType: string): Promise<string> {
+    ensureLocalStorageDir();
+    const objectId = randomUUID();
+    const ext = mimeType.split('/')[1] || 'bin';
+    const filename = `${objectId}.${ext}`;
+    const filePath = path.join(LOCAL_STORAGE_DIR, filename);
+    
+    fs.writeFileSync(filePath, buffer);
+    console.log(`Local file saved: ${filePath}`);
+    
+    return `/images/uploads/${filename}`;
+  }
+
   async getObjectEntityFile(objectPath: string): Promise<File> {
+    if (this.isLocal) {
+      throw new Error("getObjectEntityFile is not supported in local mode. Use getLocalFilePath instead.");
+    }
+    
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
@@ -172,7 +268,7 @@ export class ObjectStorageService {
     }
     const objectEntityPath = `${entityDir}${entityId}`;
     const { bucketName, objectName } = parseObjectPath(objectEntityPath);
-    const bucket = objectStorageClient.bucket(bucketName);
+    const bucket = objectStorageClient!.bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
     if (!exists) {
@@ -181,14 +277,40 @@ export class ObjectStorageService {
     return objectFile;
   }
 
+  getLocalFilePath(objectPath: string): string {
+    let normalizedPath = objectPath;
+    if (normalizedPath.startsWith('/objects/')) {
+      normalizedPath = normalizedPath.replace('/objects/', '');
+    }
+    if (normalizedPath.startsWith('/images/')) {
+      normalizedPath = normalizedPath.replace('/images/', '');
+    }
+    
+    const filePath = path.join(LOCAL_STORAGE_DIR, normalizedPath);
+    return filePath;
+  }
+
+  localFileExists(objectPath: string): boolean {
+    const filePath = this.getLocalFilePath(objectPath);
+    return fs.existsSync(filePath);
+  }
+
   normalizeObjectEntityPath(
     rawPath: string,
   ): string {
+    if (this.isLocal) {
+      if (rawPath.startsWith('local://')) {
+        const localPath = rawPath.replace('local://', '');
+        const filename = path.basename(localPath);
+        return `/objects/uploads/${filename}`;
+      }
+      return rawPath;
+    }
+    
     if (!rawPath.startsWith("https://storage.googleapis.com/")) {
       return rawPath;
     }
   
-    // Extract the path from the URL by removing query parameters and domain
     const url = new URL(rawPath);
     const rawObjectPath = url.pathname;
   
@@ -201,16 +323,18 @@ export class ObjectStorageService {
       return rawObjectPath;
     }
   
-    // Extract the entity ID from the path
     const entityId = rawObjectPath.slice(objectEntityDir.length);
     return `/objects/${entityId}`;
   }
 
-  // Tries to set the ACL policy for the object entity and return the normalized path.
   async trySetObjectEntityAclPolicy(
     rawPath: string,
     aclPolicy: ObjectAclPolicy
   ): Promise<string> {
+    if (this.isLocal) {
+      return this.normalizeObjectEntityPath(rawPath);
+    }
+    
     const normalizedPath = this.normalizeObjectEntityPath(rawPath);
     if (!normalizedPath.startsWith("/")) {
       return normalizedPath;
@@ -221,7 +345,6 @@ export class ObjectStorageService {
     return normalizedPath;
   }
 
-  // Checks if the user can access the object entity.
   async canAccessObjectEntity({
     userId,
     objectFile,
@@ -231,11 +354,19 @@ export class ObjectStorageService {
     objectFile: File;
     requestedPermission?: ObjectPermission;
   }): Promise<boolean> {
+    if (this.isLocal) {
+      return true;
+    }
+    
     return canAccessObject({
       userId,
       objectFile,
       requestedPermission: requestedPermission ?? ObjectPermission.READ,
     });
+  }
+
+  isLocalMode(): boolean {
+    return this.isLocal;
   }
 }
 
