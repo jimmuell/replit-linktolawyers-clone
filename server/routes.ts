@@ -1864,17 +1864,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const storageService = getStorageService();
       const descriptor = await storageService.getObjectEntityFile(imagePath);
       
-      // Set aggressive caching for images
-      const etag = `"${Date.now()}"`;
+      // Generate stable ETag based on file path and metadata
+      // Using a simple hash of the path ensures consistent ETags for the same file
+      const etagBase = `${imagePath}-${descriptor.metadata.size || 0}`;
+      const etag = `"${Buffer.from(etagBase).toString('base64')}"`;
+      
+      // Check if client has cached version BEFORE setting headers
+      const clientEtag = req.headers['if-none-match'];
+      if (clientEtag === etag) {
+        return res.sendStatus(304);
+      }
+
+      // Set caching headers for fresh responses
       res.set({
         'ETag': etag,
         'Vary': 'Accept-Encoding'
       });
-
-      // Check if client has cached version
-      if (req.headers['if-none-match'] === etag) {
-        return res.sendStatus(304);
-      }
 
       // Use the unified streaming helper - handles both Replit and local storage
       await streamStorageObject(descriptor, res, 31536000); // 1 year cache
