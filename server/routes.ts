@@ -12,7 +12,7 @@ import { getProcessedTemplate, getLegalRequestConfirmationVariables, getAttorney
 import { generateConfirmationEmail } from "../client/src/lib/emailTemplates";
 import { setSession, getSession, removeSession, requireAuth, requireRole } from "./middleware/auth";
 import attorneyReferralsRouter from "./routes/attorney-referrals";
-import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { ObjectStorageService, ObjectNotFoundError, isLocalStorageMode } from "./objectStorage";
 
 // Multer configuration for file uploads
 const upload = multer({
@@ -1856,23 +1856,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Image serving with proper caching headers for performance
   app.get("/images/:imagePath(*)", async (req, res) => {
     try {
-      const imagePath = `/objects/${req.params.imagePath}`;
       const objectStorageService = new ObjectStorageService();
-      const objectFile = await objectStorageService.getObjectEntityFile(imagePath);
       
       // Set aggressive caching for images
       res.set({
-        'Cache-Control': 'public, max-age=31536000, immutable', // 1 year
-        'ETag': `"${Date.now()}"`, // Simple ETag based on timestamp
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'ETag': `"${Date.now()}"`,
         'Vary': 'Accept-Encoding'
       });
 
-      // Check if client has cached version
       if (req.headers['if-none-match'] === res.get('ETag')) {
         return res.sendStatus(304);
       }
 
-      await objectStorageService.downloadObject(objectFile, res);
+      if (objectStorageService.isLocalMode()) {
+        const localPath = objectStorageService.getLocalFilePath(req.params.imagePath);
+        if (!objectStorageService.localFileExists(req.params.imagePath)) {
+          return res.status(404).json({ error: 'Image not found' });
+        }
+        await objectStorageService.downloadLocalFile(localPath, res);
+      } else {
+        const imagePath = `/objects/${req.params.imagePath}`;
+        const objectFile = await objectStorageService.getObjectEntityFile(imagePath);
+        await objectStorageService.downloadObject(objectFile, res);
+      }
     } catch (error) {
       console.error('Image serving error:', error);
       res.status(404).json({ error: 'Image not found' });
@@ -1886,8 +1893,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'No image file provided' });
       }
 
-      // Enhanced server-side validation
-      const maxSize = 10 * 1024 * 1024; // 10MB
+      const maxSize = 10 * 1024 * 1024;
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 
       if (!allowedTypes.includes(req.file.mimetype)) {
@@ -1902,61 +1908,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get alt text from form data for SEO and accessibility
       const altText = req.body.altText?.trim() || '';
-
       const objectStorageService = new ObjectStorageService();
-      
-      // Generate organized filename with timestamp and random suffix for uniqueness
-      const timestamp = Date.now();
-      const randomSuffix = Math.random().toString(36).substring(2, 8);
       const sanitizedName = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase() || 'jpg';
       
-      // Get upload URL
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      
-      // Upload the file to object storage (signed URLs don't allow custom headers)
-      const uploadResponse = await fetch(uploadURL, {
-        method: 'PUT',
-        body: req.file.buffer,
-        headers: {
-          'Content-Type': req.file.mimetype,
-        },
-      });
+      let imageUrl: string;
 
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text().catch(() => 'Unknown error');
-        console.error('Object storage upload failed:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          error: errorText,
-          fileSize: req.file.size,
-          fileName: req.file.originalname
+      if (objectStorageService.isLocalMode()) {
+        imageUrl = await objectStorageService.uploadLocalFile(req.file.buffer, req.file.mimetype);
+        console.log(`Image uploaded to local storage: ${sanitizedName}`, {
+          size: `${Math.round(req.file.size / 1024 * 100) / 100}KB`,
+          type: req.file.mimetype,
+          hasAltText: Boolean(altText),
+          path: imageUrl,
+          mode: 'local'
         });
-        throw new Error(`Upload to storage failed: ${uploadResponse.status} - ${uploadResponse.statusText}`);
-      }
+      } else {
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        
+        const uploadResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: req.file.buffer,
+          headers: {
+            'Content-Type': req.file.mimetype,
+          },
+        });
 
-      // Set ACL policy to make image publicly accessible
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        uploadURL,
-        {
-          owner: "admin",
-          visibility: "public", // Blog images should be publicly accessible
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text().catch(() => 'Unknown error');
+          console.error('Object storage upload failed:', {
+            status: uploadResponse.status,
+            statusText: uploadResponse.statusText,
+            error: errorText,
+            fileSize: req.file.size,
+            fileName: req.file.originalname
+          });
+          throw new Error(`Upload to storage failed: ${uploadResponse.status} - ${uploadResponse.statusText}`);
         }
-      );
 
-      // Return a path that points to our image serving endpoint
-      const imageUrl = `/images${objectPath.replace('/objects', '')}`;
-      
-      // Log successful upload for monitoring and analytics
-      console.log(`Image uploaded successfully: ${sanitizedName}`, {
-        size: `${Math.round(req.file.size / 1024 * 100) / 100}KB`,
-        type: req.file.mimetype,
-        hasAltText: Boolean(altText),
-        path: objectPath,
-        altText: altText || 'No alt text provided'
-      });
+        const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+          uploadURL,
+          {
+            owner: "admin",
+            visibility: "public",
+          }
+        );
+
+        imageUrl = `/images${objectPath.replace('/objects', '')}`;
+        console.log(`Image uploaded to object storage: ${sanitizedName}`, {
+          size: `${Math.round(req.file.size / 1024 * 100) / 100}KB`,
+          type: req.file.mimetype,
+          hasAltText: Boolean(altText),
+          path: objectPath,
+          mode: 'replit'
+        });
+      }
       
       res.json({ 
         imageUrl,
@@ -1965,13 +1971,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           size: req.file.size,
           type: req.file.mimetype,
           altText: altText || null,
-          dimensions: null // Could be enhanced with image analysis
+          dimensions: null
         }
       });
     } catch (error) {
       console.error('Upload error:', error);
       
-      // Provide more specific error messages
       let errorMessage = 'Failed to upload image. Please try again.';
       if (error instanceof Error) {
         if (error.message.includes('network') || error.message.includes('fetch')) {
@@ -2020,23 +2025,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error setting image policy:", error);
       res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Serve uploaded images (public)
-  app.get("/images/:objectPath(*)", async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
-    try {
-      const objectFile = await objectStorageService.getObjectEntityFile(
-        `/objects/${req.params.objectPath}`,
-      );
-      objectStorageService.downloadObject(objectFile, res);
-    } catch (error) {
-      console.error("Error serving image:", error);
-      if (error instanceof ObjectNotFoundError) {
-        return res.sendStatus(404);
-      }
-      return res.sendStatus(500);
     }
   });
 
