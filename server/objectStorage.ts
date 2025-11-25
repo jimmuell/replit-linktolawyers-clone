@@ -285,6 +285,9 @@ export class ObjectStorageService {
     if (normalizedPath.startsWith('/images/')) {
       normalizedPath = normalizedPath.replace('/images/', '');
     }
+    if (normalizedPath.startsWith('uploads/')) {
+      normalizedPath = normalizedPath.replace('uploads/', '');
+    }
     
     if (normalizedPath.includes('..') || normalizedPath.includes('\0')) {
       throw new ObjectNotFoundError();
