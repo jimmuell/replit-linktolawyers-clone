@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { seedCaseTypes } from "./seed-case-types";
@@ -54,6 +55,11 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    // Serve static files from public/ folder for local development
+    // This is needed because Vite middleware mode doesn't automatically serve public/
+    const publicPath = path.resolve(import.meta.dirname, "..", "public");
+    app.use(express.static(publicPath));
+    
     await setupVite(app, server);
   } else {
     serveStatic(app);
