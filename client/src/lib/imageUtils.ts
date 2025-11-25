@@ -1,9 +1,41 @@
 /**
+ * Detects if we're running in local development mode
+ */
+function isLocalDevelopment(): boolean {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
+/**
  * Converts cloud storage URLs to our local serving endpoints
  * This ensures images are served through our application's image serving infrastructure
+ * 
+ * In local development, transforms /images/uploads/... to /uploads/... 
+ * because Vite serves public/ folder files directly
  */
 export function getImageUrl(imageUrl: string | null | undefined): string | null {
   if (!imageUrl) return null;
+
+  const isLocal = isLocalDevelopment();
+
+  // Handle /images/uploads/... URLs - transform for local dev
+  if (imageUrl.startsWith('/images/uploads/')) {
+    if (isLocal) {
+      // Local dev: Vite serves public/uploads/ at /uploads/
+      return imageUrl.replace('/images/uploads/', '/uploads/');
+    }
+    return imageUrl;
+  }
+
+  // Handle /uploads/... URLs (already in local format)
+  if (imageUrl.startsWith('/uploads/')) {
+    if (!isLocal) {
+      // Production: transform to /images/uploads/ for Express route
+      return `/images${imageUrl}`;
+    }
+    return imageUrl;
+  }
 
   // If it's already a relative URL (our serving endpoint), return as-is
   if (imageUrl.startsWith('/images/') || imageUrl.startsWith('/public-objects/')) {
@@ -25,6 +57,9 @@ export function getImageUrl(imageUrl: string | null | undefined): string | null 
         if (objectPath.includes('uploads/')) {
           // Remove the private directory prefix and serve through our endpoint
           const finalPath = objectPath.replace(/^.*?uploads\//, 'uploads/');
+          if (isLocal) {
+            return `/${finalPath}`;
+          }
           return `/images/${finalPath}`;
         }
       }
