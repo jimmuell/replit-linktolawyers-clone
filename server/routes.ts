@@ -1855,6 +1855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Image serving with proper caching headers for performance
   app.get("/images/:imagePath(*)", async (req, res) => {
+    console.log('[DEBUG ROUTE v3] Image request received:', req.params.imagePath);
     try {
       const imagePath = req.params.imagePath;
       
@@ -1863,6 +1864,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const objectStorageService = new ObjectStorageService();
+      console.log('[DEBUG ROUTE v3] isLocalMode:', objectStorageService.isLocalMode());
       
       res.set({
         'Cache-Control': 'public, max-age=31536000, immutable',
@@ -1876,6 +1878,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (objectStorageService.isLocalMode()) {
         const localPath = objectStorageService.getLocalFilePath(imagePath);
+        console.log('[DEBUG ROUTE v3] localPath:', localPath);
+        console.log('[DEBUG ROUTE v3] fileExists:', objectStorageService.localFileExists(imagePath));
         if (!objectStorageService.localFileExists(imagePath)) {
           return res.status(404).json({ error: 'Image not found' });
         }
