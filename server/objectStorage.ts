@@ -244,7 +244,8 @@ export class ObjectStorageService {
     fs.writeFileSync(filePath, buffer);
     console.log(`Local file saved: ${filePath}`);
     
-    return `/images/uploads/${filename}`;
+    // In local mode, Vite serves public/ folder at root, so public/uploads/file.jpg is at /uploads/file.jpg
+    return `/uploads/${filename}`;
   }
 
   async getObjectEntityFile(objectPath: string): Promise<File> {
