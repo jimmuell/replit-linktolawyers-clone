@@ -286,13 +286,27 @@ export class ObjectStorageService {
       normalizedPath = normalizedPath.replace('/images/', '');
     }
     
-    const filePath = path.join(LOCAL_STORAGE_DIR, normalizedPath);
+    if (normalizedPath.includes('..') || normalizedPath.includes('\0')) {
+      throw new ObjectNotFoundError();
+    }
+    
+    const baseDir = path.resolve(LOCAL_STORAGE_DIR);
+    const filePath = path.resolve(baseDir, normalizedPath);
+    
+    if (!filePath.startsWith(baseDir + path.sep) && filePath !== baseDir) {
+      throw new ObjectNotFoundError();
+    }
+    
     return filePath;
   }
 
   localFileExists(objectPath: string): boolean {
-    const filePath = this.getLocalFilePath(objectPath);
-    return fs.existsSync(filePath);
+    try {
+      const filePath = this.getLocalFilePath(objectPath);
+      return fs.existsSync(filePath);
+    } catch {
+      return false;
+    }
   }
 
   normalizeObjectEntityPath(

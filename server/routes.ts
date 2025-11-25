@@ -1856,9 +1856,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Image serving with proper caching headers for performance
   app.get("/images/:imagePath(*)", async (req, res) => {
     try {
+      const imagePath = req.params.imagePath;
+      
+      if (imagePath.includes('..') || imagePath.includes('\0') || imagePath.includes('%2e%2e') || imagePath.includes('%2E%2E')) {
+        return res.status(404).json({ error: 'Image not found' });
+      }
+
       const objectStorageService = new ObjectStorageService();
       
-      // Set aggressive caching for images
       res.set({
         'Cache-Control': 'public, max-age=31536000, immutable',
         'ETag': `"${Date.now()}"`,
@@ -1870,14 +1875,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (objectStorageService.isLocalMode()) {
-        const localPath = objectStorageService.getLocalFilePath(req.params.imagePath);
-        if (!objectStorageService.localFileExists(req.params.imagePath)) {
+        const localPath = objectStorageService.getLocalFilePath(imagePath);
+        if (!objectStorageService.localFileExists(imagePath)) {
           return res.status(404).json({ error: 'Image not found' });
         }
         await objectStorageService.downloadLocalFile(localPath, res);
       } else {
-        const imagePath = `/objects/${req.params.imagePath}`;
-        const objectFile = await objectStorageService.getObjectEntityFile(imagePath);
+        const objectPath = `/objects/${imagePath}`;
+        const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
         await objectStorageService.downloadObject(objectFile, res);
       }
     } catch (error) {
