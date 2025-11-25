@@ -23,7 +23,12 @@ export function getImageUrl(imageUrl: string | null | undefined): string | null 
   if (imageUrl.startsWith('/images/uploads/')) {
     if (isLocal) {
       // Local dev: Vite serves public/uploads/ at /uploads/
-      return imageUrl.replace('/images/uploads/', '/uploads/');
+      let localUrl = imageUrl.replace('/images/uploads/', '/uploads/');
+      // Add .jpeg extension if missing (Object Storage files have .jpeg but DB paths may not)
+      if (!localUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i)) {
+        localUrl += '.jpeg';
+      }
+      return localUrl;
     }
     return imageUrl;
   }
