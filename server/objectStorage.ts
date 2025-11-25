@@ -278,6 +278,7 @@ export class ObjectStorageService {
   }
 
   getLocalFilePath(objectPath: string): string {
+    console.log('[DEBUG v2] getLocalFilePath called with:', objectPath);
     let normalizedPath = objectPath;
     if (normalizedPath.startsWith('/objects/')) {
       normalizedPath = normalizedPath.replace('/objects/', '');
@@ -288,6 +289,7 @@ export class ObjectStorageService {
     if (normalizedPath.startsWith('uploads/')) {
       normalizedPath = normalizedPath.replace('uploads/', '');
     }
+    console.log('[DEBUG v2] normalizedPath after stripping prefixes:', normalizedPath);
     
     if (normalizedPath.includes('..') || normalizedPath.includes('\0')) {
       throw new ObjectNotFoundError();
@@ -295,6 +297,7 @@ export class ObjectStorageService {
     
     const baseDir = path.resolve(LOCAL_STORAGE_DIR);
     const filePath = path.resolve(baseDir, normalizedPath);
+    console.log('[DEBUG v2] Final resolved filePath:', filePath);
     
     if (!filePath.startsWith(baseDir + path.sep) && filePath !== baseDir) {
       throw new ObjectNotFoundError();
