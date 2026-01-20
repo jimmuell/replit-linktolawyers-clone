@@ -23,6 +23,8 @@ export default function FlowPreview() {
   const [state, setState] = useState<FlowState | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [yesNoValue, setYesNoValue] = useState<string>('');
+  const [choiceValue, setChoiceValue] = useState<string>('');
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const storedFlows = localStorage.getItem('importedFlows');
@@ -35,6 +37,13 @@ export default function FlowPreview() {
         if (startNode) {
           setState({
             currentNodeId: startNode.id,
+            responses: {},
+            nodeHistory: [],
+            stepNumber: 1
+          });
+        } else if (found.nodes.length > 0) {
+          setState({
+            currentNodeId: found.nodes[0].id,
             responses: {},
             nodeHistory: [],
             stepNumber: 1
@@ -81,6 +90,8 @@ export default function FlowPreview() {
         newResponses[currentNode.id] = { ...formValues };
       } else if (currentNode?.type === 'yes-no') {
         newResponses[currentNode.id] = condition || yesNoValue;
+      } else if (currentNode?.type === 'multiple-choice') {
+        newResponses[currentNode.id] = condition || choiceValue;
       } else if (currentNode?.type === 'start') {
         newResponses[currentNode.id] = { started: true };
       }
@@ -94,6 +105,7 @@ export default function FlowPreview() {
       
       setFormValues({});
       setYesNoValue('');
+      setChoiceValue('');
     }
   };
 
@@ -231,6 +243,21 @@ export default function FlowPreview() {
           </div>
         );
 
+      case 'multiple-choice':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900">{currentNode.question}</h2>
+            <RadioGroup value={choiceValue} onValueChange={setChoiceValue}>
+              {currentNode.options?.map((option) => (
+                <div key={option.id} className="flex items-center space-x-2">
+                  <RadioGroupItem value={option.id} id={option.id} />
+                  <Label htmlFor={option.id} className="cursor-pointer">{option.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        );
+
       default:
         return (
           <div className="text-center py-12">
@@ -243,6 +270,7 @@ export default function FlowPreview() {
   const isLastNode = currentNode.type === 'completion';
   const canProceed = () => {
     if (currentNode.type === 'yes-no') return !!yesNoValue;
+    if (currentNode.type === 'multiple-choice') return !!choiceValue;
     if (currentNode.type === 'form') {
       return currentNode.formFields.every(field => !field.required || formValues[field.id]);
     }
@@ -287,7 +315,11 @@ export default function FlowPreview() {
             </Button>
           ) : (
             <Button 
-              onClick={() => handleNext(currentNode.type === 'yes-no' ? yesNoValue : undefined)}
+              onClick={() => handleNext(
+                currentNode.type === 'yes-no' ? yesNoValue : 
+                currentNode.type === 'multiple-choice' ? choiceValue : 
+                undefined
+              )}
               disabled={!canProceed()}
             >
               Next
