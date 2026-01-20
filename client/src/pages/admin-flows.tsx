@@ -16,6 +16,7 @@ export default function AdminFlows() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [deleteConfirmFlow, setDeleteConfirmFlow] = useState<{ id: string; name: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -108,15 +109,21 @@ export default function AdminFlows() {
     return flow.metadata?.flowId || flow.name.toLowerCase().replace(/\s+/g, '-');
   };
 
-  const handleDeleteFlow = (flowId: string, e: React.MouseEvent) => {
+  const handleDeleteClick = (flow: ParsedFlow, e: React.MouseEvent) => {
     e.stopPropagation();
-    const updatedFlows = savedFlows.filter(f => getFlowId(f) !== flowId);
+    setDeleteConfirmFlow({ id: getFlowId(flow), name: flow.name });
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteConfirmFlow) return;
+    const updatedFlows = savedFlows.filter(f => getFlowId(f) !== deleteConfirmFlow.id);
     localStorage.setItem('importedFlows', JSON.stringify(updatedFlows));
     setSavedFlows(updatedFlows);
     toast({
       title: 'Flow deleted',
       description: 'The flow has been removed.',
     });
+    setDeleteConfirmFlow(null);
   };
 
   const handleFlowClick = (flow: ParsedFlow) => {
@@ -299,7 +306,7 @@ export default function AdminFlows() {
               variant="ghost"
               size="icon"
               className="absolute top-2 right-2 h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50"
-              onClick={(e) => handleDeleteFlow(getFlowId(flow), e)}
+              onClick={(e) => handleDeleteClick(flow, e)}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -449,6 +456,28 @@ export default function AdminFlows() {
                 Confirm Import
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteConfirmFlow} onOpenChange={() => setDeleteConfirmFlow(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              Delete Flow
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{deleteConfirmFlow?.name}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteConfirmFlow(null)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
