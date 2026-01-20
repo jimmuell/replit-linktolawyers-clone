@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { GitBranch, Upload, FileText, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { GitBranch, Upload, FileText, CheckCircle, XCircle, ArrowRight, ArrowDown, Split } from 'lucide-react';
 import { parseFlowMarkdown, validateFlow, type ParsedFlow } from '@/lib/flowParser';
 import { useToast } from '@/hooks/use-toast';
 
@@ -92,6 +92,39 @@ export default function AdminFlows() {
       'multiple-choice': 'bg-orange-100 text-orange-800'
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getOutgoingConnections = (nodeId: string) => {
+    if (!importedFlow) return [];
+    return importedFlow.connections.filter(conn => conn.sourceNodeId === nodeId);
+  };
+
+  const getNodeById = (nodeId: string) => {
+    if (!importedFlow) return null;
+    return importedFlow.nodes.find(n => n.id === nodeId);
+  };
+
+  const getConditionLabel = (condition: string) => {
+    const labels: Record<string, string> = {
+      'any': 'Continue',
+      'yes': 'Yes',
+      'no': 'No'
+    };
+    return labels[condition] || condition;
+  };
+
+  const getConditionColor = (condition: string) => {
+    const colors: Record<string, string> = {
+      'any': 'bg-gray-100 text-gray-700',
+      'yes': 'bg-green-100 text-green-700',
+      'no': 'bg-red-100 text-red-700'
+    };
+    return colors[condition] || 'bg-gray-100 text-gray-700';
+  };
+
+  const hasBranching = (nodeId: string) => {
+    const connections = getOutgoingConnections(nodeId);
+    return connections.length > 1;
   };
 
   return (
@@ -259,26 +292,59 @@ export default function AdminFlows() {
 
               <div>
                 <h4 className="font-medium mb-3">Flow Screens</h4>
-                <div className="space-y-2">
-                  {importedFlow.nodes.map((node, index) => (
-                    <div key={node.id} className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500 w-6">{index + 1}.</span>
-                      <Badge className={getNodeTypeColor(node.type)}>
-                        {getNodeTypeLabel(node.type)}
-                      </Badge>
-                      <span className="text-sm">
-                        {node.formTitle || node.question || node.thankYouTitle || 'Untitled'}
-                      </span>
-                      {node.formFields && node.formFields.length > 0 && (
-                        <span className="text-xs text-gray-500">
-                          ({node.formFields.length} fields)
-                        </span>
-                      )}
-                      {index < importedFlow.nodes.length - 1 && (
-                        <ArrowRight className="h-3 w-3 text-gray-400 ml-auto" />
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  {importedFlow.nodes.map((node, index) => {
+                    const outgoingConnections = getOutgoingConnections(node.id);
+                    const isBranching = outgoingConnections.length > 1;
+                    
+                    return (
+                      <div key={node.id} className="border rounded-lg p-3 bg-white">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-500 w-6">{index + 1}.</span>
+                          <Badge className={getNodeTypeColor(node.type)}>
+                            {getNodeTypeLabel(node.type)}
+                          </Badge>
+                          <span className="text-sm font-medium">
+                            {node.formTitle || node.question || node.thankYouTitle || 'Untitled'}
+                          </span>
+                          {node.formFields && node.formFields.length > 0 && (
+                            <span className="text-xs text-gray-500">
+                              ({node.formFields.length} fields)
+                            </span>
+                          )}
+                          {isBranching && (
+                            <Badge variant="outline" className="ml-auto flex items-center gap-1">
+                              <Split className="h-3 w-3" />
+                              Branches
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {outgoingConnections.length > 0 && (
+                          <div className="mt-2 pl-8 space-y-1">
+                            {outgoingConnections.map((conn) => {
+                              const targetNode = getNodeById(conn.targetNodeId);
+                              return (
+                                <div key={conn.id} className="flex items-center gap-2 text-sm">
+                                  <ArrowDown className="h-3 w-3 text-gray-400" />
+                                  <Badge variant="outline" className={getConditionColor(conn.condition)}>
+                                    {getConditionLabel(conn.condition)}
+                                  </Badge>
+                                  <ArrowRight className="h-3 w-3 text-gray-400" />
+                                  <span className="text-gray-600">
+                                    {targetNode?.formTitle || targetNode?.question || targetNode?.thankYouTitle || 'Unknown'}
+                                  </span>
+                                  {conn.isEndConnection && (
+                                    <Badge variant="secondary" className="text-xs">End</Badge>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
