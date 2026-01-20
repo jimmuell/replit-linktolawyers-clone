@@ -31,6 +31,7 @@ import QuotesSuccessPageSpanish from "@/pages/QuotesSuccessPageSpanish";
 import PromptManagement from "@/pages/prompt-management";
 import ChatPage from "@/pages/chat";
 import CaseDetailsPage from "@/pages/CaseDetailsPage";
+import AdminFlows from "@/pages/admin-flows";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/es" component={HomeSpanish} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/admin/flows" component={AdminFlows} />
       <Route path="/attorney-dashboard" component={AttorneyDashboard} />
       <Route path="/smtp-config" component={SmtpConfigPage} />
       <Route path="/request-management" component={RequestManagementPage} />
