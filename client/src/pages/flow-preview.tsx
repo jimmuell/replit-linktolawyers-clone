@@ -66,8 +66,17 @@ export default function FlowPreview() {
     let matchedConnection = connections.find(c => c.condition === 'any');
     
     if (condition) {
-      const conditionMatch = connections.find(c => c.condition === condition);
+      const conditionMatch = connections.find(c => 
+        c.condition === condition || 
+        c.label === condition ||
+        c.condition?.toLowerCase() === condition.toLowerCase() ||
+        c.label?.toLowerCase() === condition.toLowerCase()
+      );
       if (conditionMatch) matchedConnection = conditionMatch;
+    }
+    
+    if (!matchedConnection && connections.length === 1) {
+      matchedConnection = connections[0];
     }
     
     if (matchedConnection) {
