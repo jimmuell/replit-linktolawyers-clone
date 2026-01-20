@@ -307,31 +307,11 @@ export default function FlowPreview() {
 
       case 'end':
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900">{currentNode.thankYouTitle || 'Thank You'}</h1>
-              {currentNode.thankYouMessage && (
-                <p className="text-gray-600 mt-2">{currentNode.thankYouMessage}</p>
-              )}
-            </div>
-            
-            {currentNode.legalDisclaimer && (
-              <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-700 mb-2">Legal Disclaimer:</h3>
-                <p className="text-gray-700 text-sm">{currentNode.legalDisclaimer}</p>
-              </div>
-            )}
-            
-            {currentNode.additionalInfoPrompt && (
-              <div className="space-y-2">
-                <p className="text-gray-700">{currentNode.additionalInfoPrompt}</p>
-                <Textarea 
-                  placeholder="Optional: Share any additional details about your case..."
-                  value={formValues['additional-info'] || ''}
-                  onChange={(e) => setFormValues({ ...formValues, 'additional-info': e.target.value })}
-                  className="min-h-[120px]"
-                />
-              </div>
+          <div className="text-center space-y-6">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+            <h1 className="text-2xl font-bold text-gray-900">{currentNode.thankYouTitle || 'Thank You'}</h1>
+            {currentNode.thankYouMessage && (
+              <p className="text-gray-600">{currentNode.thankYouMessage}</p>
             )}
           </div>
         );
