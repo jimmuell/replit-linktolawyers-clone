@@ -58,11 +58,32 @@ export interface FlowParseResult {
 }
 
 function extractJsonFromMarkdown(content: string): string | null {
-  const jsonBlockMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-  if (jsonBlockMatch && jsonBlockMatch[1]) {
-    return jsonBlockMatch[1].trim();
+  const jsonBlockRegex = /```json\s*([\s\S]*?)\s*```/g;
+  const matches: string[] = [];
+  let match;
+  
+  while ((match = jsonBlockRegex.exec(content)) !== null) {
+    if (match[1]) {
+      matches.push(match[1].trim());
+    }
   }
-  return null;
+  
+  if (matches.length === 0) {
+    return null;
+  }
+  
+  for (const jsonStr of matches) {
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed.name && Array.isArray(parsed.nodes) && Array.isArray(parsed.connections)) {
+        return jsonStr;
+      }
+    } catch {
+      continue;
+    }
+  }
+  
+  return matches[matches.length - 1];
 }
 
 function extractMetadataFromMarkdown(content: string): ParsedFlow['metadata'] {
