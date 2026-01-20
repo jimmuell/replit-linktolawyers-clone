@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,12 +10,21 @@ import { parseFlowMarkdown, validateFlow, type ParsedFlow } from '@/lib/flowPars
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminFlows() {
+  const [, setLocation] = useLocation();
   const [importedFlow, setImportedFlow] = useState<ParsedFlow | null>(null);
+  const [savedFlows, setSavedFlows] = useState<ParsedFlow[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const stored = localStorage.getItem('importedFlows');
+    if (stored) {
+      setSavedFlows(JSON.parse(stored));
+    }
+  }, []);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -63,11 +73,44 @@ export default function AdminFlows() {
   const handleConfirmImport = () => {
     if (!importedFlow) return;
     
+    const flowId = importedFlow.metadata?.flowId || importedFlow.name.toLowerCase().replace(/\s+/g, '-');
+    const flowWithId: ParsedFlow = {
+      ...importedFlow,
+      metadata: {
+        ...importedFlow.metadata,
+        flowId
+      }
+    };
+    
+    const existingIndex = savedFlows.findIndex(f => 
+      f.metadata?.flowId === flowId || f.name === importedFlow.name
+    );
+    
+    let updatedFlows: ParsedFlow[];
+    if (existingIndex >= 0) {
+      updatedFlows = [...savedFlows];
+      updatedFlows[existingIndex] = flowWithId;
+    } else {
+      updatedFlows = [...savedFlows, flowWithId];
+    }
+    
+    localStorage.setItem('importedFlows', JSON.stringify(updatedFlows));
+    setSavedFlows(updatedFlows);
+    
     toast({
       title: 'Flow imported successfully',
       description: `"${importedFlow.name}" has been imported with ${importedFlow.nodes.length} screens.`
     });
     setIsPreviewOpen(false);
+  };
+
+  const getFlowId = (flow: ParsedFlow) => {
+    return flow.metadata?.flowId || flow.name.toLowerCase().replace(/\s+/g, '-');
+  };
+
+  const handleFlowClick = (flow: ParsedFlow) => {
+    const flowId = getFlowId(flow);
+    setLocation(`/admin/flows/${flowId}`);
   };
 
   const getNodeTypeLabel = (type: string) => {
@@ -234,6 +277,33 @@ export default function AdminFlows() {
             </p>
           </CardContent>
         </Card>
+
+        {savedFlows.map((flow) => (
+          <Card 
+            key={getFlowId(flow)} 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => handleFlowClick(flow)}
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <GitBranch className="h-5 w-5 text-cyan-600" />
+                {flow.name}
+              </CardTitle>
+              <CardDescription>
+                {flow.description || 'Imported flow'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2 mb-2">
+                <Badge variant="secondary">{flow.nodes.length} screens</Badge>
+                <Badge variant="outline">{flow.connections.length} connections</Badge>
+              </div>
+              <p className="text-sm text-gray-600">
+                Click to edit or preview this flow.
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
