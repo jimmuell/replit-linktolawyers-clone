@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { GitBranch, Upload, FileText, CheckCircle, XCircle, ArrowRight, ArrowDown, Split } from 'lucide-react';
+import { GitBranch, Upload, FileText, CheckCircle, XCircle, ArrowRight, ArrowDown, Split, Trash2 } from 'lucide-react';
 import { parseFlowMarkdown, validateFlow, type ParsedFlow } from '@/lib/flowParser';
 import { useToast } from '@/hooks/use-toast';
 
@@ -106,6 +106,17 @@ export default function AdminFlows() {
 
   const getFlowId = (flow: ParsedFlow) => {
     return flow.metadata?.flowId || flow.name.toLowerCase().replace(/\s+/g, '-');
+  };
+
+  const handleDeleteFlow = (flowId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updatedFlows = savedFlows.filter(f => getFlowId(f) !== flowId);
+    localStorage.setItem('importedFlows', JSON.stringify(updatedFlows));
+    setSavedFlows(updatedFlows);
+    toast({
+      title: 'Flow deleted',
+      description: 'The flow has been removed.',
+    });
   };
 
   const handleFlowClick = (flow: ParsedFlow) => {
@@ -281,11 +292,19 @@ export default function AdminFlows() {
         {savedFlows.map((flow) => (
           <Card 
             key={getFlowId(flow)} 
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="cursor-pointer hover:shadow-lg transition-shadow relative"
             onClick={() => handleFlowClick(flow)}
           >
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50"
+              onClick={(e) => handleDeleteFlow(getFlowId(flow), e)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 pr-8">
                 <GitBranch className="h-5 w-5 text-cyan-600" />
                 {flow.name}
               </CardTitle>
