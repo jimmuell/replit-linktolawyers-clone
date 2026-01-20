@@ -1,13 +1,20 @@
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GitBranch } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { GitBranch, Upload } from 'lucide-react';
 
 export default function AdminFlows() {
   return (
     <AdminLayout title="Flows Management">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Flows Management</h2>
-        <p className="text-gray-600">View and manage intake flows for different case types.</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Flows Management</h2>
+          <p className="text-gray-600">View and manage intake flows for different case types.</p>
+        </div>
+        <Button className="flex items-center gap-2">
+          <Upload className="h-4 w-4" />
+          Import
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
