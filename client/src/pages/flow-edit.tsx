@@ -30,7 +30,12 @@ export default function FlowEdit() {
       'yes-no': 'Yes/No Question',
       'info': 'Information',
       'completion': 'Completion',
-      'multiple-choice': 'Multiple Choice'
+      'multiple-choice': 'Multiple Choice',
+      'text': 'Text Input',
+      'date': 'Date Picker',
+      'success': 'Success',
+      'end': 'End',
+      'subflow': 'Subflow'
     };
     return labels[type] || type;
   };
@@ -42,7 +47,12 @@ export default function FlowEdit() {
       'yes-no': 'bg-purple-100 text-purple-800',
       'info': 'bg-yellow-100 text-yellow-800',
       'completion': 'bg-emerald-100 text-emerald-800',
-      'multiple-choice': 'bg-orange-100 text-orange-800'
+      'multiple-choice': 'bg-orange-100 text-orange-800',
+      'text': 'bg-sky-100 text-sky-800',
+      'date': 'bg-pink-100 text-pink-800',
+      'success': 'bg-lime-100 text-lime-800',
+      'end': 'bg-slate-100 text-slate-800',
+      'subflow': 'bg-violet-100 text-violet-800'
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
   };

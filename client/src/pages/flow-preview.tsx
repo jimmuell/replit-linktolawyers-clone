@@ -267,6 +267,69 @@ export default function FlowPreview() {
           </div>
         );
 
+      case 'text':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900">{currentNode.question}</h2>
+            <Input
+              id="text-input"
+              type="text"
+              placeholder="Enter your answer..."
+              value={formValues['text-input'] || ''}
+              onChange={(e) => setFormValues({ ...formValues, 'text-input': e.target.value })}
+            />
+          </div>
+        );
+
+      case 'date':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-gray-900">{currentNode.question}</h2>
+            <Input
+              id="date-input"
+              type="date"
+              value={formValues['date-input'] || ''}
+              onChange={(e) => setFormValues({ ...formValues, 'date-input': e.target.value })}
+            />
+          </div>
+        );
+
+      case 'success':
+        return (
+          <div className="text-center space-y-6">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+            <h1 className="text-2xl font-bold text-gray-900">{currentNode.successTitle || 'Congratulations!'}</h1>
+            {currentNode.successMessage && (
+              <p className="text-gray-600">{currentNode.successMessage}</p>
+            )}
+          </div>
+        );
+
+      case 'end':
+        return (
+          <div className="text-center space-y-6">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+            <h1 className="text-2xl font-bold text-gray-900">{currentNode.thankYouTitle || 'Thank You!'}</h1>
+            {currentNode.thankYouMessage && (
+              <p className="text-gray-600">{currentNode.thankYouMessage}</p>
+            )}
+          </div>
+        );
+
+      case 'subflow':
+        return (
+          <div className="text-center space-y-6 py-8">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-purple-900">{currentNode.question || 'Subflow'}</h2>
+              <p className="text-purple-700 mt-2">
+                {currentNode.referencedFlowName 
+                  ? `This step references: ${currentNode.referencedFlowName}` 
+                  : 'This step references another flow'}
+              </p>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="text-center py-12">
@@ -276,7 +339,7 @@ export default function FlowPreview() {
     }
   };
 
-  const isLastNode = currentNode.type === 'completion';
+  const isLastNode = ['completion', 'success', 'end'].includes(currentNode.type);
   const canProceed = () => {
     if (currentNode.type === 'yes-no') return !!yesNoValue;
     if (currentNode.type === 'multiple-choice') return !!choiceValue;

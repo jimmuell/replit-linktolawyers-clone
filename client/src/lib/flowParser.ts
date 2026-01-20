@@ -1,16 +1,44 @@
+export type FormFieldType = 
+  | 'text' 
+  | 'email' 
+  | 'phone' 
+  | 'url' 
+  | 'number' 
+  | 'textarea' 
+  | 'date' 
+  | 'select'
+  | 'yes-no' 
+  | 'multiple-choice';
+
 export interface FlowFormField {
   id: string;
-  type: 'text' | 'email' | 'number' | 'textarea' | 'select';
+  type: FormFieldType;
   label: string;
   placeholder?: string;
   required: boolean;
-  options?: { value: string; label: string }[];
+  defaultValue?: string;
+  options?: { id?: string; value?: string; label: string }[];
 }
+
+export type QuestionType = 
+  | 'start' 
+  | 'form' 
+  | 'yes-no' 
+  | 'info' 
+  | 'completion' 
+  | 'multiple-choice'
+  | 'text'
+  | 'date'
+  | 'success'
+  | 'end'
+  | 'subflow';
 
 export interface FlowNode {
   id: string;
-  type: 'start' | 'form' | 'yes-no' | 'info' | 'completion' | 'multiple-choice';
+  type: QuestionType;
   question: string;
+  position?: { x: number; y: number };
+  defaultValue?: string;
   yesLabel?: string | null;
   noLabel?: string | null;
   options?: { id: string; label: string }[] | null;
@@ -25,6 +53,12 @@ export interface FlowNode {
   additionalInfoPrompt?: string | null;
   infoTitle?: string | null;
   infoDescription?: string | null;
+  successTitle?: string | null;
+  successMessage?: string | null;
+  showConfetti?: boolean;
+  referencedFlowId?: string | null;
+  referencedFlowName?: string | null;
+  edgeLabelDisplay?: 'full' | 'abbreviated' | 'none';
 }
 
 export interface FlowConnection {
