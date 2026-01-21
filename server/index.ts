@@ -65,12 +65,12 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Seed case types on startup
-  try {
-    await seedCaseTypes();
-  } catch (error) {
-    console.error("Failed to seed case types:", error);
-  }
+  // Seed case types disabled - categories are now managed via admin interface
+  // try {
+  //   await seedCaseTypes();
+  // } catch (error) {
+  //   console.error("Failed to seed case types:", error);
+  // }
 
   // Start background translation service
   startBackgroundTranslationService();
