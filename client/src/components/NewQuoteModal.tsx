@@ -811,44 +811,41 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'end':
         return (
           <div className="space-y-6">
-            <div className="text-center">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <ClipboardList className="w-8 h-8 text-green-600" />
+            {/* Title section from node */}
+            {(currentNode.thankYouTitle || currentNode.successTitle) && (
+              <div className="text-center">
+                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <ClipboardList className="w-8 h-8 text-green-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {currentNode.thankYouTitle || currentNode.successTitle}
+                </h2>
+                {(currentNode.thankYouMessage || currentNode.successMessage) && (
+                  <p className="text-gray-600 mt-2">{currentNode.thankYouMessage || currentNode.successMessage}</p>
+                )}
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {currentNode.thankYouTitle || currentNode.successTitle || (isSpanish ? '¡Gracias!' : 'Thank You!')}
-              </h2>
-              {(currentNode.thankYouMessage || currentNode.successMessage) && (
-                <p className="text-gray-600 mt-2">{currentNode.thankYouMessage || currentNode.successMessage}</p>
-              )}
-            </div>
+            )}
             
+            {/* Legal disclaimer from node */}
             {currentNode.legalDisclaimer && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-700">{currentNode.legalDisclaimer}</p>
               </div>
             )}
             
-            {/* Additional details field */}
-            <div className="space-y-2">
-              <Label htmlFor="additionalDetails">
-                {isSpanish 
-                  ? '¿Le gustaría agregar más detalles sobre su caso?' 
-                  : 'Would you like to add any more details about your case?'}
-              </Label>
-              <p className="text-sm text-gray-500">
-                {isSpanish 
-                  ? 'Esto ayuda al abogado a comprender mejor su caso.' 
-                  : 'This helps the attorney understand your case better.'}
-              </p>
-              <Textarea
-                id="additionalDetails"
-                value={additionalDetails}
-                onChange={(e) => setAdditionalDetails(e.target.value)}
-                placeholder={isSpanish ? 'Opcional: Comparta detalles adicionales sobre su caso...' : 'Optional: Share any additional details about your case...'}
-                rows={4}
-              />
-            </div>
+            {/* Additional info prompt from node */}
+            {currentNode.additionalInfoPrompt && (
+              <div className="space-y-2">
+                <p className="text-gray-700">{currentNode.additionalInfoPrompt}</p>
+                <Textarea
+                  id="additionalDetails"
+                  value={additionalDetails}
+                  onChange={(e) => setAdditionalDetails(e.target.value)}
+                  placeholder={isSpanish ? 'Opcional: Comparta detalles adicionales...' : 'Optional: Share additional details...'}
+                  rows={4}
+                />
+              </div>
+            )}
           </div>
         );
 
