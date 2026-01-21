@@ -6,11 +6,13 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ClipboardList, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ClipboardList, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
-import { buildFlowConfig, getCaseTypeOptions, getLabels } from '@/lib/translations';
+import { useQuery } from '@tanstack/react-query';
+import { buildFlowConfig, getLabels } from '@/lib/translations';
+import type { CaseType as CaseTypeDB } from '@shared/schema';
 
 interface NewQuoteModalProps {
   isOpen: boolean;
@@ -38,7 +40,7 @@ type Flow = {
   nodes: Record<string, Question>;
 };
 
-type CaseType = 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'other';
+type CaseType = string;
 
 type Step = 'welcome' | 'basic-info' | 'role-selection' | 'case-type' | 'questionnaire' | 'no-flow' | 'wrap-up';
 
@@ -110,11 +112,11 @@ const US_STATES = [
   { value: 'OTHER', label: 'Outside the US' },
 ];
 
-// Flow configuration for all case types
-const FLOW_CONFIG = buildFlowConfig('en');
+// Flow configuration for all case types (legacy - flows are now managed via admin interface)
+const FLOW_CONFIG: Record<string, Flow> = buildFlowConfig('en') as unknown as Record<string, Flow>;
 
-// Spanish translations for all flow configurations
-const FLOW_CONFIG_ES = buildFlowConfig('es');
+// Spanish translations for all flow configurations (legacy)
+const FLOW_CONFIG_ES: Record<string, Flow> = buildFlowConfig('es') as unknown as Record<string, Flow>;
 
 export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false }: NewQuoteModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>(skipToQuestionnaire ? 'questionnaire' : 'welcome');
@@ -156,31 +158,34 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   // UI labels from translation files
   const labels = getLabels(isSpanish ? 'es' : 'en');
 
-  // Case type options from translation files - filtered by role
-  const caseTypeOptions = getCaseTypeOptions(isSpanish ? 'es' : 'en')
-    .map(opt => ({
-      value: opt.value as CaseType,
-      label: opt.label
-    }))
-    .filter(opt => {
-      // If no role selected yet, show all options
+  // Fetch categories from database
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery<{ success: boolean; data: CaseTypeDB[] }>({
+    queryKey: ['/api/case-types'],
+    enabled: isOpen,
+  });
+
+  // Filter categories by role and sort by display order
+  const caseTypeOptions = (categoriesData?.data || [])
+    .filter((cat: CaseTypeDB) => {
+      // Only show active categories
+      if (!cat.isActive) return false;
+      
+      // Filter by applicant type based on selected role
       if (!role) return true;
       
-      // Define petitioner-only and beneficiary-only case types
-      const petitionerOnlyCaseTypes = ['new-k1-fiance-visa', 'new-family-based-green-card-petitioner'];
-      const beneficiaryOnlyCaseTypes = ['new-k1-fiance-visa-beneficiary', 'new-family-based-green-card-beneficiary'];
-      
-      // Filter based on role
       if (role === 'beneficiary') {
-        // Hide petitioner-specific options
-        return !petitionerOnlyCaseTypes.includes(opt.value);
+        return cat.applicantType === 'beneficiary' || cat.applicantType === 'both';
       } else if (role === 'petitioner') {
-        // Hide beneficiary-specific options
-        return !beneficiaryOnlyCaseTypes.includes(opt.value);
+        return cat.applicantType === 'petitioner' || cat.applicantType === 'both';
       }
       
       return true;
-    });
+    })
+    .sort((a: CaseTypeDB, b: CaseTypeDB) => (a.displayOrder || 0) - (b.displayOrder || 0))
+    .map((cat: CaseTypeDB) => ({
+      value: cat.value,
+      label: isSpanish && cat.labelEs ? cat.labelEs : cat.label
+    }));
 
   const validateBasicInfo = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -827,10 +832,42 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         );
 
       case 'case-type':
+        if (categoriesLoading) {
+          return (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-4" />
+              <p className="text-gray-600">{isSpanish ? 'Cargando opciones...' : 'Loading options...'}</p>
+            </div>
+          );
+        }
+
+        if (caseTypeOptions.length === 0) {
+          return (
+            <div className="space-y-6">
+              <div className="text-center py-8">
+                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <ClipboardList className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {isSpanish ? 'No hay categorías disponibles' : 'No categories available'}
+                </h3>
+                <p className="text-gray-600 max-w-sm mx-auto">
+                  {isSpanish 
+                    ? 'Actualmente no hay categorías de casos activas. Por favor, contacte a nuestro equipo para obtener asistencia.' 
+                    : 'There are currently no active case categories. Please contact our team for assistance.'}
+                </p>
+              </div>
+              <Button variant="outline" onClick={handleBack} className="w-full" data-testid="button-back">
+                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
+              </Button>
+            </div>
+          );
+        }
+
         return (
           <div className="space-y-6">
             <div className="space-y-3">
-              <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value as CaseType)} className="space-y-3">
+              <RadioGroup value={caseType} onValueChange={(value) => setCaseType(value)} className="space-y-3">
                 {caseTypeOptions.map((caseTypeOption) => (
                   <div key={caseTypeOption.value} className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                     <RadioGroupItem value={caseTypeOption.value} id={caseTypeOption.value} className="mt-1" data-testid={`radio-${caseTypeOption.value}`} />
