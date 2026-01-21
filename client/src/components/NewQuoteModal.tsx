@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClipboardList, ArrowLeft, ArrowRight } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
@@ -46,7 +47,68 @@ type Role = 'beneficiary' | 'petitioner' | '';
 interface BasicInfo {
   fullName: string;
   email: string;
+  phone: string;
+  state: string;
 }
+
+// US States list
+const US_STATES = [
+  { value: 'AL', label: 'Alabama' },
+  { value: 'AK', label: 'Alaska' },
+  { value: 'AZ', label: 'Arizona' },
+  { value: 'AR', label: 'Arkansas' },
+  { value: 'CA', label: 'California' },
+  { value: 'CO', label: 'Colorado' },
+  { value: 'CT', label: 'Connecticut' },
+  { value: 'DE', label: 'Delaware' },
+  { value: 'FL', label: 'Florida' },
+  { value: 'GA', label: 'Georgia' },
+  { value: 'HI', label: 'Hawaii' },
+  { value: 'ID', label: 'Idaho' },
+  { value: 'IL', label: 'Illinois' },
+  { value: 'IN', label: 'Indiana' },
+  { value: 'IA', label: 'Iowa' },
+  { value: 'KS', label: 'Kansas' },
+  { value: 'KY', label: 'Kentucky' },
+  { value: 'LA', label: 'Louisiana' },
+  { value: 'ME', label: 'Maine' },
+  { value: 'MD', label: 'Maryland' },
+  { value: 'MA', label: 'Massachusetts' },
+  { value: 'MI', label: 'Michigan' },
+  { value: 'MN', label: 'Minnesota' },
+  { value: 'MS', label: 'Mississippi' },
+  { value: 'MO', label: 'Missouri' },
+  { value: 'MT', label: 'Montana' },
+  { value: 'NE', label: 'Nebraska' },
+  { value: 'NV', label: 'Nevada' },
+  { value: 'NH', label: 'New Hampshire' },
+  { value: 'NJ', label: 'New Jersey' },
+  { value: 'NM', label: 'New Mexico' },
+  { value: 'NY', label: 'New York' },
+  { value: 'NC', label: 'North Carolina' },
+  { value: 'ND', label: 'North Dakota' },
+  { value: 'OH', label: 'Ohio' },
+  { value: 'OK', label: 'Oklahoma' },
+  { value: 'OR', label: 'Oregon' },
+  { value: 'PA', label: 'Pennsylvania' },
+  { value: 'RI', label: 'Rhode Island' },
+  { value: 'SC', label: 'South Carolina' },
+  { value: 'SD', label: 'South Dakota' },
+  { value: 'TN', label: 'Tennessee' },
+  { value: 'TX', label: 'Texas' },
+  { value: 'UT', label: 'Utah' },
+  { value: 'VT', label: 'Vermont' },
+  { value: 'VA', label: 'Virginia' },
+  { value: 'WA', label: 'Washington' },
+  { value: 'WV', label: 'West Virginia' },
+  { value: 'WI', label: 'Wisconsin' },
+  { value: 'WY', label: 'Wyoming' },
+  { value: 'DC', label: 'District of Columbia' },
+  { value: 'PR', label: 'Puerto Rico' },
+  { value: 'VI', label: 'US Virgin Islands' },
+  { value: 'GU', label: 'Guam' },
+  { value: 'OTHER', label: 'Outside the US' },
+];
 
 // Flow configuration for all case types
 const FLOW_CONFIG = buildFlowConfig('en');
@@ -59,9 +121,11 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
   const [role, setRole] = useState<Role>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>(
-    initialBasicInfo || {
+    initialBasicInfo ? { ...initialBasicInfo, phone: '', state: '' } : {
       fullName: 'Jim Mueller',
-      email: 'jimmuell@aol.com'
+      email: 'jimmuell@aol.com',
+      phone: '',
+      state: ''
     }
   );
   const [currentNodeKey, setCurrentNodeKey] = useState<string>('');
@@ -311,6 +375,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         firstName: basicInfo.fullName.split(' ')[0] || basicInfo.fullName,
         lastName: basicInfo.fullName.split(' ').slice(1).join(' ') || '',
         email: basicInfo.email,
+        phoneNumber: basicInfo.phone || null,
+        state: basicInfo.state || null,
         caseType,
         role,
         formResponses: {
@@ -355,6 +421,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         firstName: basicInfo.fullName.split(' ')[0] || basicInfo.fullName,
         lastName: basicInfo.fullName.split(' ').slice(1).join(' ') || '',
         email: basicInfo.email,
+        phoneNumber: basicInfo.phone || null,
+        state: basicInfo.state || null,
         caseType: 'other',
         role,
         formResponses: {
@@ -387,7 +455,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     setCurrentStep('welcome');
     setCaseType('');
     setRole('');
-    setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com' });
+    setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com', phone: '', state: '' });
     setCurrentNodeKey('');
     setAnswers({});
     setAdditionalDetails('');
@@ -666,6 +734,38 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
                 {errors.email && (
                   <p className="text-red-500 text-sm mt-1">{errors.email}</p>
                 )}
+              </div>
+
+              <div>
+                <Label htmlFor="phone">{isSpanish ? 'Número de teléfono (opcional)' : 'Phone Number (optional)'}</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={basicInfo.phone}
+                  onChange={(e) => setBasicInfo(prev => ({ ...prev, phone: e.target.value }))}
+                  placeholder="(555) 123-4567"
+                  data-testid="input-phone"
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="state">{isSpanish ? 'Estado' : 'State'}</Label>
+                <Select
+                  value={basicInfo.state}
+                  onValueChange={(value) => setBasicInfo(prev => ({ ...prev, state: value }))}
+                >
+                  <SelectTrigger id="state" className="mt-1" data-testid="select-state">
+                    <SelectValue placeholder={isSpanish ? 'Seleccione un estado' : 'Select a state'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {US_STATES.map((state) => (
+                      <SelectItem key={state.value} value={state.value}>
+                        {state.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

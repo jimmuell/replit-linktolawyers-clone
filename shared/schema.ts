@@ -447,6 +447,8 @@ export const structuredIntakes = pgTable("structured_intakes", {
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
+  phoneNumber: varchar("phone_number", { length: 50 }),
+  state: varchar("state", { length: 50 }),
   caseType: varchar("case_type", { length: 50 }).notNull(), // 'family', 'asylum', 'naturalization'
   role: varchar("role", { length: 20 }), // 'beneficiary', 'petitioner'
   formResponses: text("form_responses").notNull(), // JSON string of form responses
@@ -560,6 +562,8 @@ export const insertStructuredIntakeSchema = createInsertSchema(structuredIntakes
   firstName: true,
   lastName: true,  
   email: true,
+  phoneNumber: true,
+  state: true,
   caseType: true,
   formResponses: true,
   attorneyIntakeSummary: true,
