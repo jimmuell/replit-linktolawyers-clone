@@ -61,8 +61,11 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Use different endpoint for attorneys (showAssignButton) vs admins
+  const apiEndpoint = showAssignButton ? '/api/attorney-referrals/available' : '/api/structured-intakes';
+
   const { data: submissionsResponse, isLoading } = useQuery<{ success: boolean; data: StructuredIntake[] }>({
-    queryKey: ['/api/structured-intakes'],
+    queryKey: [apiEndpoint],
     retry: false,
   });
 
@@ -86,7 +89,7 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
         title: "Success",
         description: "Submission assigned successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/structured-intakes'] });
+      queryClient.invalidateQueries({ queryKey: [apiEndpoint] });
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
       setSelectedSubmission(null);
       setIsDetailsOpen(false);
@@ -112,7 +115,7 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
         title: "Success",
         description: `${deletedIds.length} submission(s) deleted successfully`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/structured-intakes'] });
+      queryClient.invalidateQueries({ queryKey: [apiEndpoint] });
       setSelectedIds(new Set());
     },
     onError: (error: Error) => {
