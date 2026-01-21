@@ -3,6 +3,7 @@ import AdminLayout from '@/components/AdminLayout';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
 import PromptManagementCard from '@/components/PromptManagementCard';
 import RequestManagementCard from '@/components/RequestManagementCard';
+import SubmissionsCard from '@/components/SubmissionsCard';
 import AttorneyOnboardingCard from '@/components/AttorneyOnboardingCard';
 import AttorneyFeeScheduleCard from '@/components/AttorneyFeeScheduleCard';
 import BlogManagementCard from '@/components/BlogManagementCard';
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 auto-rows-fr">
         <SmtpStatusCard />
         <PromptManagementCard />
+        <SubmissionsCard />
         <RequestManagementCard />
         <AttorneyOnboardingCard />
         <AttorneyFeeScheduleCard />

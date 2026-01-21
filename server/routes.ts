@@ -996,6 +996,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/structured-intakes/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ success: false, error: "Invalid ID" });
+      }
+      await storage.deleteStructuredIntake(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting structured intake:", error);
+      res.status(500).json({ success: false, error: "Failed to delete structured intake" });
+    }
+  });
+
   app.get("/api/admin/legal-requests", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const legalRequests = await storage.getAllLegalRequests();
