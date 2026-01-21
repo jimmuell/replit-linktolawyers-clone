@@ -1088,4 +1088,62 @@ router.patch("/cases/:caseId", requireAuth, async (req, res) => {
   }
 });
 
+// Assign a structured intake submission to the current attorney
+router.post("/assign-submission/:submissionId", requireAuth, async (req, res) => {
+  try {
+    const submissionId = parseInt(req.params.submissionId);
+    const userId = req.user!.id;
+    const { notes } = req.body;
+    
+    // Get the attorney ID from the attorneys table using the user ID
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+      
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+    
+    const attorneyId = attorney[0].id;
+
+    // Check if this attorney is already assigned to this submission
+    const existingAssignment = await db
+      .select()
+      .from(referralAssignments)
+      .where(and(
+        eq(referralAssignments.submissionId, submissionId),
+        eq(referralAssignments.attorneyId, attorneyId)
+      ))
+      .limit(1);
+
+    if (existingAssignment.length > 0) {
+      return res.status(400).json({ error: 'You are already assigned to this submission' });
+    }
+
+    // Create the assignment with submissionId
+    const [assignment] = await db
+      .insert(referralAssignments)
+      .values({
+        submissionId,
+        attorneyId,
+        status: 'assigned',
+        notes: notes || null,
+      })
+      .returning();
+
+    // Update the structured intake status to 'assigned'
+    await db
+      .update(structuredIntakes)
+      .set({ status: 'assigned', updatedAt: new Date() })
+      .where(eq(structuredIntakes.id, submissionId));
+
+    res.json({ success: true, data: assignment });
+  } catch (error) {
+    console.error('Error assigning submission:', error);
+    res.status(500).json({ error: 'Failed to assign submission' });
+  }
+});
+
 export default router;

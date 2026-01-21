@@ -98,7 +98,8 @@ export const emailHistory = pgTable("email_history", {
 // Referral assignment tracking
 export const referralAssignments = pgTable("referral_assignments", {
   id: serial("id").primaryKey(),
-  requestId: integer("request_id").notNull().references(() => legalRequests.id),
+  requestId: integer("request_id").references(() => legalRequests.id), // Legacy - for old legal_requests
+  submissionId: integer("submission_id").references(() => structuredIntakes.id), // For structured intake submissions
   attorneyId: integer("attorney_id").notNull().references(() => attorneys.id),
   assignedAt: timestamp("assigned_at").defaultNow().notNull(),
   status: varchar("status", { length: 50 }).notNull().default("assigned"), // assigned, under_review, info_requested, ready_to_quote, quoted, accepted, rejected, case_created
@@ -388,6 +389,7 @@ export const loginSchema = z.object({
 // Schema validations for new referral management tables
 export const insertReferralAssignmentSchema = createInsertSchema(referralAssignments).pick({
   requestId: true,
+  submissionId: true,
   attorneyId: true,
   status: true,
   notes: true,
