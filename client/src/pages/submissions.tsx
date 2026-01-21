@@ -527,12 +527,30 @@ export default function SubmissionsPage() {
                   All Responses
                 </h3>
                 <div className="space-y-4">
-                  {Object.entries(selectedSubmission.formResponses?.answers || {}).map(([nodeId, value]) => (
-                    <div key={nodeId} className="border-b border-gray-200 pb-3 last:border-b-0 last:pb-0">
-                      <div className="text-gray-400 text-sm font-mono mb-1">{nodeId}</div>
-                      <div className="text-gray-900">{String(value)}</div>
-                    </div>
-                  ))}
+                  {Object.entries(selectedSubmission.formResponses?.answers || {}).map(([nodeId, value]) => {
+                    // Format value: handle objects, arrays, and primitives
+                    let displayValue: string;
+                    if (value === null || value === undefined) {
+                      displayValue = 'N/A';
+                    } else if (typeof value === 'object') {
+                      // For objects like {"1": "tourist visa"} or {"started": true}
+                      const entries = Object.entries(value as Record<string, unknown>);
+                      if (entries.length === 1 && entries[0][0] === 'started') {
+                        displayValue = '(started)';
+                      } else {
+                        displayValue = entries.map(([k, v]) => `${k}: ${v}`).join(', ');
+                      }
+                    } else {
+                      displayValue = String(value);
+                    }
+                    
+                    return (
+                      <div key={nodeId} className="border-b border-gray-200 pb-3 last:border-b-0 last:pb-0">
+                        <div className="text-gray-400 text-sm font-mono mb-1">{nodeId}</div>
+                        <div className="text-gray-900">{displayValue}</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
