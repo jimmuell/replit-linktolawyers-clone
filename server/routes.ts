@@ -600,7 +600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             category: categoryGroup,
             applicantType: 'both',
             displayOrder: 0,
-            isActive: true,
+            isActive: false, // Inactive by default, admin must activate manually
             flowId: flow.id,
           });
           console.log(`Auto-created category "${flow.name}" for flow ${flow.id}`);
