@@ -7,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Home from "@/pages/home";
 import AdminDashboard from "@/pages/admin-dashboard";
 import SmtpConfigPage from "@/pages/smtp-config";
-import RequestManagementPage from "@/pages/request-management";
 import SubmissionsPage from "@/pages/submissions";
 import FreeResources from "@/pages/free-resources";
 import FreeResourcesSpanish from "@/pages/free-resources-spanish";
@@ -50,7 +49,6 @@ function Router() {
       <Route path="/admin/categories" component={AdminCategories} />
       <Route path="/attorney-dashboard" component={AttorneyDashboard} />
       <Route path="/smtp-config" component={SmtpConfigPage} />
-      <Route path="/request-management" component={RequestManagementPage} />
       <Route path="/submissions" component={SubmissionsPage} />
       <Route path="/attorney-onboarding" component={AttorneyOnboarding} />
       <Route path="/attorney-fee-schedule" component={AttorneyFeeSchedule} />

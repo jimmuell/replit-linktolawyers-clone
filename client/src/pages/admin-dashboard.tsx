@@ -2,7 +2,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/AdminLayout';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
 import PromptManagementCard from '@/components/PromptManagementCard';
-import RequestManagementCard from '@/components/RequestManagementCard';
 import SubmissionsCard from '@/components/SubmissionsCard';
 import AttorneyOnboardingCard from '@/components/AttorneyOnboardingCard';
 import AttorneyFeeScheduleCard from '@/components/AttorneyFeeScheduleCard';
@@ -24,7 +23,6 @@ export default function AdminDashboard() {
         <SmtpStatusCard />
         <PromptManagementCard />
         <SubmissionsCard />
-        <RequestManagementCard />
         <AttorneyOnboardingCard />
         <AttorneyFeeScheduleCard />
         <BlogManagementCard />
