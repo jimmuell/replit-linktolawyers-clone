@@ -14,10 +14,10 @@ import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
 
 interface TranscriptEntry {
-  nodeId: string;
+  nodeId?: string;
   question: string;
   answer: string;
-  nodeType: string;
+  nodeType?: string;
   timestamp?: string;
 }
 
@@ -468,14 +468,20 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
                           )}
                         </div>
                         <div className="flex-1 pb-6">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="secondary">
-                              {getNodeTypeLabel(entry.nodeType)}
-                            </Badge>
-                            <span className="text-gray-400 text-sm">
-                              {formatTimestamp(entry.timestamp)}
-                            </span>
-                          </div>
+                          {(entry.nodeType || entry.timestamp) && (
+                            <div className="flex items-center gap-2 mb-1">
+                              {entry.nodeType && (
+                                <Badge variant="secondary">
+                                  {getNodeTypeLabel(entry.nodeType)}
+                                </Badge>
+                              )}
+                              {entry.timestamp && (
+                                <span className="text-gray-400 text-sm">
+                                  {formatTimestamp(entry.timestamp)}
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <div className="text-gray-900 mb-1">{entry.question}</div>
                           {entry.answer && (
                             <div className="text-blue-600 text-sm">Response: {entry.answer}</div>

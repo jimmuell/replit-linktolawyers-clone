@@ -80,7 +80,13 @@ router.get("/available", requireAuth, async (req, res) => {
 
     const availableReferrals = await query.execute();
 
-    res.json({ success: true, data: availableReferrals });
+    // Parse formResponses from JSON string to object
+    const parsedReferrals = availableReferrals.map(referral => ({
+      ...referral,
+      formResponses: referral.formResponses ? JSON.parse(referral.formResponses) : null
+    }));
+
+    res.json({ success: true, data: parsedReferrals });
   } catch (error) {
     console.error('Error fetching available referrals:', error);
     res.status(500).json({ error: 'Failed to fetch available referrals' });
