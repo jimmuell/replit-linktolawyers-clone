@@ -1073,6 +1073,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/structured-intakes/bulk-delete", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ success: false, error: "Invalid IDs array" });
+      }
+      const validIds = ids.filter(id => typeof id === 'number' && !isNaN(id));
+      if (validIds.length === 0) {
+        return res.status(400).json({ success: false, error: "No valid IDs provided" });
+      }
+      await storage.deleteStructuredIntakesBulk(validIds);
+      res.json({ success: true, deletedCount: validIds.length });
+    } catch (error) {
+      console.error("Error bulk deleting structured intakes:", error);
+      res.status(500).json({ success: false, error: "Failed to delete structured intakes" });
+    }
+  });
+
   // Public endpoint to get assigned attorneys for a structured intake submission
   app.get("/api/structured-intakes/:id/attorneys", async (req, res) => {
     try {

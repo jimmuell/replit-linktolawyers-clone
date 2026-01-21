@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, UserPlus, Search, Filter, FileText, Clock } from 'lucide-react';
+import { Eye, UserPlus, Search, Filter, FileText, Clock, Trash2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { format } from 'date-fns';
@@ -55,6 +56,7 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
   const [stateFilter, setStateFilter] = useState('all');
   const [selectedSubmission, setSelectedSubmission] = useState<StructuredIntake | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -98,6 +100,30 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      return await apiRequest('/api/structured-intakes/bulk-delete', {
+        method: 'POST',
+        body: { ids },
+      });
+    },
+    onSuccess: (_, deletedIds) => {
+      toast({
+        title: "Success",
+        description: `${deletedIds.length} submission(s) deleted successfully`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/structured-intakes'] });
+      setSelectedIds(new Set());
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete submissions",
+        variant: "destructive",
+      });
+    },
+  });
+
   const filteredSubmissions = submissions.filter((submission) => {
     const searchMatch = !searchQuery || 
       submission.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -111,6 +137,29 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
     
     return searchMatch && caseTypeMatch && stateMatch;
   });
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(filteredSubmissions.map(s => s.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: number, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.size === 0) return;
+    deleteMutation.mutate(Array.from(selectedIds));
+  };
 
   const uniqueStates = Array.from(new Set(submissions.map(s => s.state).filter((s): s is string => s !== null)));
 
@@ -216,6 +265,19 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
                 ))}
               </SelectContent>
             </Select>
+
+            {selectedIds.size > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteSelected}
+                disabled={deleteMutation.isPending}
+                className="ml-2"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete ({selectedIds.size})
+              </Button>
+            )}
           </div>
         </CardHeader>
         
@@ -229,6 +291,12 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={filteredSubmissions.length > 0 && selectedIds.size === filteredSubmissions.length}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead>Request #</TableHead>
                     <TableHead>Client</TableHead>
                     <TableHead>Case Type</TableHead>
@@ -241,6 +309,12 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
                 <TableBody>
                   {filteredSubmissions.map((submission) => (
                     <TableRow key={submission.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(submission.id)}
+                          onCheckedChange={(checked) => handleSelectOne(submission.id, checked as boolean)}
+                        />
+                      </TableCell>
                       <TableCell className="font-medium">
                         {submission.requestNumber}
                       </TableCell>

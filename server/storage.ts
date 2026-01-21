@@ -99,6 +99,7 @@ export interface IStorage {
   getAllStructuredIntakes(): Promise<StructuredIntake[]>;
   updateStructuredIntake(id: number, updates: Partial<InsertStructuredIntake>): Promise<StructuredIntake>;
   deleteStructuredIntake(id: number): Promise<void>;
+  deleteStructuredIntakesBulk(ids: number[]): Promise<void>;
   // Flows
   createFlow(flow: InsertFlow): Promise<Flow>;
   getFlow(id: number): Promise<Flow | undefined>;
@@ -929,6 +930,11 @@ export class DatabaseStorage implements IStorage {
 
   async deleteStructuredIntake(id: number): Promise<void> {
     await db.delete(structuredIntakes).where(eq(structuredIntakes.id, id));
+  }
+
+  async deleteStructuredIntakesBulk(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    await db.delete(structuredIntakes).where(inArray(structuredIntakes.id, ids));
   }
 
   // Flows methods
