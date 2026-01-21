@@ -12,7 +12,7 @@ export interface IStorage {
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
   getCaseType(id: number): Promise<CaseType | undefined>;
   getCaseTypeByValue(value: string): Promise<CaseType | undefined>;
-  getAllCaseTypes(): Promise<CaseType[]>;
+  getAllCaseTypes(includeInactive?: boolean): Promise<CaseType[]>;
   createCaseType(caseType: InsertCaseType): Promise<CaseType>;
   updateCaseType(id: number, caseType: Partial<InsertCaseType>): Promise<CaseType>;
   deleteCaseType(id: number): Promise<void>;
@@ -150,7 +150,13 @@ export class DatabaseStorage implements IStorage {
     return caseType || undefined;
   }
 
-  async getAllCaseTypes(): Promise<CaseType[]> {
+  async getAllCaseTypes(includeInactive: boolean = false): Promise<CaseType[]> {
+    if (includeInactive) {
+      return await db
+        .select()
+        .from(caseTypes)
+        .orderBy(asc(caseTypes.displayOrder), asc(caseTypes.label));
+    }
     return await db
       .select()
       .from(caseTypes)

@@ -483,7 +483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin endpoints for case type management
   app.get("/api/admin/case-types", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
-      const caseTypes = await storage.getAllCaseTypes();
+      const caseTypes = await storage.getAllCaseTypes(true);
       res.json(caseTypes);
     } catch (error) {
       console.error("Error fetching case types:", error);
@@ -505,11 +505,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/case-types/:id", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      console.log("PUT /api/admin/case-types/:id - req.body:", JSON.stringify(req.body));
       const validatedData = insertCaseTypeSchema.partial().parse(req.body);
-      console.log("PUT /api/admin/case-types/:id - validatedData:", JSON.stringify(validatedData));
       const caseType = await storage.updateCaseType(id, validatedData);
-      console.log("PUT /api/admin/case-types/:id - result:", JSON.stringify(caseType));
       res.json(caseType);
     } catch (error) {
       console.error("Error updating case type:", error);
