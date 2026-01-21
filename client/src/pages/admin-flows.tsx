@@ -38,6 +38,7 @@ export default function AdminFlows() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/flows'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/flows/active'] });
     },
   });
 
@@ -49,6 +50,7 @@ export default function AdminFlows() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/flows'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/flows/active'] });
     },
   });
 
