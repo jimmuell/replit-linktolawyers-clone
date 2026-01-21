@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import AdminNavbar from '@/components/AdminNavbar';
-import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, MapPin } from 'lucide-react';
+import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, Clock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -17,7 +17,7 @@ interface TranscriptEntry {
   question: string;
   answer: string;
   nodeType: string;
-  timestamp: string;
+  timestamp?: string;
 }
 
 interface FormResponses {
@@ -104,10 +104,10 @@ export default function SubmissionsPage() {
 
   if (loading || !user || user.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-[#1a1f2e] flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -168,17 +168,28 @@ export default function SubmissionsPage() {
     const transcript = submission.formResponses?.transcript;
     if (!transcript || transcript.length < 2) return 'N/A';
     
-    const firstTimestamp = new Date(transcript[0].timestamp).getTime();
-    const lastTimestamp = new Date(transcript[transcript.length - 1].timestamp).getTime();
-    const diffMs = lastTimestamp - firstTimestamp;
+    const firstEntry = transcript[0];
+    const lastEntry = transcript[transcript.length - 1];
     
-    const minutes = Math.floor(diffMs / 60000);
-    const seconds = Math.floor((diffMs % 60000) / 1000);
+    if (!firstEntry.timestamp || !lastEntry.timestamp) return 'N/A';
     
-    if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
+    try {
+      const firstTimestamp = new Date(firstEntry.timestamp).getTime();
+      const lastTimestamp = new Date(lastEntry.timestamp).getTime();
+      
+      if (isNaN(firstTimestamp) || isNaN(lastTimestamp)) return 'N/A';
+      
+      const diffMs = lastTimestamp - firstTimestamp;
+      const minutes = Math.floor(diffMs / 60000);
+      const seconds = Math.floor((diffMs % 60000) / 1000);
+      
+      if (minutes > 0) {
+        return `${minutes}m ${seconds}s`;
+      }
+      return `${seconds}s`;
+    } catch {
+      return 'N/A';
     }
-    return `${seconds}s`;
   };
 
   const getNodeTypeLabel = (nodeType: string): string => {
@@ -194,6 +205,17 @@ export default function SubmissionsPage() {
       'success': 'End',
     };
     return typeMap[nodeType] || nodeType;
+  };
+
+  const formatTimestamp = (timestamp: string | undefined): string => {
+    if (!timestamp) return '--:--:--';
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return '--:--:--';
+      return format(date, 'HH:mm:ss');
+    } catch {
+      return '--:--:--';
+    }
   };
 
   const exportToCSV = (formGroup: FormGroup) => {
@@ -219,20 +241,20 @@ export default function SubmissionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e]">
+    <div className="min-h-screen bg-gray-50">
       <AdminNavbar title="Submissions" />
 
       <div className="p-6">
         <div className="max-w-6xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-white">All Submissions</h1>
-            <p className="text-gray-400 mt-1">
+            <h1 className="text-3xl font-bold text-gray-900">All Submissions</h1>
+            <p className="text-gray-600 mt-1">
               {totalSubmissions} total submission{totalSubmissions !== 1 ? 's' : ''} across {totalForms} form{totalForms !== 1 ? 's' : ''}
             </p>
           </div>
 
-          <div className="bg-[#242938] rounded-lg border border-gray-700 overflow-hidden">
-            <div className="grid grid-cols-[1fr,120px,140px,120px] gap-4 px-6 py-3 border-b border-gray-700 text-sm text-gray-400">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+            <div className="grid grid-cols-[1fr,120px,140px,120px] gap-4 px-6 py-3 border-b border-gray-200 text-sm text-gray-500 font-medium bg-gray-50">
               <div>Form Name</div>
               <div>Status</div>
               <div>Submissions</div>
@@ -241,27 +263,27 @@ export default function SubmissionsPage() {
 
             {isLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-                <p className="text-gray-400">Loading submissions...</p>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading submissions...</p>
               </div>
             ) : error ? (
               <div className="text-center py-12">
-                <p className="text-red-400">Error loading submissions. Please try again.</p>
+                <p className="text-red-600">Error loading submissions. Please try again.</p>
               </div>
             ) : formGroups.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-gray-400">No submissions found.</p>
+                <p className="text-gray-500">No submissions found.</p>
               </div>
             ) : (
               formGroups.map((formGroup) => (
-                <div key={formGroup.caseType} className="border-b border-gray-700 last:border-b-0">
+                <div key={formGroup.caseType} className="border-b border-gray-200 last:border-b-0">
                   <div 
-                    className="grid grid-cols-[1fr,120px,140px,120px] gap-4 px-6 py-4 items-center cursor-pointer hover:bg-[#2a303f] transition-colors"
+                    className="grid grid-cols-[1fr,120px,140px,120px] gap-4 px-6 py-4 items-center cursor-pointer hover:bg-gray-50 transition-colors"
                     onClick={() => toggleFormExpansion(formGroup.caseType)}
                   >
                     <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-cyan-500" />
-                      <span className="text-white font-medium">{formGroup.displayName}</span>
+                      <FileText className="w-5 h-5 text-blue-600" />
+                      <span className="text-gray-900 font-medium">{formGroup.displayName}</span>
                       {expandedForms.has(formGroup.caseType) ? (
                         <ChevronDown className="w-4 h-4 text-gray-400" />
                       ) : (
@@ -269,28 +291,27 @@ export default function SubmissionsPage() {
                       )}
                     </div>
                     <div>
-                      <Badge className="bg-cyan-600 hover:bg-cyan-600 text-white">Published</Badge>
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Published</Badge>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <MessageSquare className="w-4 h-4 text-gray-500" />
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <MessageSquare className="w-4 h-4 text-gray-400" />
                       {formGroup.submissions.length}
                     </div>
-                    <div className="text-gray-400 text-sm">
+                    <div className="text-gray-500 text-sm">
                       {formatDistanceToNow(new Date(formGroup.latestSubmission), { addSuffix: true })}
                     </div>
                   </div>
 
                   {expandedForms.has(formGroup.caseType) && (
-                    <div className="bg-[#1e2330] px-6 py-4 border-t border-gray-700">
+                    <div className="bg-gray-50 px-6 py-4 border-t border-gray-200">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-white font-medium">
+                        <h3 className="text-gray-900 font-medium">
                           {formGroup.submissions.length} Submission{formGroup.submissions.length !== 1 ? 's' : ''}
                         </h3>
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-gray-300 border-gray-600 hover:bg-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
                               const ids = formGroup.submissions.map(s => s.id);
@@ -306,7 +327,6 @@ export default function SubmissionsPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="text-gray-300 border-gray-600 hover:bg-gray-700"
                             onClick={(e) => {
                               e.stopPropagation();
                               exportToCSV(formGroup);
@@ -322,7 +342,7 @@ export default function SubmissionsPage() {
                         {formGroup.submissions.map((submission) => (
                           <div
                             key={submission.id}
-                            className="flex items-center justify-between bg-[#242938] rounded-lg px-4 py-3"
+                            className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3"
                           >
                             <div className="flex items-center gap-4">
                               <Checkbox
@@ -337,14 +357,14 @@ export default function SubmissionsPage() {
                               />
                               <div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-white font-medium">
+                                  <span className="text-gray-900 font-medium">
                                     {format(new Date(submission.createdAt), 'MMM d, yyyy, h:mm a')}
                                   </span>
-                                  <span className="text-gray-400 text-sm">
+                                  <span className="text-gray-500 text-sm">
                                     Completed in {calculateCompletionTime(submission)}
                                   </span>
                                 </div>
-                                <div className="text-gray-400 text-sm">
+                                <div className="text-gray-500 text-sm">
                                   {Object.keys(submission.formResponses?.answers || {}).length} responses • {submission.formResponses?.transcript?.length || 0} nodes visited
                                 </div>
                               </div>
@@ -353,7 +373,6 @@ export default function SubmissionsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-gray-300 hover:text-white hover:bg-gray-700"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleViewDetails(submission);
@@ -365,7 +384,7 @@ export default function SubmissionsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteClick(submission);
@@ -388,13 +407,13 @@ export default function SubmissionsPage() {
 
       {/* Details Modal */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-[#1a1f2e] text-white border-gray-700">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <CheckCircle2 className="w-6 h-6 text-green-500" />
+              <CheckCircle2 className="w-6 h-6 text-green-600" />
               Submission Details
             </DialogTitle>
-            <p className="text-gray-400 text-sm">
+            <p className="text-gray-500 text-sm">
               Form: {selectedSubmission?.caseType}
             </p>
           </DialogHeader>
@@ -402,59 +421,59 @@ export default function SubmissionsPage() {
           {selectedSubmission && (
             <div className="space-y-6 mt-4">
               {/* Submission Information */}
-              <div className="bg-[#242938] rounded-lg p-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-                  <MapPin className="w-5 h-5 text-gray-400" />
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+                  <Clock className="w-5 h-5 text-gray-500" />
                   Submission Information
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Submitted At</div>
-                    <div className="text-white">
+                    <div className="text-gray-500 text-sm mb-1">Submitted At</div>
+                    <div className="text-gray-900 font-medium">
                       {format(new Date(selectedSubmission.createdAt), 'MMM d, yyyy, h:mm:ss a')}
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Completion Time</div>
-                    <div className="text-white">{calculateCompletionTime(selectedSubmission)}</div>
+                    <div className="text-gray-500 text-sm mb-1">Completion Time</div>
+                    <div className="text-gray-900 font-medium">{calculateCompletionTime(selectedSubmission)}</div>
                   </div>
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Nodes Visited</div>
-                    <div className="text-white">{selectedSubmission.formResponses?.transcript?.length || 0}</div>
+                    <div className="text-gray-500 text-sm mb-1">Nodes Visited</div>
+                    <div className="text-gray-900 font-medium">{selectedSubmission.formResponses?.transcript?.length || 0}</div>
                   </div>
                 </div>
               </div>
 
               {/* User Journey */}
               {selectedSubmission.formResponses?.transcript && selectedSubmission.formResponses.transcript.length > 0 && (
-                <div className="bg-[#242938] rounded-lg p-6">
-                  <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-                    <MapPin className="w-5 h-5 text-gray-400" />
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+                    <FileText className="w-5 h-5 text-gray-500" />
                     User Journey
                   </h3>
                   <div className="space-y-4">
                     {selectedSubmission.formResponses.transcript.map((entry, index) => (
                       <div key={index} className="flex gap-4">
                         <div className="flex flex-col items-center">
-                          <div className="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center text-white text-sm font-medium">
+                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
                             {index + 1}
                           </div>
                           {index < selectedSubmission.formResponses.transcript!.length - 1 && (
-                            <div className="w-0.5 h-full bg-gray-600 mt-2"></div>
+                            <div className="w-0.5 h-full bg-gray-300 mt-2"></div>
                           )}
                         </div>
                         <div className="flex-1 pb-6">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="secondary" className="bg-gray-700 text-gray-200">
+                            <Badge variant="secondary">
                               {getNodeTypeLabel(entry.nodeType)}
                             </Badge>
-                            <span className="text-gray-500 text-sm">
-                              {format(new Date(entry.timestamp), 'HH:mm:ss')}
+                            <span className="text-gray-400 text-sm">
+                              {formatTimestamp(entry.timestamp)}
                             </span>
                           </div>
-                          <div className="text-white mb-1">{entry.question}</div>
+                          <div className="text-gray-900 mb-1">{entry.question}</div>
                           {entry.answer && (
-                            <div className="text-cyan-400 text-sm">Response: {entry.answer}</div>
+                            <div className="text-blue-600 text-sm">Response: {entry.answer}</div>
                           )}
                         </div>
                       </div>
@@ -464,16 +483,16 @@ export default function SubmissionsPage() {
               )}
 
               {/* All Responses */}
-              <div className="bg-[#242938] rounded-lg p-6">
-                <h3 className="flex items-center gap-2 text-lg font-semibold mb-4">
-                  <MessageSquare className="w-5 h-5 text-gray-400" />
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+                  <MessageSquare className="w-5 h-5 text-gray-500" />
                   All Responses
                 </h3>
                 <div className="space-y-4">
                   {Object.entries(selectedSubmission.formResponses?.answers || {}).map(([nodeId, value]) => (
-                    <div key={nodeId} className="border-b border-gray-700 pb-3 last:border-b-0 last:pb-0">
+                    <div key={nodeId} className="border-b border-gray-200 pb-3 last:border-b-0 last:pb-0">
                       <div className="text-gray-400 text-sm font-mono mb-1">{nodeId}</div>
-                      <div className="text-white">{String(value)}</div>
+                      <div className="text-gray-900">{String(value)}</div>
                     </div>
                   ))}
                 </div>
@@ -483,7 +502,6 @@ export default function SubmissionsPage() {
               <div className="flex justify-end pt-4">
                 <Button
                   variant="destructive"
-                  className="bg-red-600 hover:bg-red-700"
                   onClick={() => setIsDeleteModalOpen(true)}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -497,24 +515,22 @@ export default function SubmissionsPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="bg-[#1a1f2e] text-white border-gray-700">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Submission</DialogTitle>
           </DialogHeader>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Are you sure you want to delete this submission? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-3 mt-4">
             <Button
               variant="outline"
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
               onClick={() => setIsDeleteModalOpen(false)}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              className="bg-red-600 hover:bg-red-700"
               onClick={handleDeleteConfirm}
               disabled={deleteMutation.isPending}
             >
