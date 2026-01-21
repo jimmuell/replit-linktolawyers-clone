@@ -4,7 +4,7 @@ import AdminCard from './AdminCard';
 import type { CaseType, Flow } from '@shared/schema';
 
 export default function CaseTypesManagementCard() {
-  const { data: caseTypes = [], isLoading: caseTypesLoading } = useQuery<CaseType[]>({
+  const { data: caseTypesResponse, isLoading: caseTypesLoading } = useQuery<{ success: boolean; data: CaseType[] }>({
     queryKey: ['/api/case-types'],
   });
 
@@ -13,6 +13,8 @@ export default function CaseTypesManagementCard() {
   });
 
   const isLoading = caseTypesLoading || flowsLoading;
+  
+  const caseTypes = caseTypesResponse?.data || [];
   
   const activeCaseTypes = caseTypes.filter(ct => ct.isActive);
   const linkedCaseTypes = caseTypes.filter(ct => ct.flowId);
