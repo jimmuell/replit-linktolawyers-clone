@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Eye, UserPlus, Search, Filter, FileText, Clock, Trash2 } from 'lucide-react';
+import { Eye, UserPlus, Search, Filter, FileText, Clock, Trash2, CheckCircle2, MessageSquare } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -198,6 +198,45 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
     return typeMap[nodeType] || nodeType;
   };
 
+  const calculateCompletionTime = (submission: StructuredIntake): string => {
+    const transcript = submission.formResponses?.transcript;
+    if (!transcript || transcript.length < 2) return 'N/A';
+    
+    const firstEntry = transcript[0];
+    const lastEntry = transcript[transcript.length - 1];
+    
+    if (!firstEntry.timestamp || !lastEntry.timestamp) return 'N/A';
+    
+    try {
+      const firstTimestamp = new Date(firstEntry.timestamp).getTime();
+      const lastTimestamp = new Date(lastEntry.timestamp).getTime();
+      
+      if (isNaN(firstTimestamp) || isNaN(lastTimestamp)) return 'N/A';
+      
+      const diffMs = lastTimestamp - firstTimestamp;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffSecs = Math.floor((diffMs % 60000) / 1000);
+      
+      if (diffMins > 0) {
+        return `${diffMins}m ${diffSecs}s`;
+      }
+      return `${diffSecs}s`;
+    } catch {
+      return 'N/A';
+    }
+  };
+
+  const formatTimestamp = (timestamp: string | undefined): string => {
+    if (!timestamp) return '--:--:--';
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) return '--:--:--';
+      return format(date, 'HH:mm:ss');
+    } catch {
+      return '--:--:--';
+    }
+  };
+
   const handleViewDetails = (submission: StructuredIntake) => {
     setSelectedSubmission(submission);
     setIsDetailsOpen(true);
@@ -375,67 +414,71 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Submission Details - {selectedSubmission?.requestNumber}
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <CheckCircle2 className="w-6 h-6 text-green-600" />
+              Submission Details
             </DialogTitle>
+            <p className="text-gray-500 text-sm">
+              Form: {selectedSubmission?.caseType}
+            </p>
           </DialogHeader>
           
           {selectedSubmission && (
-            <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg p-4 border">
-                <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Client Information
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6 mt-4">
+              {/* Submission Information */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+                  <Clock className="w-5 h-5 text-gray-500" />
+                  Submission Information
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Name</label>
-                    <p className="text-sm">{selectedSubmission.firstName} {selectedSubmission.lastName}</p>
+                    <div className="text-gray-500 text-sm mb-1">Submitted At</div>
+                    <div className="text-gray-900 font-medium">
+                      {format(new Date(selectedSubmission.createdAt), 'MMM d, yyyy, h:mm:ss a')}
+                    </div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-sm">{selectedSubmission.email}</p>
+                    <div className="text-gray-500 text-sm mb-1">Completion Time</div>
+                    <div className="text-gray-900 font-medium">{calculateCompletionTime(selectedSubmission)}</div>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-500">Phone</label>
-                    <p className="text-sm">{selectedSubmission.phoneNumber || 'Not provided'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">State</label>
-                    <p className="text-sm">{selectedSubmission.state || 'Not specified'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Case Type</label>
-                    <p className="text-sm">{selectedSubmission.caseType}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Status</label>
-                    <Badge variant={getStatusBadgeVariant(selectedSubmission.status)}>
-                      {selectedSubmission.status}
-                    </Badge>
+                    <div className="text-gray-500 text-sm mb-1">Nodes Visited</div>
+                    <div className="text-gray-900 font-medium">{selectedSubmission.formResponses?.transcript?.length || 0}</div>
                   </div>
                 </div>
               </div>
 
+              {/* User Journey */}
               {selectedSubmission.formResponses?.transcript && selectedSubmission.formResponses.transcript.length > 0 && (
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <h4 className="font-medium text-gray-900 mb-3">User Journey</h4>
-                  <div className="space-y-3">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+                    <FileText className="w-5 h-5 text-gray-500" />
+                    User Journey
+                  </h3>
+                  <div className="space-y-4">
                     {selectedSubmission.formResponses.transcript.map((entry, index) => (
-                      <div key={index} className="flex gap-3">
-                        <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                          {index + 1}
+                      <div key={index} className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-medium">
+                            {index + 1}
+                          </div>
+                          {index < selectedSubmission.formResponses.transcript!.length - 1 && (
+                            <div className="w-0.5 h-full bg-gray-300 mt-2"></div>
+                          )}
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 pb-6">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary">
                               {getNodeTypeLabel(entry.nodeType)}
                             </Badge>
+                            <span className="text-gray-400 text-sm">
+                              {formatTimestamp(entry.timestamp)}
+                            </span>
                           </div>
-                          <div className="text-sm text-gray-900">{entry.question}</div>
+                          <div className="text-gray-900 mb-1">{entry.question}</div>
                           {entry.answer && (
-                            <div className="text-sm text-blue-600 mt-1">Response: {entry.answer}</div>
+                            <div className="text-blue-600 text-sm">Response: {entry.answer}</div>
                           )}
                         </div>
                       </div>
@@ -444,15 +487,25 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
                 </div>
               )}
 
-              {selectedSubmission.attorneyIntakeSummary && (
-                <div className="bg-gray-50 rounded-lg p-4 border">
-                  <h4 className="font-medium text-gray-900 mb-2">Intake Summary</h4>
-                  <p className="text-sm whitespace-pre-wrap">{selectedSubmission.attorneyIntakeSummary}</p>
+              {/* All Responses */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
+                  <MessageSquare className="w-5 h-5 text-gray-500" />
+                  All Responses
+                </h3>
+                <div className="space-y-4">
+                  {Object.entries(selectedSubmission.formResponses?.answers || {}).map(([nodeId, value]) => (
+                    <div key={nodeId} className="border-b border-gray-200 pb-3 last:border-b-0 last:pb-0">
+                      <div className="text-gray-400 text-sm font-mono mb-1">{nodeId}</div>
+                      <div className="text-gray-900">{String(value)}</div>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
 
+              {/* Action Button */}
               {showAssignButton && (
-                <div className="flex justify-end pt-4 border-t">
+                <div className="flex justify-end pt-4">
                   <Button 
                     onClick={() => assignMutation.mutate(selectedSubmission.id)}
                     disabled={assignMutation.isPending}
