@@ -810,21 +810,45 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'success':
       case 'end':
         return (
-          <div className="text-center space-y-4 py-8">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <ClipboardList className="w-8 h-8 text-green-600" />
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <ClipboardList className="w-8 h-8 text-green-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">
+                {currentNode.thankYouTitle || currentNode.successTitle || (isSpanish ? '¡Gracias!' : 'Thank You!')}
+              </h2>
+              {(currentNode.thankYouMessage || currentNode.successMessage) && (
+                <p className="text-gray-600 mt-2">{currentNode.thankYouMessage || currentNode.successMessage}</p>
+              )}
             </div>
-            <h2 className="text-xl font-bold text-gray-900">
-              {currentNode.thankYouTitle || currentNode.successTitle || (isSpanish ? '¡Gracias!' : 'Thank You!')}
-            </h2>
-            {(currentNode.thankYouMessage || currentNode.successMessage) && (
-              <p className="text-gray-600">{currentNode.thankYouMessage || currentNode.successMessage}</p>
-            )}
+            
             {currentNode.legalDisclaimer && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-700">{currentNode.legalDisclaimer}</p>
               </div>
             )}
+            
+            {/* Additional details field */}
+            <div className="space-y-2">
+              <Label htmlFor="additionalDetails">
+                {isSpanish 
+                  ? '¿Le gustaría agregar más detalles sobre su caso?' 
+                  : 'Would you like to add any more details about your case?'}
+              </Label>
+              <p className="text-sm text-gray-500">
+                {isSpanish 
+                  ? 'Esto ayuda al abogado a comprender mejor su caso.' 
+                  : 'This helps the attorney understand your case better.'}
+              </p>
+              <Textarea
+                id="additionalDetails"
+                value={additionalDetails}
+                onChange={(e) => setAdditionalDetails(e.target.value)}
+                placeholder={isSpanish ? 'Opcional: Comparta detalles adicionales sobre su caso...' : 'Optional: Share any additional details about your case...'}
+                rows={4}
+              />
+            </div>
           </div>
         );
 
@@ -1267,11 +1291,14 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
               {isDbFlow ? (
                 isDbEndNode ? (
                   <Button 
-                    onClick={() => setCurrentStep('wrap-up')}
-                    className="bg-green-600 hover:bg-green-700"
-                    data-testid="button-continue"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    data-testid="button-submit"
                   >
-                    {isSpanish ? 'Continuar' : 'Continue'} <ArrowRight className="w-4 h-4 ml-2" />
+                    {isSubmitting 
+                      ? (isSpanish ? 'Enviando...' : 'Submitting...') 
+                      : (isSpanish ? 'Enviar Solicitud' : 'Submit Request')}
                   </Button>
                 ) : (
                   <Button 
