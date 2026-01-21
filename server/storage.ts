@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, conversations, messages, structuredIntakes, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage, type StructuredIntake, type InsertStructuredIntake } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, conversations, messages, structuredIntakes, flows, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage, type StructuredIntake, type InsertStructuredIntake, type Flow, type InsertFlow } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 
@@ -95,6 +95,15 @@ export interface IStorage {
   getAllStructuredIntakes(): Promise<StructuredIntake[]>;
   updateStructuredIntake(id: number, updates: Partial<InsertStructuredIntake>): Promise<StructuredIntake>;
   deleteStructuredIntake(id: number): Promise<void>;
+  // Flows
+  createFlow(flow: InsertFlow): Promise<Flow>;
+  getFlow(id: number): Promise<Flow | undefined>;
+  getFlowBySlug(slug: string): Promise<Flow | undefined>;
+  getAllFlows(): Promise<Flow[]>;
+  getActiveFlows(): Promise<Flow[]>;
+  updateFlow(id: number, updates: Partial<InsertFlow>): Promise<Flow>;
+  deleteFlow(id: number): Promise<void>;
+  getFlowsWithUsageStatus(): Promise<(Flow & { linkedCaseTypes: number })[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -840,6 +849,79 @@ export class DatabaseStorage implements IStorage {
 
   async deleteStructuredIntake(id: number): Promise<void> {
     await db.delete(structuredIntakes).where(eq(structuredIntakes.id, id));
+  }
+
+  // Flows methods
+  async createFlow(flow: InsertFlow): Promise<Flow> {
+    const [result] = await db
+      .insert(flows)
+      .values(flow as any)
+      .returning();
+    return result;
+  }
+
+  async getFlow(id: number): Promise<Flow | undefined> {
+    const [result] = await db
+      .select()
+      .from(flows)
+      .where(eq(flows.id, id));
+    return result || undefined;
+  }
+
+  async getFlowBySlug(slug: string): Promise<Flow | undefined> {
+    const [result] = await db
+      .select()
+      .from(flows)
+      .where(eq(flows.slug, slug));
+    return result || undefined;
+  }
+
+  async getAllFlows(): Promise<Flow[]> {
+    return await db
+      .select()
+      .from(flows)
+      .orderBy(desc(flows.createdAt));
+  }
+
+  async getActiveFlows(): Promise<Flow[]> {
+    return await db
+      .select()
+      .from(flows)
+      .where(eq(flows.isActive, true))
+      .orderBy(asc(flows.name));
+  }
+
+  async updateFlow(id: number, updates: Partial<InsertFlow>): Promise<Flow> {
+    const [result] = await db
+      .update(flows)
+      .set({ ...updates, updatedAt: new Date() } as any)
+      .where(eq(flows.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteFlow(id: number): Promise<void> {
+    await db.update(caseTypes).set({ flowId: null }).where(eq(caseTypes.flowId, id));
+    await db.delete(flows).where(eq(flows.id, id));
+  }
+
+  async getFlowsWithUsageStatus(): Promise<(Flow & { linkedCaseTypes: number })[]> {
+    const allFlows = await this.getAllFlows();
+    const result: (Flow & { linkedCaseTypes: number })[] = [];
+    
+    for (const flow of allFlows) {
+      const linkedCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(caseTypes)
+        .where(eq(caseTypes.flowId, flow.id));
+      
+      result.push({
+        ...flow,
+        linkedCaseTypes: Number(linkedCount[0]?.count || 0)
+      });
+    }
+    
+    return result;
   }
 }
 

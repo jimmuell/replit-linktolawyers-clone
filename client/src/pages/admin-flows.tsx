@@ -1,31 +1,56 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useLocation } from 'wouter';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { GitBranch, Upload, FileText, CheckCircle, XCircle, ArrowRight, ArrowDown, Split, Trash2 } from 'lucide-react';
+import { GitBranch, Upload, FileText, CheckCircle, XCircle, ArrowRight, ArrowDown, Split, Trash2, Link, Loader2 } from 'lucide-react';
 import { parseFlowMarkdown, validateFlow, type ParsedFlow } from '@/lib/flowParser';
 import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import type { Flow } from '@shared/schema';
+
+type FlowWithUsage = Flow & { linkedCaseTypes: number };
 
 export default function AdminFlows() {
   const [, setLocation] = useLocation();
   const [importedFlow, setImportedFlow] = useState<ParsedFlow | null>(null);
-  const [savedFlows, setSavedFlows] = useState<ParsedFlow[]>([]);
   const [parseError, setParseError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [deleteConfirmFlow, setDeleteConfirmFlow] = useState<{ id: string; name: string } | null>(null);
+  const [deleteConfirmFlow, setDeleteConfirmFlow] = useState<{ id: number; name: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const stored = localStorage.getItem('importedFlows');
-    if (stored) {
-      setSavedFlows(JSON.parse(stored));
-    }
-  }, []);
+  const { data: flows = [], isLoading } = useQuery<FlowWithUsage[]>({
+    queryKey: ['/api/admin/flows'],
+  });
+
+  const createFlowMutation = useMutation({
+    mutationFn: async (flowData: any) => {
+      return await apiRequest('/api/admin/flows', {
+        method: 'POST',
+        body: flowData,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/flows'] });
+    },
+  });
+
+  const deleteFlowMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return await apiRequest(`/api/admin/flows/${id}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/flows'] });
+    },
+  });
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -71,64 +96,62 @@ export default function AdminFlows() {
     }
   };
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     if (!importedFlow) return;
     
-    const flowId = importedFlow.metadata?.flowId || importedFlow.name.toLowerCase().replace(/\s+/g, '-');
-    const flowWithId: ParsedFlow = {
-      ...importedFlow,
-      metadata: {
-        ...importedFlow.metadata,
-        flowId
-      }
-    };
+    const slug = importedFlow.metadata?.flowId || importedFlow.name.toLowerCase().replace(/\s+/g, '-');
     
-    const existingIndex = savedFlows.findIndex(f => 
-      f.metadata?.flowId === flowId || f.name === importedFlow.name
-    );
-    
-    let updatedFlows: ParsedFlow[];
-    if (existingIndex >= 0) {
-      updatedFlows = [...savedFlows];
-      updatedFlows[existingIndex] = flowWithId;
-    } else {
-      updatedFlows = [...savedFlows, flowWithId];
+    try {
+      await createFlowMutation.mutateAsync({
+        name: importedFlow.name,
+        slug,
+        description: importedFlow.description || 'Imported flow',
+        nodes: importedFlow.nodes,
+        connections: importedFlow.connections,
+        metadata: importedFlow.metadata,
+        isActive: true,
+      });
+      
+      toast({
+        title: 'Flow imported successfully',
+        description: `"${importedFlow.name}" has been imported with ${importedFlow.nodes.length} screens.`
+      });
+      setIsPreviewOpen(false);
+    } catch (error) {
+      toast({
+        title: 'Import failed',
+        description: error instanceof Error ? error.message : 'Failed to save flow',
+        variant: 'destructive'
+      });
     }
-    
-    localStorage.setItem('importedFlows', JSON.stringify(updatedFlows));
-    setSavedFlows(updatedFlows);
-    
-    toast({
-      title: 'Flow imported successfully',
-      description: `"${importedFlow.name}" has been imported with ${importedFlow.nodes.length} screens.`
-    });
-    setIsPreviewOpen(false);
   };
 
-  const getFlowId = (flow: ParsedFlow) => {
-    return flow.metadata?.flowId || flow.name.toLowerCase().replace(/\s+/g, '-');
-  };
-
-  const handleDeleteClick = (flow: ParsedFlow, e: React.MouseEvent) => {
+  const handleDeleteClick = (flow: FlowWithUsage, e: React.MouseEvent) => {
     e.stopPropagation();
-    setDeleteConfirmFlow({ id: getFlowId(flow), name: flow.name });
+    setDeleteConfirmFlow({ id: flow.id, name: flow.name });
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deleteConfirmFlow) return;
-    const updatedFlows = savedFlows.filter(f => getFlowId(f) !== deleteConfirmFlow.id);
-    localStorage.setItem('importedFlows', JSON.stringify(updatedFlows));
-    setSavedFlows(updatedFlows);
-    toast({
-      title: 'Flow deleted',
-      description: 'The flow has been removed.',
-    });
+    
+    try {
+      await deleteFlowMutation.mutateAsync(deleteConfirmFlow.id);
+      toast({
+        title: 'Flow deleted',
+        description: 'The flow has been removed.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Delete failed',
+        description: error instanceof Error ? error.message : 'Failed to delete flow',
+        variant: 'destructive'
+      });
+    }
     setDeleteConfirmFlow(null);
   };
 
-  const handleFlowClick = (flow: ParsedFlow) => {
-    const flowId = getFlowId(flow);
-    setLocation(`/admin/flows/${flowId}`);
+  const handleFlowClick = (flow: FlowWithUsage) => {
+    setLocation(`/admin/flows/${flow.slug}`);
   };
 
   const getNodeTypeLabel = (type: string) => {
@@ -183,11 +206,6 @@ export default function AdminFlows() {
     return colors[condition] || 'bg-gray-100 text-gray-700';
   };
 
-  const hasBranching = (nodeId: string) => {
-    const connections = getOutgoingConnections(nodeId);
-    return connections.length > 1;
-  };
-
   return (
     <AdminLayout title="Flows Management">
       <div className="mb-8 flex items-start justify-between">
@@ -210,127 +228,70 @@ export default function AdminFlows() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitBranch className="h-5 w-5 text-blue-600" />
-              Asylum Flow
-            </CardTitle>
-            <CardDescription>
-              Affirmative asylum application intake
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              8 questions covering persecution fears, entry information, and court status.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitBranch className="h-5 w-5 text-green-600" />
-              K-1 Fiancé Visa
-            </CardTitle>
-            <CardDescription>
-              Fiancé visa application intake
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Questions for U.S. citizen petitioners bringing fiancés to the U.S.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitBranch className="h-5 w-5 text-purple-600" />
-              Family-Based Green Card
-            </CardTitle>
-            <CardDescription>
-              Family immigration intake
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Separate flows for petitioners and beneficiaries.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitBranch className="h-5 w-5 text-orange-600" />
-              Removal of Conditions
-            </CardTitle>
-            <CardDescription>
-              I-751 petition intake
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              For conditional residents removing conditions on their green card.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GitBranch className="h-5 w-5 text-indigo-600" />
-              Citizenship/Naturalization
-            </CardTitle>
-            <CardDescription>
-              N-400 application intake
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600">
-              Naturalization application for lawful permanent residents.
-            </p>
-          </CardContent>
-        </Card>
-
-        {savedFlows.map((flow) => (
-          <Card 
-            key={getFlowId(flow)} 
-            className="cursor-pointer hover:shadow-lg transition-shadow relative"
-            onClick={() => handleFlowClick(flow)}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50"
-              onClick={(e) => handleDeleteClick(flow, e)}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      ) : flows.length === 0 ? (
+        <div className="text-center py-12">
+          <GitBranch className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No flows yet</h3>
+          <p className="text-gray-600 mb-4">Import a flow file to get started.</p>
+          <Button onClick={handleImportClick} className="flex items-center gap-2 mx-auto">
+            <Upload className="h-4 w-4" />
+            Import Flow
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {flows.map((flow) => (
+            <Card 
+              key={flow.id} 
+              className="cursor-pointer hover:shadow-lg transition-shadow relative"
+              onClick={() => handleFlowClick(flow)}
             >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 pr-8">
-                <GitBranch className="h-5 w-5 text-cyan-600" />
-                {flow.name}
-              </CardTitle>
-              <CardDescription>
-                {flow.description || 'Imported flow'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2 mb-2">
-                <Badge variant="secondary">{flow.nodes.length} screens</Badge>
-                <Badge variant="outline">{flow.connections.length} connections</Badge>
-              </div>
-              <p className="text-sm text-gray-600">
-                Click to edit or preview this flow.
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                onClick={(e) => handleDeleteClick(flow, e)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 pr-8">
+                  <GitBranch className="h-5 w-5 text-cyan-600" />
+                  {flow.name}
+                </CardTitle>
+                <CardDescription>
+                  {flow.description || 'Imported flow'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <Badge variant="secondary">{(flow.nodes as any[])?.length || 0} screens</Badge>
+                  <Badge variant="outline">{(flow.connections as any[])?.length || 0} connections</Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  {flow.linkedCaseTypes > 0 ? (
+                    <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                      <Link className="h-3 w-3 mr-1" />
+                      Active ({flow.linkedCaseTypes} {flow.linkedCaseTypes === 1 ? 'category' : 'categories'})
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-gray-500">
+                      Inactive
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600 mt-3">
+                  Click to edit or preview this flow.
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -451,8 +412,16 @@ export default function AdminFlows() {
               Cancel
             </Button>
             {importedFlow && !parseError && (
-              <Button onClick={handleConfirmImport} className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4" />
+              <Button 
+                onClick={handleConfirmImport} 
+                className="flex items-center gap-2"
+                disabled={createFlowMutation.isPending}
+              >
+                {createFlowMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
                 Confirm Import
               </Button>
             )}
@@ -475,7 +444,14 @@ export default function AdminFlows() {
             <Button variant="outline" onClick={() => setDeleteConfirmFlow(null)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirmDelete}
+              disabled={deleteFlowMutation.isPending}
+            >
+              {deleteFlowMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
               Delete
             </Button>
           </DialogFooter>

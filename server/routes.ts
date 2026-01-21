@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import OpenAI from "openai";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
@@ -522,6 +522,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting case type:", error);
       res.status(500).json({ error: "Failed to delete case type" });
+    }
+  });
+
+  // Flows API routes
+  app.get("/api/admin/flows", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const flows = await storage.getFlowsWithUsageStatus();
+      res.json(flows);
+    } catch (error) {
+      console.error("Error fetching flows:", error);
+      res.status(500).json({ error: "Failed to fetch flows" });
+    }
+  });
+
+  app.get("/api/admin/flows/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const flow = await storage.getFlow(id);
+      if (!flow) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      res.json(flow);
+    } catch (error) {
+      console.error("Error fetching flow:", error);
+      res.status(500).json({ error: "Failed to fetch flow" });
+    }
+  });
+
+  app.get("/api/admin/flows/slug/:slug", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const flow = await storage.getFlowBySlug(slug);
+      if (!flow) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      res.json(flow);
+    } catch (error) {
+      console.error("Error fetching flow by slug:", error);
+      res.status(500).json({ error: "Failed to fetch flow" });
+    }
+  });
+
+  app.post("/api/admin/flows", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const validatedData = insertFlowSchema.parse(req.body);
+      const flow = await storage.createFlow(validatedData);
+      res.json(flow);
+    } catch (error) {
+      console.error("Error creating flow:", error);
+      res.status(500).json({ error: "Failed to create flow" });
+    }
+  });
+
+  app.put("/api/admin/flows/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertFlowSchema.partial().parse(req.body);
+      const flow = await storage.updateFlow(id, validatedData);
+      res.json(flow);
+    } catch (error) {
+      console.error("Error updating flow:", error);
+      res.status(500).json({ error: "Failed to update flow" });
+    }
+  });
+
+  app.delete("/api/admin/flows/:id", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteFlow(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting flow:", error);
+      res.status(500).json({ error: "Failed to delete flow" });
+    }
+  });
+
+  // Get active flows for dropdown selection
+  app.get("/api/flows/active", async (req, res) => {
+    try {
+      const flows = await storage.getActiveFlows();
+      res.json(flows);
+    } catch (error) {
+      console.error("Error fetching active flows:", error);
+      res.status(500).json({ error: "Failed to fetch active flows" });
     }
   });
 

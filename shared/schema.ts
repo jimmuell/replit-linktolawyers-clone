@@ -1,7 +1,28 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { sql, relations } from "drizzle-orm";
 import { z } from "zod";
+
+// Flows table for storing parsed intake flows
+export const flows = pgTable("flows", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  nodes: jsonb("nodes").notNull().$type<any[]>(),
+  connections: jsonb("connections").notNull().$type<any[]>(),
+  metadata: jsonb("metadata").$type<{
+    flowId?: string;
+    version?: string;
+    totalScreens?: number;
+    totalConnections?: number;
+    estimatedTime?: string;
+    created?: string;
+  }>(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -24,6 +45,7 @@ export const caseTypes = pgTable("case_types", {
   category: varchar("category", { length: 255 }),
   displayOrder: integer("display_order").default(0),
   isActive: boolean("is_active").default(true),
+  flowId: integer("flow_id").references(() => flows.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -229,6 +251,17 @@ export const insertCaseTypeSchema = createInsertSchema(caseTypes).pick({
   category: true,
   displayOrder: true,
   isActive: true,
+  flowId: true,
+});
+
+export const insertFlowSchema = createInsertSchema(flows).pick({
+  name: true,
+  slug: true,
+  description: true,
+  nodes: true,
+  connections: true,
+  metadata: true,
+  isActive: true,
 });
 
 export const insertRequestAttorneyAssignmentSchema = createInsertSchema(requestAttorneyAssignments).pick({
@@ -429,6 +462,8 @@ export type User = typeof users.$inferSelect;
 export type LoginCredentials = z.infer<typeof loginSchema>;
 export type InsertCaseType = z.infer<typeof insertCaseTypeSchema>;
 export type CaseType = typeof caseTypes.$inferSelect;
+export type InsertFlow = z.infer<typeof insertFlowSchema>;
+export type Flow = typeof flows.$inferSelect;
 export type InsertLegalRequest = z.infer<typeof insertLegalRequestSchema>;
 export type LegalRequest = typeof legalRequests.$inferSelect;
 export type InsertSmtpSettings = z.infer<typeof insertSmtpSettingsSchema>;

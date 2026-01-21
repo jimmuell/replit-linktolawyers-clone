@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'wouter';
-import { LayoutDashboard, GitBranch } from 'lucide-react';
+import { LayoutDashboard, GitBranch, Tags } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SidebarItem {
@@ -11,6 +11,7 @@ interface SidebarItem {
 const sidebarItems: SidebarItem[] = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Flows', href: '/admin/flows', icon: GitBranch },
+  { label: 'Categories', href: '/admin/categories', icon: Tags },
 ];
 
 export default function AdminSidebar() {
