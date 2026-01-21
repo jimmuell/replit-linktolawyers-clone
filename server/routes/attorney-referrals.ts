@@ -66,7 +66,10 @@ router.get("/available", requireAuth, async (req, res) => {
         caseType: structuredIntakes.caseType,
         caseDescription: sql<string>`''`.as('caseDescription'),
         location: structuredIntakes.state,
+        state: structuredIntakes.state,
         status: structuredIntakes.status,
+        formResponses: structuredIntakes.formResponses,
+        attorneyIntakeSummary: structuredIntakes.attorneyIntakeSummary,
         createdAt: structuredIntakes.createdAt,
         updatedAt: structuredIntakes.updatedAt,
       })
