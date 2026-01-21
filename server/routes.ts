@@ -609,6 +609,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get a specific flow by ID (public endpoint for frontend)
+  app.get("/api/flows/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const flow = await storage.getFlow(id);
+      if (!flow) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      // Only return active flows to the public
+      if (!flow.isActive) {
+        return res.status(404).json({ error: "Flow not found" });
+      }
+      res.json(flow);
+    } catch (error) {
+      console.error("Error fetching flow:", error);
+      res.status(500).json({ error: "Failed to fetch flow" });
+    }
+  });
+
   // Legal Request API routes
   app.post("/api/legal-requests", async (req, res) => {
     try {

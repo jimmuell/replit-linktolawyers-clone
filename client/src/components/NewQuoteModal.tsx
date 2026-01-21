@@ -137,6 +137,9 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   const [navigationHistory, setNavigationHistory] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showOtherCaseDialog, setShowOtherCaseDialog] = useState<boolean>(false);
+  const [dbFlow, setDbFlow] = useState<any>(null);
+  const [dbFlowNodeIndex, setDbFlowNodeIndex] = useState<number>(0);
+  const [isLoadingFlow, setIsLoadingFlow] = useState<boolean>(false);
 
   const [location] = useLocation();
   const isSpanish = location.startsWith('/es');
@@ -184,8 +187,15 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     .sort((a: CaseTypeDB, b: CaseTypeDB) => (a.displayOrder || 0) - (b.displayOrder || 0))
     .map((cat: CaseTypeDB) => ({
       value: cat.value,
-      label: isSpanish && cat.labelEs ? cat.labelEs : cat.label
+      label: isSpanish && cat.labelEs ? cat.labelEs : cat.label,
+      flowId: cat.flowId
     }));
+
+  // Get the selected category's flowId
+  const getSelectedFlowId = (): number | null => {
+    const selected = caseTypeOptions.find(opt => opt.value === caseType);
+    return selected?.flowId || null;
+  };
 
   const validateBasicInfo = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -270,14 +280,40 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     }
   };
 
-  const handleCaseTypeNext = () => {
+  const handleCaseTypeNext = async () => {
     if (caseType) {
-      // Flows are now managed via admin interface - show no flow available message
-      // In the future, this will check if a flow is assigned to the selected category
-      setNavigationHistory([]);
-      setAnswers({});
-      setErrors({});
-      setCurrentStep('no-flow');
+      const flowId = getSelectedFlowId();
+      
+      if (flowId) {
+        // Fetch the assigned flow from the database
+        setIsLoadingFlow(true);
+        try {
+          const response = await fetch(`/api/flows/${flowId}`);
+          if (response.ok) {
+            const flow = await response.json();
+            setDbFlow(flow);
+            setDbFlowNodeIndex(0);
+            setNavigationHistory([]);
+            setAnswers({});
+            setErrors({});
+            setCurrentStep('questionnaire');
+          } else {
+            // Flow not found, show no flow message
+            setCurrentStep('no-flow');
+          }
+        } catch (error) {
+          console.error('Error fetching flow:', error);
+          setCurrentStep('no-flow');
+        } finally {
+          setIsLoadingFlow(false);
+        }
+      } else {
+        // No flow assigned - show no flow available message
+        setNavigationHistory([]);
+        setAnswers({});
+        setErrors({});
+        setCurrentStep('no-flow');
+      }
     }
   };
 
@@ -322,25 +358,41 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     } else if (currentStep === 'no-flow') {
       setCurrentStep('case-type');
     } else if (currentStep === 'questionnaire') {
-      // Use navigation history for accurate back navigation
-      if (navigationHistory.length > 0) {
-        const previousNodeKey = navigationHistory[navigationHistory.length - 1];
-        setNavigationHistory(prev => prev.slice(0, -1));
-        setCurrentNodeKey(previousNodeKey);
+      // Handle database flow back navigation
+      if (dbFlow) {
+        if (dbFlowNodeIndex > 0) {
+          setDbFlowNodeIndex(prev => prev - 1);
+        } else {
+          // At first question, go back to case-type
+          setDbFlow(null);
+          setDbFlowNodeIndex(0);
+          setCurrentStep('case-type');
+        }
       } else {
-        // If no history, go back to case-type (we're at the start)
-        setCurrentStep('case-type');
+        // Use navigation history for legacy flow back navigation
+        if (navigationHistory.length > 0) {
+          const previousNodeKey = navigationHistory[navigationHistory.length - 1];
+          setNavigationHistory(prev => prev.slice(0, -1));
+          setCurrentNodeKey(previousNodeKey);
+        } else {
+          // If no history, go back to case-type (we're at the start)
+          setCurrentStep('case-type');
+        }
       }
     } else if (currentStep === 'wrap-up') {
-      // Go back to the last question using navigation history
-      if (navigationHistory.length > 0) {
+      // Go back to the last question
+      if (dbFlow) {
+        // For database flows, go back to the last node
+        setDbFlowNodeIndex((dbFlow.nodes?.length || 1) - 1);
+        setCurrentStep('questionnaire');
+      } else if (navigationHistory.length > 0) {
         const lastNodeKey = navigationHistory[navigationHistory.length - 1];
         setCurrentNodeKey(lastNodeKey);
         setCurrentStep('questionnaire');
       } else if (caseType) {
         // If no history, go to the start of the flow
         const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
-        setCurrentNodeKey(flow.start);
+        setCurrentNodeKey(flow?.start || '');
         setCurrentStep('questionnaire');
       }
     }
@@ -470,6 +522,9 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     setNavigationHistory([]);
     setIsSubmitting(false);
     setShowOtherCaseDialog(false);
+    setDbFlow(null);
+    setDbFlowNodeIndex(0);
+    setIsLoadingFlow(false);
     onClose();
   };
 
@@ -519,11 +574,112 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     }
   };
 
+  // Render database flow question (from admin-uploaded flows)
+  const renderDbFlowQuestion = () => {
+    if (!dbFlow || !dbFlow.nodes || dbFlowNodeIndex >= dbFlow.nodes.length) return null;
+    
+    const node = dbFlow.nodes[dbFlowNodeIndex];
+    const nodeId = node.id;
+    const answer = answers[nodeId];
+    const error = errors[nodeId];
+
+    const updateAnswer = (value: Answer) => {
+      setAnswers(prev => ({ ...prev, [nodeId]: value }));
+      setErrors({});
+    };
+
+    // Render based on node type
+    switch (node.type) {
+      case 'yes-no':
+        return (
+          <div className="space-y-4">
+            <Label className="text-lg font-medium">{node.question}</Label>
+            <RadioGroup value={String(answer || '')} onValueChange={updateAnswer}>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <RadioGroupItem value="yes" id={`${nodeId}-yes`} />
+                <Label htmlFor={`${nodeId}-yes`} className="cursor-pointer">{node.yesLabel || 'Yes'}</Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                <RadioGroupItem value="no" id={`${nodeId}-no`} />
+                <Label htmlFor={`${nodeId}-no`} className="cursor-pointer">{node.noLabel || 'No'}</Label>
+              </div>
+            </RadioGroup>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
+        );
+
+      case 'multiple-choice':
+        return (
+          <div className="space-y-4">
+            <Label className="text-lg font-medium">{node.question}</Label>
+            <RadioGroup value={String(answer || '')} onValueChange={updateAnswer}>
+              {(node.options || []).map((opt: any, idx: number) => (
+                <div key={idx} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
+                  <RadioGroupItem value={opt.value || opt.label} id={`${nodeId}-${idx}`} />
+                  <Label htmlFor={`${nodeId}-${idx}`} className="cursor-pointer">{opt.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
+        );
+
+      case 'form':
+        return (
+          <div className="space-y-4">
+            <Label className="text-lg font-medium">{node.formTitle || node.question}</Label>
+            {node.formDescription && <p className="text-gray-600">{node.formDescription}</p>}
+            {(node.formFields || []).map((field: any) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</Label>
+                {field.type === 'textarea' ? (
+                  <Textarea
+                    value={String(answers[`${nodeId}-${field.id}`] || '')}
+                    onChange={(e) => setAnswers(prev => ({ ...prev, [`${nodeId}-${field.id}`]: e.target.value }))}
+                    placeholder={field.placeholder}
+                  />
+                ) : (
+                  <Input
+                    type={field.type || 'text'}
+                    value={String(answers[`${nodeId}-${field.id}`] || '')}
+                    onChange={(e) => setAnswers(prev => ({ ...prev, [`${nodeId}-${field.id}`]: e.target.value }))}
+                    placeholder={field.placeholder}
+                  />
+                )}
+              </div>
+            ))}
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
+        );
+
+      case 'info':
+        return (
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">{node.infoTitle}</h3>
+            {node.infoDescription && <p className="text-gray-600">{node.infoDescription}</p>}
+          </div>
+        );
+
+      default:
+        return (
+          <div className="space-y-4">
+            <Label className="text-lg font-medium">{node.question || node.formTitle || 'Question'}</Label>
+            <Textarea
+              value={String(answer || '')}
+              onChange={(e) => updateAnswer(e.target.value)}
+              placeholder="Enter your answer"
+            />
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+          </div>
+        );
+    }
+  };
+
   const renderQuestion = () => {
     if (!caseType) return null;
     
     const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
-    const currentQuestion = flow.nodes[currentNodeKey];
+    const currentQuestion = flow?.nodes?.[currentNodeKey];
     
     if (!currentQuestion) return null;
 
@@ -881,11 +1037,18 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
 
             <Button 
               onClick={handleCaseTypeNext} 
-              disabled={!caseType} 
+              disabled={!caseType || isLoadingFlow} 
               className="w-full bg-black hover:bg-gray-800 text-white py-6"
               data-testid="button-continue"
             >
-              {labels.continueButton}
+              {isLoadingFlow ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  {isSpanish ? 'Cargando...' : 'Loading...'}
+                </>
+              ) : (
+                labels.continueButton
+              )}
             </Button>
           </div>
         );
@@ -921,17 +1084,36 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         );
 
       case 'questionnaire':
+        // Use database flow if available, otherwise fall back to legacy flow
+        const isDbFlow = !!dbFlow;
+        const isLastDbNode = isDbFlow && dbFlowNodeIndex >= (dbFlow.nodes?.length || 0) - 1;
+        
         return (
           <div className="space-y-6">
-            {renderQuestion()}
+            {isDbFlow ? renderDbFlowQuestion() : renderQuestion()}
             
             <div className="flex justify-between space-x-3 pt-4">
               <Button variant="outline" onClick={handleBack} data-testid="button-back">
                 <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
               </Button>
-              <Button onClick={handleQuestionNext} disabled={!checkCurrentQuestionValid()} data-testid="button-continue">
-                {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              {isDbFlow ? (
+                <Button 
+                  onClick={() => {
+                    if (isLastDbNode) {
+                      setCurrentStep('wrap-up');
+                    } else {
+                      setDbFlowNodeIndex(prev => prev + 1);
+                    }
+                  }} 
+                  data-testid="button-continue"
+                >
+                  {isLastDbNode ? (isSpanish ? 'Finalizar' : 'Finish') : labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button onClick={handleQuestionNext} disabled={!checkCurrentQuestionValid()} data-testid="button-continue">
+                  {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              )}
             </div>
           </div>
         );
