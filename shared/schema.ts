@@ -106,17 +106,6 @@ export const referralAssignments = pgTable("referral_assignments", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Information requests from attorneys to clients
-export const informationRequests = pgTable("information_requests", {
-  id: serial("id").primaryKey(),
-  assignmentId: integer("assignment_id").notNull().references(() => referralAssignments.id),
-  subject: varchar("subject", { length: 255 }).notNull(),
-  message: text("message").notNull(),
-  sentAt: timestamp("sent_at").defaultNow().notNull(),
-  clientResponse: text("client_response"),
-  respondedAt: timestamp("responded_at"),
-});
-
 // Attorney quotes for referrals
 export const quotes = pgTable("quotes", {
   id: serial("id").primaryKey(),
@@ -404,13 +393,6 @@ export const insertReferralAssignmentSchema = createInsertSchema(referralAssignm
   notes: true,
 });
 
-export const insertInformationRequestSchema = createInsertSchema(informationRequests).pick({
-  assignmentId: true,
-  subject: true,
-  message: true,
-  clientResponse: true,
-});
-
 export const insertQuoteSchema = createInsertSchema(quotes).pick({
   assignmentId: true,
   serviceFee: true,
@@ -482,8 +464,6 @@ export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertReferralAssignment = z.infer<typeof insertReferralAssignmentSchema>;
 export type ReferralAssignment = typeof referralAssignments.$inferSelect;
-export type InsertInformationRequest = z.infer<typeof insertInformationRequestSchema>;
-export type InformationRequest = typeof informationRequests.$inferSelect;
 export type InsertQuote = z.infer<typeof insertQuoteSchema>;
 export type Quote = typeof quotes.$inferSelect;
 export type InsertCase = z.infer<typeof insertCaseSchema>;

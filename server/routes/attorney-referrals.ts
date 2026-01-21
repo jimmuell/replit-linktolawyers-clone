@@ -7,12 +7,11 @@ import {
   attorneys,
   attorneyFeeSchedule,
   caseTypes,
-  informationRequests,
   quotes,
   cases,
   attorneyNotes,
+  structuredIntakes,
   insertReferralAssignmentSchema,
-  insertInformationRequestSchema,
   insertQuoteSchema,
   insertCaseSchema,
   insertAttorneyNoteSchema
@@ -242,56 +241,6 @@ router.patch("/assignment/:assignmentId/status", requireAuth, async (req, res) =
   } catch (error) {
     console.error('Error updating assignment status:', error);
     res.status(500).json({ error: 'Failed to update assignment status' });
-  }
-});
-
-// Request additional information from client
-router.post("/assignment/:assignmentId/request-info", requireAuth, async (req, res) => {
-  try {
-    const assignmentId = parseInt(req.params.assignmentId);
-    const attorneyId = req.user!.id;
-    
-    const validatedData = insertInformationRequestSchema.parse({
-      assignmentId,
-      ...req.body
-    });
-
-    // Verify the assignment belongs to this attorney
-    const assignment = await db
-      .select()
-      .from(referralAssignments)
-      .where(and(
-        eq(referralAssignments.id, assignmentId),
-        eq(referralAssignments.attorneyId, attorneyId)
-      ))
-      .limit(1);
-
-    if (assignment.length === 0) {
-      return res.status(404).json({ error: 'Assignment not found or not authorized' });
-    }
-
-    // Create the information request
-    const [infoRequest] = await db
-      .insert(informationRequests)
-      .values(validatedData)
-      .returning();
-
-    // Update assignment status to info_requested
-    await db
-      .update(referralAssignments)
-      .set({
-        status: 'info_requested',
-        updatedAt: new Date(),
-      })
-      .where(eq(referralAssignments.id, assignmentId));
-
-    res.json({ success: true, data: infoRequest });
-  } catch (error) {
-    console.error('Error requesting information:', error);
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: 'Invalid request data', details: error.errors });
-    }
-    res.status(500).json({ error: 'Failed to request information' });
   }
 });
 
