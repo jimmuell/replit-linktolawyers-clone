@@ -23,6 +23,7 @@ interface CaseTypeFormData {
   description: string;
   descriptionEs: string;
   category: string;
+  applicantType: string;
   displayOrder: number;
   isActive: boolean;
   flowId: number | null;
@@ -35,6 +36,7 @@ const defaultFormData: CaseTypeFormData = {
   description: '',
   descriptionEs: '',
   category: '',
+  applicantType: 'both',
   displayOrder: 0,
   isActive: true,
   flowId: null,
@@ -132,6 +134,7 @@ export default function AdminCategories() {
       description: caseType.description,
       descriptionEs: caseType.descriptionEs || '',
       category: caseType.category || '',
+      applicantType: caseType.applicantType || 'both',
       displayOrder: caseType.displayOrder || 0,
       isActive: caseType.isActive ?? true,
       flowId: caseType.flowId || null,
@@ -203,6 +206,7 @@ export default function AdminCategories() {
                 <TableRow>
                   <TableHead>Label</TableHead>
                   <TableHead>Category</TableHead>
+                  <TableHead>Applicant</TableHead>
                   <TableHead>Flow</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Order</TableHead>
@@ -224,6 +228,21 @@ export default function AdminCategories() {
                       ) : (
                         <span className="text-gray-400">—</span>
                       )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={
+                        caseType.applicantType === 'beneficiary' 
+                          ? 'bg-blue-100 text-blue-800'
+                          : caseType.applicantType === 'petitioner'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-gray-100 text-gray-800'
+                      }>
+                        {caseType.applicantType === 'beneficiary' 
+                          ? 'Beneficiary' 
+                          : caseType.applicantType === 'petitioner'
+                            ? 'Petitioner'
+                            : 'Both'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
                       {caseType.flowId ? (
@@ -364,14 +383,31 @@ export default function AdminCategories() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="displayOrder">Display Order</Label>
-                <Input
-                  id="displayOrder"
-                  type="number"
-                  value={formData.displayOrder}
-                  onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
-                />
+                <Label htmlFor="applicantType">Applicant Type</Label>
+                <Select
+                  value={formData.applicantType}
+                  onValueChange={(value) => setFormData({ ...formData, applicantType: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select applicant type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="both">Both (Beneficiary & Petitioner)</SelectItem>
+                    <SelectItem value="beneficiary">Beneficiary Only</SelectItem>
+                    <SelectItem value="petitioner">Petitioner Only</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="displayOrder">Display Order</Label>
+              <Input
+                id="displayOrder"
+                type="number"
+                value={formData.displayOrder}
+                onChange={(e) => setFormData({ ...formData, displayOrder: parseInt(e.target.value) || 0 })}
+              />
             </div>
 
             <div className="space-y-2 p-4 bg-cyan-50 rounded-lg border border-cyan-200">
