@@ -568,6 +568,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertFlowSchema.parse(req.body);
       const flow = await storage.createFlow(validatedData);
+      
+      // Auto-create a category for this flow
+      try {
+        // Derive category group from flow name (extract first word or common patterns)
+        const flowName = flow.name.toLowerCase();
+        let categoryGroup = 'General';
+        if (flowName.includes('asylum') || flowName.includes('persecution')) {
+          categoryGroup = 'Asylum';
+        } else if (flowName.includes('family') || flowName.includes('spouse') || flowName.includes('marriage') || flowName.includes('fiance') || flowName.includes('fiancé')) {
+          categoryGroup = 'Family-Based';
+        } else if (flowName.includes('naturalization') || flowName.includes('citizenship') || flowName.includes('citizen')) {
+          categoryGroup = 'Naturalization';
+        } else if (flowName.includes('green card') || flowName.includes('removal') || flowName.includes('conditional')) {
+          categoryGroup = 'Green Card';
+        } else if (flowName.includes('work') || flowName.includes('employment') || flowName.includes('visa')) {
+          categoryGroup = 'Employment';
+        }
+        
+        // Check if a category with this value already exists
+        const existingCategories = await storage.getAllCaseTypes(true);
+        const categoryExists = existingCategories.some((cat: { value: string }) => cat.value === flow.slug);
+        
+        if (!categoryExists) {
+          await storage.createCaseType({
+            value: flow.slug,
+            label: flow.name,
+            labelEs: flow.name, // Same as English, admin can update later
+            description: flow.description || `Intake flow for ${flow.name}`,
+            descriptionEs: '', // Empty, admin can update later
+            category: categoryGroup,
+            applicantType: 'both',
+            displayOrder: 0,
+            isActive: true,
+            flowId: flow.id,
+          });
+          console.log(`Auto-created category "${flow.name}" for flow ${flow.id}`);
+        }
+      } catch (categoryError) {
+        // Log but don't fail the flow creation if category creation fails
+        console.error("Error auto-creating category:", categoryError);
+      }
+      
       res.json(flow);
     } catch (error) {
       console.error("Error creating flow:", error);
