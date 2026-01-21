@@ -102,6 +102,30 @@ export default function SubmissionsPage() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: number[]) => {
+      return await apiRequest('/api/structured-intakes/bulk-delete', {
+        method: 'POST',
+        body: { ids },
+      });
+    },
+    onSuccess: (_, deletedIds) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/structured-intakes'] });
+      toast({
+        title: "Submissions deleted",
+        description: `${deletedIds.length} submission(s) have been successfully deleted.`,
+      });
+      setSelectedSubmissionIds([]);
+    },
+    onError: () => {
+      toast({
+        title: "Failed to delete submissions",
+        description: "An error occurred while deleting the submissions.",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (loading || !user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -324,6 +348,20 @@ export default function SubmissionsPage() {
                           >
                             Select All
                           </Button>
+                          {selectedSubmissionIds.length > 0 && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                bulkDeleteMutation.mutate(selectedSubmissionIds);
+                              }}
+                              disabled={bulkDeleteMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete ({selectedSubmissionIds.length})
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
