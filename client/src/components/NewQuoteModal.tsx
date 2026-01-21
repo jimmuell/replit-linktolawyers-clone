@@ -415,26 +415,54 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       // Create transcript of questions and answers in order
       const transcript: Array<{ question: string; answer: string }> = [];
       
-      if (caseType) {
-        const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
-        // Create ordered transcript based on navigation history + current answers
-        const questionOrder = [...navigationHistory, currentNodeKey];
+      if (dbFlow) {
+        // For database flows, build transcript from node history
+        const questionOrder = [...dbNodeHistory, dbCurrentNodeId];
         
-        questionOrder.forEach((questionId) => {
-          const question = flow.nodes[questionId];
-          const answer = answers[questionId];
-          if (question && answer !== undefined) {
-            let answerText = String(answer);
-            if (question.options) {
-              const option = question.options.find(opt => opt.value === answer);
-              answerText = option?.label || answerText;
+        questionOrder.forEach((nodeId) => {
+          const node = dbFlow.nodes?.find((n: any) => n.id === nodeId);
+          const answer = answers[nodeId];
+          if (node && answer !== undefined && node.type !== 'start') {
+            let answerText = '';
+            if (typeof answer === 'object') {
+              // Form fields
+              answerText = Object.entries(answer).map(([k, v]) => `${k}: ${v}`).join(', ');
+            } else {
+              answerText = String(answer);
+              // For multiple choice, find the label
+              if (node.type === 'multiple-choice' && node.options) {
+                const option = node.options.find((opt: any) => opt.id === answer);
+                answerText = option?.label || answerText;
+              }
             }
             transcript.push({
-              question: question.prompt,
+              question: node.question || node.formTitle || 'Question',
               answer: answerText
             });
           }
         });
+      } else if (caseType) {
+        // Legacy flow handling
+        const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
+        if (flow?.nodes) {
+          const questionOrder = [...navigationHistory, currentNodeKey];
+          
+          questionOrder.forEach((questionId) => {
+            const question = flow.nodes[questionId];
+            const answer = answers[questionId];
+            if (question && answer !== undefined) {
+              let answerText = String(answer);
+              if (question.options) {
+                const option = question.options.find((opt: any) => opt.value === answer);
+                answerText = option?.label || answerText;
+              }
+              transcript.push({
+                question: question.prompt,
+                answer: answerText
+              });
+            }
+          });
+        }
       }
 
       // Format data to match existing backend endpoint
