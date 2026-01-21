@@ -21,9 +21,9 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Fetch available legal requests for dropdown
-  const { data: legalRequests, isLoading } = useQuery<{data: Array<{id: number, requestNumber: string, firstName: string, lastName: string}>}>({
-    queryKey: ['/api/legal-requests/public'],
+  // Fetch available structured intakes for dropdown
+  const { data: structuredIntakes, isLoading } = useQuery<{data: Array<{id: number, requestNumber: string, firstName: string, lastName: string}>}>({
+    queryKey: ['/api/structured-intakes/public'],
     enabled: isOpen,
   });
 
@@ -87,7 +87,7 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
                   <SelectValue placeholder={isLoading ? "Loading requests..." : "Choose a request"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {legalRequests?.data?.map((request: any) => (
+                  {structuredIntakes?.data?.map((request: any) => (
                     <SelectItem key={request.id} value={request.requestNumber}>
                       {request.requestNumber} - {request.firstName} {request.lastName}
                     </SelectItem>
