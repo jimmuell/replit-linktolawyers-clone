@@ -112,7 +112,7 @@ export default function SubmissionsList({ title, showAssignButton = false }: Sub
     return searchMatch && caseTypeMatch && stateMatch;
   });
 
-  const uniqueStates = [...new Set(submissions.map(s => s.state).filter(Boolean))];
+  const uniqueStates = Array.from(new Set(submissions.map(s => s.state).filter((s): s is string => s !== null)));
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
