@@ -23,16 +23,18 @@ interface Attorney {
   bio: string;
 }
 
-interface LegalRequestData {
+interface StructuredIntakeData {
   id: number;
   requestNumber: string;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string | null;
+  state: string | null;
   caseType: string;
-  caseDescription: string;
-  location: string | null;
+  role: string | null;
+  formResponses: any;
+  attorneyIntakeSummary: string | null;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -64,9 +66,9 @@ export default function QuotesPageSpanish() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch legal request data
+  // Fetch structured intake data
   const { data: request, isLoading: requestLoading, error: requestError } = useQuery({
-    queryKey: [`/api/legal-requests/${requestNumber}`],
+    queryKey: [`/api/structured-intakes/${requestNumber}`],
     enabled: !!requestNumber,
     retry: false,
   });

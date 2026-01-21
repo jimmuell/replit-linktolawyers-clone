@@ -37,7 +37,7 @@ interface Quote {
   valid_until?: string;
 }
 
-interface LegalRequest {
+interface StructuredIntakeResponse {
   success: boolean;
   data: {
     id: number;
@@ -46,9 +46,11 @@ interface LegalRequest {
     lastName: string;
     email: string;
     phoneNumber?: string;
+    state?: string;
     caseType: string;
-    caseDescription: string;
-    location: string;
+    role?: string;
+    formResponses: string;
+    attorneyIntakeSummary?: string;
     status: string;
     createdAt: string;
     updatedAt: string;
@@ -67,9 +69,9 @@ export default function QuotesPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Fetch request details
-  const { data: request } = useQuery<LegalRequest>({
-    queryKey: ['/api/legal-requests', requestNumber],
+  // Fetch request details from structured intakes
+  const { data: request } = useQuery<StructuredIntakeResponse>({
+    queryKey: ['/api/structured-intakes', requestNumber],
     enabled: !!requestNumber,
   });
 
@@ -345,12 +347,9 @@ export default function QuotesPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <div>
-                  <span className="text-sm font-medium text-gray-600">City, State:</span>
+                  <span className="text-sm font-medium text-gray-600">State:</span>
                   <p className="text-sm text-gray-900 mt-1">
-                    {request.data.city && request.data.state 
-                      ? `${request.data.city}, ${request.data.state}`
-                      : request.data.location || 'Not specified'
-                    }
+                    {request.data.state || 'Not specified'}
                   </p>
                 </div>
                 <div>
