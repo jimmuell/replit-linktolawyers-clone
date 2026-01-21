@@ -138,8 +138,12 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showOtherCaseDialog, setShowOtherCaseDialog] = useState<boolean>(false);
   const [dbFlow, setDbFlow] = useState<any>(null);
-  const [dbFlowNodeIndex, setDbFlowNodeIndex] = useState<number>(0);
+  const [dbCurrentNodeId, setDbCurrentNodeId] = useState<string>('');
+  const [dbNodeHistory, setDbNodeHistory] = useState<string[]>([]);
   const [isLoadingFlow, setIsLoadingFlow] = useState<boolean>(false);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [yesNoValue, setYesNoValue] = useState<string>('');
+  const [choiceValue, setChoiceValue] = useState<string>('');
 
   const [location] = useLocation();
   const isSpanish = location.startsWith('/es');
@@ -292,10 +296,19 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
           if (response.ok) {
             const flow = await response.json();
             setDbFlow(flow);
-            setDbFlowNodeIndex(0);
+            
+            // Find the start node
+            const startNode = flow.nodes?.find((n: any) => n.type === 'start');
+            const firstNodeId = startNode?.id || flow.nodes?.[0]?.id || '';
+            
+            setDbCurrentNodeId(firstNodeId);
+            setDbNodeHistory([]);
             setNavigationHistory([]);
             setAnswers({});
             setErrors({});
+            setFormValues({});
+            setYesNoValue('');
+            setChoiceValue('');
             setCurrentStep('questionnaire');
           } else {
             // Flow not found, show no flow message
@@ -360,14 +373,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     } else if (currentStep === 'questionnaire') {
       // Handle database flow back navigation
       if (dbFlow) {
-        if (dbFlowNodeIndex > 0) {
-          setDbFlowNodeIndex(prev => prev - 1);
-        } else {
-          // At first question, go back to case-type
-          setDbFlow(null);
-          setDbFlowNodeIndex(0);
-          setCurrentStep('case-type');
-        }
+        handleDbFlowBack();
       } else {
         // Use navigation history for legacy flow back navigation
         if (navigationHistory.length > 0) {
@@ -381,9 +387,11 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       }
     } else if (currentStep === 'wrap-up') {
       // Go back to the last question
-      if (dbFlow) {
-        // For database flows, go back to the last node
-        setDbFlowNodeIndex((dbFlow.nodes?.length || 1) - 1);
+      if (dbFlow && dbNodeHistory.length > 0) {
+        // For database flows, go back to the last node in history
+        const lastNodeId = dbNodeHistory[dbNodeHistory.length - 1];
+        setDbCurrentNodeId(lastNodeId);
+        setDbNodeHistory(prev => prev.slice(0, -1));
         setCurrentStep('questionnaire');
       } else if (navigationHistory.length > 0) {
         const lastNodeKey = navigationHistory[navigationHistory.length - 1];
@@ -523,8 +531,12 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     setIsSubmitting(false);
     setShowOtherCaseDialog(false);
     setDbFlow(null);
-    setDbFlowNodeIndex(0);
+    setDbCurrentNodeId('');
+    setDbNodeHistory([]);
     setIsLoadingFlow(false);
+    setFormValues({});
+    setYesNoValue('');
+    setChoiceValue('');
     onClose();
   };
 
@@ -574,102 +586,257 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     }
   };
 
+  // Get current database flow node
+  const getDbCurrentNode = () => {
+    if (!dbFlow || !dbFlow.nodes) return null;
+    return dbFlow.nodes.find((n: any) => n.id === dbCurrentNodeId) || null;
+  };
+
+  // Get next node based on connections
+  const getDbNextNode = (condition?: string) => {
+    if (!dbFlow || !dbFlow.connections) return null;
+    
+    const connections = dbFlow.connections.filter((c: any) => c.sourceNodeId === dbCurrentNodeId);
+    
+    let matchedConnection = connections.find((c: any) => c.condition === 'any');
+    
+    if (condition) {
+      const conditionMatch = connections.find((c: any) => 
+        c.condition === condition || 
+        c.label === condition ||
+        c.condition?.toLowerCase() === condition.toLowerCase() ||
+        c.label?.toLowerCase() === condition.toLowerCase()
+      );
+      if (conditionMatch) matchedConnection = conditionMatch;
+    }
+    
+    if (!matchedConnection && connections.length === 1) {
+      matchedConnection = connections[0];
+    }
+    
+    if (matchedConnection) {
+      return dbFlow.nodes.find((n: any) => n.id === matchedConnection.targetNodeId) || null;
+    }
+    
+    return null;
+  };
+
+  // Handle next in database flow
+  const handleDbFlowNext = (condition?: string) => {
+    if (!dbFlow) return;
+    
+    const currentNode = getDbCurrentNode();
+    const nextNode = getDbNextNode(condition);
+    
+    if (nextNode) {
+      const newAnswers = { ...answers };
+      
+      if (currentNode?.type === 'form') {
+        newAnswers[currentNode.id] = formValues as any;
+      } else if (currentNode?.type === 'yes-no') {
+        newAnswers[currentNode.id] = condition || yesNoValue;
+      } else if (currentNode?.type === 'multiple-choice') {
+        newAnswers[currentNode.id] = condition || choiceValue;
+      } else if (currentNode?.type === 'start') {
+        newAnswers[currentNode.id] = { started: true } as any;
+      }
+      
+      setDbNodeHistory(prev => [...prev, dbCurrentNodeId]);
+      setDbCurrentNodeId(nextNode.id);
+      setAnswers(newAnswers);
+      setFormValues({});
+      setYesNoValue('');
+      setChoiceValue('');
+    } else {
+      // No next node - go to wrap-up
+      setCurrentStep('wrap-up');
+    }
+  };
+
+  // Handle back in database flow
+  const handleDbFlowBack = () => {
+    if (dbNodeHistory.length === 0) {
+      setDbFlow(null);
+      setDbCurrentNodeId('');
+      setCurrentStep('case-type');
+      return;
+    }
+    
+    const previousNodeId = dbNodeHistory[dbNodeHistory.length - 1];
+    setDbNodeHistory(prev => prev.slice(0, -1));
+    setDbCurrentNodeId(previousNodeId);
+  };
+
+  // Check if can proceed in database flow
+  const canDbFlowProceed = () => {
+    const currentNode = getDbCurrentNode();
+    if (!currentNode) return false;
+    
+    if (currentNode.type === 'yes-no') return !!yesNoValue;
+    if (currentNode.type === 'multiple-choice') return !!choiceValue;
+    if (currentNode.type === 'form') {
+      return (currentNode.formFields || []).every((field: any) => !field.required || formValues[field.id]);
+    }
+    return true;
+  };
+
+  // Check if current node is end node
+  const isDbEndNode = () => {
+    const currentNode = getDbCurrentNode();
+    return currentNode && ['completion', 'success', 'end'].includes(currentNode.type);
+  };
+
   // Render database flow question (from admin-uploaded flows)
   const renderDbFlowQuestion = () => {
-    if (!dbFlow || !dbFlow.nodes || dbFlowNodeIndex >= dbFlow.nodes.length) return null;
-    
-    const node = dbFlow.nodes[dbFlowNodeIndex];
-    const nodeId = node.id;
-    const answer = answers[nodeId];
-    const error = errors[nodeId];
+    const currentNode = getDbCurrentNode();
+    if (!currentNode) return null;
 
-    const updateAnswer = (value: Answer) => {
-      setAnswers(prev => ({ ...prev, [nodeId]: value }));
-      setErrors({});
-    };
-
-    // Render based on node type
-    switch (node.type) {
-      case 'yes-no':
+    switch (currentNode.type) {
+      case 'start':
         return (
-          <div className="space-y-4">
-            <Label className="text-lg font-medium">{node.question}</Label>
-            <RadioGroup value={String(answer || '')} onValueChange={updateAnswer}>
-              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                <RadioGroupItem value="yes" id={`${nodeId}-yes`} />
-                <Label htmlFor={`${nodeId}-yes`} className="cursor-pointer">{node.yesLabel || 'Yes'}</Label>
-              </div>
-              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                <RadioGroupItem value="no" id={`${nodeId}-no`} />
-                <Label htmlFor={`${nodeId}-no`} className="cursor-pointer">{node.noLabel || 'No'}</Label>
-              </div>
-            </RadioGroup>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+          <div className="text-center py-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">{dbFlow?.name || 'Questionnaire'}</h2>
+            <p className="text-gray-600">{isSpanish ? 'Haga clic en Continuar para comenzar' : 'Click Continue to begin'}</p>
           </div>
         );
 
-      case 'multiple-choice':
+      case 'yes-no':
         return (
           <div className="space-y-4">
-            <Label className="text-lg font-medium">{node.question}</Label>
-            <RadioGroup value={String(answer || '')} onValueChange={updateAnswer}>
-              {(node.options || []).map((opt: any, idx: number) => (
-                <div key={idx} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50">
-                  <RadioGroupItem value={opt.value || opt.label} id={`${nodeId}-${idx}`} />
-                  <Label htmlFor={`${nodeId}-${idx}`} className="cursor-pointer">{opt.label}</Label>
-                </div>
-              ))}
+            <h2 className="text-lg font-medium text-gray-900">{currentNode.question}</h2>
+            <RadioGroup value={yesNoValue} onValueChange={setYesNoValue}>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="yes" id="yes" />
+                <Label htmlFor="yes" className="cursor-pointer flex-1">{currentNode.yesLabel || 'Yes'}</Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                <RadioGroupItem value="no" id="no" />
+                <Label htmlFor="no" className="cursor-pointer flex-1">{currentNode.noLabel || 'No'}</Label>
+              </div>
             </RadioGroup>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
           </div>
         );
 
       case 'form':
         return (
           <div className="space-y-4">
-            <Label className="text-lg font-medium">{node.formTitle || node.question}</Label>
-            {node.formDescription && <p className="text-gray-600">{node.formDescription}</p>}
-            {(node.formFields || []).map((field: any) => (
+            {currentNode.formTitle && (
+              <h2 className="text-lg font-medium text-gray-900">{currentNode.formTitle}</h2>
+            )}
+            {currentNode.formDescription && (
+              <p className="text-gray-600">{currentNode.formDescription}</p>
+            )}
+            {(currentNode.formFields || []).map((field: any) => (
               <div key={field.id} className="space-y-2">
-                <Label>{field.label}{field.required && <span className="text-red-500 ml-1">*</span>}</Label>
+                <Label htmlFor={field.id}>
+                  {field.label}
+                  {field.required && <span className="text-red-500 ml-1">*</span>}
+                </Label>
                 {field.type === 'textarea' ? (
                   <Textarea
-                    value={String(answers[`${nodeId}-${field.id}`] || '')}
-                    onChange={(e) => setAnswers(prev => ({ ...prev, [`${nodeId}-${field.id}`]: e.target.value }))}
+                    id={field.id}
                     placeholder={field.placeholder}
+                    value={formValues[field.id] || ''}
+                    onChange={(e) => setFormValues(prev => ({ ...prev, [field.id]: e.target.value }))}
                   />
                 ) : (
                   <Input
-                    type={field.type || 'text'}
-                    value={String(answers[`${nodeId}-${field.id}`] || '')}
-                    onChange={(e) => setAnswers(prev => ({ ...prev, [`${nodeId}-${field.id}`]: e.target.value }))}
+                    id={field.id}
+                    type={field.type === 'email' ? 'email' : field.type === 'number' ? 'number' : 'text'}
                     placeholder={field.placeholder}
+                    value={formValues[field.id] || ''}
+                    onChange={(e) => setFormValues(prev => ({ ...prev, [field.id]: e.target.value }))}
                   />
                 )}
               </div>
             ))}
-            {error && <p className="text-red-500 text-sm">{error}</p>}
           </div>
         );
 
       case 'info':
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">{node.infoTitle}</h3>
-            {node.infoDescription && <p className="text-gray-600">{node.infoDescription}</p>}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900">{currentNode.formTitle || currentNode.infoTitle || currentNode.question}</h3>
+              {(currentNode.formDescription || currentNode.infoDescription) && (
+                <p className="text-gray-600 mt-2">{currentNode.formDescription || currentNode.infoDescription}</p>
+              )}
+            </div>
+          </div>
+        );
+
+      case 'multiple-choice':
+        return (
+          <div className="space-y-4">
+            <h2 className="text-lg font-medium text-gray-900">{currentNode.question}</h2>
+            <RadioGroup value={choiceValue} onValueChange={setChoiceValue}>
+              {(currentNode.options || []).map((option: any) => (
+                <div key={option.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <RadioGroupItem value={option.id} id={option.id} />
+                  <Label htmlFor={option.id} className="cursor-pointer flex-1">{option.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        );
+
+      case 'text':
+        return (
+          <div className="space-y-4">
+            <h2 className="text-lg font-medium text-gray-900">{currentNode.question}</h2>
+            <Input
+              id="text-input"
+              placeholder={isSpanish ? 'Ingrese su respuesta...' : 'Enter your answer...'}
+              value={formValues['text-input'] || ''}
+              onChange={(e) => setFormValues(prev => ({ ...prev, 'text-input': e.target.value }))}
+            />
+          </div>
+        );
+
+      case 'date':
+        return (
+          <div className="space-y-4">
+            <h2 className="text-lg font-medium text-gray-900">{currentNode.question}</h2>
+            <Input
+              id="date-input"
+              type="date"
+              value={formValues['date-input'] || ''}
+              onChange={(e) => setFormValues(prev => ({ ...prev, 'date-input': e.target.value }))}
+            />
+          </div>
+        );
+
+      case 'completion':
+      case 'success':
+      case 'end':
+        return (
+          <div className="text-center space-y-4 py-8">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+              <ClipboardList className="w-8 h-8 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">
+              {currentNode.thankYouTitle || currentNode.successTitle || (isSpanish ? '¡Gracias!' : 'Thank You!')}
+            </h2>
+            {(currentNode.thankYouMessage || currentNode.successMessage) && (
+              <p className="text-gray-600">{currentNode.thankYouMessage || currentNode.successMessage}</p>
+            )}
+            {currentNode.legalDisclaimer && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+                <p className="text-sm text-blue-700">{currentNode.legalDisclaimer}</p>
+              </div>
+            )}
           </div>
         );
 
       default:
         return (
           <div className="space-y-4">
-            <Label className="text-lg font-medium">{node.question || node.formTitle || 'Question'}</Label>
+            <h2 className="text-lg font-medium text-gray-900">{currentNode.question || currentNode.formTitle || 'Question'}</h2>
             <Textarea
-              value={String(answer || '')}
-              onChange={(e) => updateAnswer(e.target.value)}
-              placeholder="Enter your answer"
+              placeholder={isSpanish ? 'Ingrese su respuesta' : 'Enter your answer'}
+              value={formValues['default'] || ''}
+              onChange={(e) => setFormValues(prev => ({ ...prev, 'default': e.target.value }))}
             />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
           </div>
         );
     }
@@ -1086,7 +1253,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'questionnaire':
         // Use database flow if available, otherwise fall back to legacy flow
         const isDbFlow = !!dbFlow;
-        const isLastDbNode = isDbFlow && dbFlowNodeIndex >= (dbFlow.nodes?.length || 0) - 1;
+        const dbCurrentNode = isDbFlow ? getDbCurrentNode() : null;
+        const isDbEndNode = dbCurrentNode && ['completion', 'success', 'end'].includes(dbCurrentNode.type);
         
         return (
           <div className="space-y-6">
@@ -1097,18 +1265,27 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
                 <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
               </Button>
               {isDbFlow ? (
-                <Button 
-                  onClick={() => {
-                    if (isLastDbNode) {
-                      setCurrentStep('wrap-up');
-                    } else {
-                      setDbFlowNodeIndex(prev => prev + 1);
-                    }
-                  }} 
-                  data-testid="button-continue"
-                >
-                  {isLastDbNode ? (isSpanish ? 'Finalizar' : 'Finish') : labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                isDbEndNode ? (
+                  <Button 
+                    onClick={() => setCurrentStep('wrap-up')}
+                    className="bg-green-600 hover:bg-green-700"
+                    data-testid="button-continue"
+                  >
+                    {isSpanish ? 'Continuar' : 'Continue'} <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={() => handleDbFlowNext(
+                      dbCurrentNode?.type === 'yes-no' ? yesNoValue : 
+                      dbCurrentNode?.type === 'multiple-choice' ? choiceValue : 
+                      undefined
+                    )}
+                    disabled={!canDbFlowProceed()}
+                    data-testid="button-continue"
+                  >
+                    {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )
               ) : (
                 <Button onClick={handleQuestionNext} disabled={!checkCurrentQuestionValid()} data-testid="button-continue">
                   {labels.continueButton} <ArrowRight className="w-4 h-4 ml-2" />
