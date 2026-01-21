@@ -40,7 +40,7 @@ type Flow = {
 
 type CaseType = 'final-asylum-flow' | 'new-k1-fiance-visa' | 'new-k1-fiance-visa-beneficiary' | 'new-removal-of-conditions' | 'new-family-based-green-card-petitioner' | 'new-family-based-green-card-beneficiary' | 'other';
 
-type Step = 'welcome' | 'basic-info' | 'role-selection' | 'case-type' | 'questionnaire' | 'wrap-up';
+type Step = 'welcome' | 'basic-info' | 'role-selection' | 'case-type' | 'questionnaire' | 'no-flow' | 'wrap-up';
 
 type Role = 'beneficiary' | 'petitioner' | '';
 
@@ -267,12 +267,12 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
 
   const handleCaseTypeNext = () => {
     if (caseType) {
-      const flow = (isSpanish ? FLOW_CONFIG_ES : FLOW_CONFIG)[caseType];
-      setCurrentNodeKey(flow.start);
-      setNavigationHistory([]); // Reset navigation history for new flow
-      setAnswers({}); // Clear previous answers to avoid stale data
+      // Flows are now managed via admin interface - show no flow available message
+      // In the future, this will check if a flow is assigned to the selected category
+      setNavigationHistory([]);
+      setAnswers({});
       setErrors({});
-      setCurrentStep('questionnaire');
+      setCurrentStep('no-flow');
     }
   };
 
@@ -314,6 +314,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       setCurrentStep('basic-info');
     } else if (currentStep === 'case-type') {
       setCurrentStep('role-selection');
+    } else if (currentStep === 'no-flow') {
+      setCurrentStep('case-type');
     } else if (currentStep === 'questionnaire') {
       // Use navigation history for accurate back navigation
       if (navigationHistory.length > 0) {
@@ -498,6 +500,10 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       case 'questionnaire':
         return {
           title: labels.title
+        };
+      case 'no-flow':
+        return {
+          title: isSpanish ? 'Flujo no disponible' : 'Flow Not Available'
         };
       case 'wrap-up':
         return {
@@ -844,6 +850,36 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
             >
               {labels.continueButton}
             </Button>
+          </div>
+        );
+
+      case 'no-flow':
+        return (
+          <div className="space-y-6">
+            <div className="text-center py-8">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <ClipboardList className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {isSpanish 
+                  ? 'No hay flujo de admisión disponible' 
+                  : 'No intake flow available'}
+              </h3>
+              <p className="text-gray-600 max-w-sm mx-auto">
+                {isSpanish 
+                  ? 'Actualmente no hay un cuestionario configurado para esta categoría de caso. Por favor, contacte a nuestro equipo para obtener asistencia.' 
+                  : 'There is currently no questionnaire configured for this case category. Please contact our team for assistance.'}
+              </p>
+            </div>
+
+            <div className="flex justify-between space-x-3 pt-4">
+              <Button variant="outline" onClick={handleBack} data-testid="button-back">
+                <ArrowLeft className="w-4 h-4 mr-2" /> {labels.backButton}
+              </Button>
+              <Button onClick={handleClose} data-testid="button-close">
+                {isSpanish ? 'Cerrar' : 'Close'}
+              </Button>
+            </div>
           </div>
         );
 
