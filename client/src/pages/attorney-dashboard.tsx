@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Briefcase, Clock, DollarSign, Users, Bell, MessageSquare } from 'lucide-react';
 import AttorneyAppBar from '@/components/AttorneyAppBar';
-import ReferralList from '@/components/ReferralList';
+import SubmissionsList from '@/components/SubmissionsList';
 import MyReferralsList from '@/components/MyReferralsList';
 import ActiveCasesList from '@/components/ActiveCasesList';
 
@@ -176,9 +176,8 @@ export default function AttorneyDashboard() {
           </TabsContent>
 
           <TabsContent value="available">
-            <ReferralList 
+            <SubmissionsList 
               title="Available Referrals"
-              endpoint="/api/attorney-referrals/available"
               showAssignButton={true}
             />
           </TabsContent>
