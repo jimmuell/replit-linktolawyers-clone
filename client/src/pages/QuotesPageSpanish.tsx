@@ -68,7 +68,7 @@ export default function QuotesPageSpanish() {
 
   // Fetch structured intake data
   const { data: request, isLoading: requestLoading, error: requestError } = useQuery({
-    queryKey: [`/api/structured-intakes/${requestNumber}`],
+    queryKey: ['/api/structured-intakes', requestNumber],
     enabled: !!requestNumber,
     retry: false,
   });
@@ -76,17 +76,19 @@ export default function QuotesPageSpanish() {
   // Fetch attorneys for this case type
   const caseType = (request as any)?.data?.caseType;
   const { data: attorneys, isLoading: attorneysLoading } = useQuery({
-    queryKey: [`/api/public/attorneys/case-type/${caseType}`],
+    queryKey: ['/api/public/attorneys/case-type', caseType],
     enabled: !!caseType,
     retry: false,
   });
 
-  // Fetch assigned attorneys for this request
-  const { data: assignedAttorneys, isLoading: assignedLoading } = useQuery({
-    queryKey: [`/api/attorney-referrals/public/request/${(request as any)?.data?.id}/attorneys`],
+  // Fetch assigned attorneys for this submission
+  const { data: assignedAttorneysResponse, isLoading: assignedLoading } = useQuery<{success: boolean, data: AttorneyAssignment[]}>({
+    queryKey: ['/api/structured-intakes', (request as any)?.data?.id, 'attorneys'],
     enabled: !!(request as any)?.data?.id,
     retry: false,
   });
+
+  const assignedAttorneys = assignedAttorneysResponse?.data || [];
 
 
 
@@ -101,21 +103,21 @@ export default function QuotesPageSpanish() {
 
   // Assign attorneys mutation
   const assignAttorneysMutation = useMutation({
-    mutationFn: async (data: { requestId: number; attorneyIds: number[] }) => {
-      return apiRequest(`/api/public/requests/${data.requestId}/attorneys`, {
+    mutationFn: async (data: { submissionId: number; attorneyIds: number[] }) => {
+      return apiRequest(`/api/structured-intakes/${data.submissionId}/attorneys`, {
         method: 'POST',
         body: { attorneyIds: data.attorneyIds },
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/attorney-referrals/public/request/${(request as any)?.data?.id}/attorneys`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/structured-intakes', (request as any)?.data?.id, 'attorneys'] });
     },
   });
 
   // Send email mutation
   const sendEmailMutation = useMutation({
-    mutationFn: async (requestId: number) => {
-      return apiRequest(`/api/public/requests/${requestId}/send-attorney-emails`, {
+    mutationFn: async (submissionId: number) => {
+      return apiRequest(`/api/structured-intakes/${submissionId}/send-attorney-emails`, {
         method: 'POST',
       });
     },
@@ -157,7 +159,7 @@ export default function QuotesPageSpanish() {
       
       // Assign ALL selected attorneys (both existing and newly selected) to maintain existing assignments
       await assignAttorneysMutation.mutateAsync({
-        requestId: (request as any).data.id,
+        submissionId: (request as any).data.id,
         attorneyIds: selectedQuotes
       });
       

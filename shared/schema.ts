@@ -194,7 +194,8 @@ export const attorneyFeeSchedule = pgTable("attorney_fee_schedule", {
 
 export const requestAttorneyAssignments = pgTable("request_attorney_assignments", {
   id: serial("id").primaryKey(),
-  requestId: integer("request_id").notNull().references(() => legalRequests.id, { onDelete: "cascade" }),
+  requestId: integer("request_id").references(() => legalRequests.id, { onDelete: "cascade" }), // Legacy - for old legal_requests
+  submissionId: integer("submission_id").references(() => structuredIntakes.id, { onDelete: "cascade" }), // For structured intake submissions
   attorneyId: integer("attorney_id").notNull().references(() => attorneys.id, { onDelete: "cascade" }),
   assignedAt: timestamp("assigned_at").defaultNow().notNull(),
   status: varchar("status", { length: 50 }).notNull().default("assigned"), // assigned, accepted, declined, completed
@@ -258,6 +259,7 @@ export const insertFlowSchema = createInsertSchema(flows).pick({
 
 export const insertRequestAttorneyAssignmentSchema = createInsertSchema(requestAttorneyAssignments).pick({
   requestId: true,
+  submissionId: true,
   attorneyId: true,
   status: true,
   notes: true,

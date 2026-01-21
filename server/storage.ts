@@ -55,6 +55,10 @@ export interface IStorage {
   updateRequestAttorneyAssignments(requestId: number, attorneyIds: number[]): Promise<SelectRequestAttorneyAssignment[]>;
   updateRequestAttorneyAssignmentEmail(assignmentId: number, emailSent: boolean): Promise<SelectRequestAttorneyAssignment>;
   getAttorneysByCaseType(caseTypeValue: string): Promise<Array<Attorney & { fee?: number; feeType?: string }>>;
+  // Submission Attorney Assignments (for structured_intakes)
+  getSubmissionAttorneyAssignments(submissionId: number): Promise<RequestAttorneyAssignmentWithAttorney[]>;
+  updateSubmissionAttorneyAssignments(submissionId: number, attorneyIds: number[]): Promise<SelectRequestAttorneyAssignment[]>;
+  markSubmissionAssignmentEmailSent(assignmentId: number): Promise<SelectRequestAttorneyAssignment>;
   // Blog Posts
   createBlogPost(blogPost: InsertBlogPost): Promise<BlogPost>;
   getBlogPost(id: number): Promise<BlogPost | undefined>;
@@ -527,6 +531,76 @@ export class DatabaseStorage implements IStorage {
       .set({ 
         emailSent,
         emailSentAt: emailSent ? new Date() : null,
+        updatedAt: new Date()
+      })
+      .where(eq(requestAttorneyAssignments.id, assignmentId))
+      .returning();
+    return result;
+  }
+
+  async getSubmissionAttorneyAssignments(submissionId: number): Promise<RequestAttorneyAssignmentWithAttorney[]> {
+    const result = await db
+      .select({
+        assignment: requestAttorneyAssignments,
+        attorney: attorneys
+      })
+      .from(requestAttorneyAssignments)
+      .innerJoin(attorneys, eq(requestAttorneyAssignments.attorneyId, attorneys.id))
+      .where(eq(requestAttorneyAssignments.submissionId, submissionId))
+      .orderBy(asc(requestAttorneyAssignments.assignedAt));
+
+    return result.map(({ assignment, attorney }) => ({
+      ...assignment,
+      attorney
+    }));
+  }
+
+  async updateSubmissionAttorneyAssignments(submissionId: number, attorneyIds: number[]): Promise<SelectRequestAttorneyAssignment[]> {
+    const existingAssignments = await db
+      .select()
+      .from(requestAttorneyAssignments)
+      .where(eq(requestAttorneyAssignments.submissionId, submissionId));
+    
+    const existingEmailStatus = new Map();
+    existingAssignments.forEach(assignment => {
+      if (assignment.emailSent) {
+        existingEmailStatus.set(assignment.attorneyId, {
+          emailSent: assignment.emailSent,
+          emailSentAt: assignment.emailSentAt
+        });
+      }
+    });
+
+    await db.delete(requestAttorneyAssignments).where(eq(requestAttorneyAssignments.submissionId, submissionId));
+    
+    if (attorneyIds.length === 0) {
+      return [];
+    }
+    
+    const assignments = attorneyIds.map((attorneyId: number) => {
+      const emailStatus = existingEmailStatus.get(attorneyId);
+      return {
+        submissionId,
+        attorneyId,
+        status: 'assigned' as const,
+        notes: null,
+        emailSent: emailStatus?.emailSent || false,
+        emailSentAt: emailStatus?.emailSentAt || null
+      };
+    });
+
+    return await db
+      .insert(requestAttorneyAssignments)
+      .values(assignments)
+      .returning();
+  }
+
+  async markSubmissionAssignmentEmailSent(assignmentId: number): Promise<SelectRequestAttorneyAssignment> {
+    const [result] = await db
+      .update(requestAttorneyAssignments)
+      .set({ 
+        emailSent: true,
+        emailSentAt: new Date(),
         updatedAt: new Date()
       })
       .where(eq(requestAttorneyAssignments.id, assignmentId))

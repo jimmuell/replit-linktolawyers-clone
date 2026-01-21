@@ -1073,6 +1073,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint to get assigned attorneys for a structured intake submission
+  app.get("/api/structured-intakes/:id/attorneys", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ success: false, error: "Invalid ID" });
+      }
+      const assignments = await storage.getSubmissionAttorneyAssignments(id);
+      res.json({ success: true, data: assignments });
+    } catch (error) {
+      console.error("Error fetching submission attorney assignments:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch attorney assignments" });
+    }
+  });
+
+  // Public endpoint to assign attorneys to a structured intake submission
+  app.post("/api/structured-intakes/:id/attorneys", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { attorneyIds } = req.body;
+      
+      if (isNaN(id)) {
+        return res.status(400).json({ success: false, error: "Invalid ID" });
+      }
+      
+      if (!Array.isArray(attorneyIds)) {
+        return res.status(400).json({ error: 'Attorney IDs must be an array' });
+      }
+
+      // Verify the submission exists
+      const submission = await storage.getStructuredIntake(id);
+      if (!submission) {
+        return res.status(404).json({ error: 'Structured intake submission not found' });
+      }
+
+      // Update assignments for this submission
+      const updatedAssignments = await storage.updateSubmissionAttorneyAssignments(id, attorneyIds);
+      res.json({ success: true, data: updatedAssignments });
+    } catch (error) {
+      console.error("Error updating submission attorney assignments:", error);
+      res.status(500).json({ success: false, error: "Failed to update attorney assignments" });
+    }
+  });
+
+  // Public endpoint to send email to assigned attorneys for a structured intake submission
+  app.post("/api/structured-intakes/:id/send-attorney-emails", async (req, res) => {
+    try {
+      const submissionId = parseInt(req.params.id);
+      if (isNaN(submissionId)) {
+        return res.status(400).json({ success: false, error: "Invalid ID" });
+      }
+      
+      // Get the structured intake details
+      const submission = await storage.getStructuredIntake(submissionId);
+      if (!submission) {
+        return res.status(404).json({ error: 'Structured intake submission not found' });
+      }
+
+      // Get assigned attorneys who haven't been emailed yet
+      const assignments = await storage.getSubmissionAttorneyAssignments(submissionId);
+      const unEmailedAssignments = assignments.filter(assignment => !assignment.emailSent);
+      
+      if (unEmailedAssignments.length === 0) {
+        return res.json({ success: true, message: 'All assigned attorneys have already been emailed' });
+      }
+
+      // Get SMTP settings
+      const smtpSettings = await storage.getSmtpSettings();
+      if (!smtpSettings) {
+        return res.status(400).json({ error: 'SMTP settings not configured' });
+      }
+
+      // Get attorney details for unemailed assignments
+      const attorneyDetails = await Promise.all(
+        unEmailedAssignments.map(async (assignment) => {
+          const attorney = await storage.getAttorney(assignment.attorneyId);
+          return { assignment, attorney };
+        })
+      );
+
+      const transporter = await createTransporter();
+
+      const emailResults = [];
+      for (const { assignment, attorney } of attorneyDetails) {
+        if (!attorney) continue;
+        
+        try {
+          const caseTypes = await storage.getAllCaseTypes();
+          const caseTypeData = caseTypes.find(ct => ct.value === submission.caseType);
+          
+          const mailOptions = {
+            from: smtpSettings.fromEmail,
+            to: attorney.email,
+            subject: `New Legal Case Referral - ${caseTypeData?.label || submission.caseType}`,
+            html: `
+              <h2>New Case Referral</h2>
+              <p>A new case has been assigned to you.</p>
+              <h3>Case Details:</h3>
+              <ul>
+                <li><strong>Case Type:</strong> ${caseTypeData?.label || submission.caseType}</li>
+                <li><strong>Client Name:</strong> ${submission.firstName} ${submission.lastName}</li>
+                <li><strong>State:</strong> ${submission.state || 'Not specified'}</li>
+              </ul>
+              <p>Please log in to your dashboard to review this case and submit a quote.</p>
+            `,
+          };
+
+          await transporter.sendMail(mailOptions);
+          await storage.markSubmissionAssignmentEmailSent(assignment.id);
+          emailResults.push({ attorneyId: attorney.id, success: true });
+        } catch (emailError) {
+          console.error(`Error sending email to attorney ${attorney.id}:`, emailError);
+          emailResults.push({ attorneyId: attorney.id, success: false });
+        }
+      }
+
+      res.json({ success: true, data: emailResults });
+    } catch (error) {
+      console.error("Error sending attorney emails:", error);
+      res.status(500).json({ success: false, error: "Failed to send attorney emails" });
+    }
+  });
+
   app.get("/api/admin/legal-requests", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const legalRequests = await storage.getAllLegalRequests();

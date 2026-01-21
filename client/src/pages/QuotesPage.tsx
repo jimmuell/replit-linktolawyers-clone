@@ -88,13 +88,13 @@ export default function QuotesPage() {
     enabled: !!request?.data?.caseType,
   });
 
-  // Fetch existing assigned attorneys for this request
-  const { data: assignedAttorneysResponse, isLoading: assignedLoading } = useQuery<any[]>({
-    queryKey: ['/api/attorney-referrals/public/request', request?.data?.id, 'attorneys'],
+  // Fetch existing assigned attorneys for this submission
+  const { data: assignedAttorneysResponse, isLoading: assignedLoading } = useQuery<{success: boolean, data: any[]}>({
+    queryKey: ['/api/structured-intakes', request?.data?.id, 'attorneys'],
     enabled: !!request?.data?.id,
   });
 
-  const assignedAttorneys = Array.isArray(assignedAttorneysResponse) ? assignedAttorneysResponse : [];
+  const assignedAttorneys = assignedAttorneysResponse?.data && Array.isArray(assignedAttorneysResponse.data) ? assignedAttorneysResponse.data : [];
 
   // Fetch attorney fee schedules for assigned attorneys
   const { data: feeSchedules } = useQuery<any[]>({
@@ -117,32 +117,30 @@ export default function QuotesPage() {
 
   // Pre-select assigned attorneys when data loads
   useEffect(() => {
-    if (Array.isArray(assignedAttorneysResponse) && assignedAttorneysResponse.length > 0) {
-      const assignedIds = assignedAttorneysResponse.map((assignment: any) => assignment.attorney.id);
+    if (assignedAttorneys.length > 0) {
+      const assignedIds = assignedAttorneys.map((assignment: any) => assignment.attorney.id);
       setSelectedQuotes(prev => {
         // Only update if the array has actually changed
         if (JSON.stringify(prev.sort()) !== JSON.stringify(assignedIds.sort())) {
-          // Debug: console.log('Pre-selecting assigned attorney IDs:', assignedIds);
           return assignedIds;
         }
         return prev;
       });
-    } else if (Array.isArray(assignedAttorneysResponse) && assignedAttorneysResponse.length === 0) {
-      // Reset selections if no assigned attorneys
+    } else if (assignedAttorneysResponse && assignedAttorneys.length === 0) {
+      // Reset selections if no assigned attorneys (only if response is loaded)
       setSelectedQuotes(prev => {
         if (prev.length > 0) {
-          // Debug: console.log('No assigned attorneys, resetting selections');
           return [];
         }
         return prev;
       });
     }
-  }, [assignedAttorneysResponse]);
+  }, [assignedAttorneys, assignedAttorneysResponse]);
 
-  // Mutation to assign attorneys to request (using public endpoint)
+  // Mutation to assign attorneys to submission (using public endpoint)
   const assignAttorneysMutation = useMutation({
-    mutationFn: async ({ requestId, attorneyIds }: { requestId: number; attorneyIds: number[] }) => {
-      return apiRequest(`/api/public/requests/${requestId}/attorneys`, {
+    mutationFn: async ({ submissionId, attorneyIds }: { submissionId: number; attorneyIds: number[] }) => {
+      return apiRequest(`/api/structured-intakes/${submissionId}/attorneys`, {
         method: 'POST',
         body: { attorneyIds }
       });
@@ -150,23 +148,23 @@ export default function QuotesPage() {
     onSuccess: (data, variables) => {
       // Invalidate the assigned attorneys query to refresh the data
       queryClient.invalidateQueries({ 
-        queryKey: ['/api/attorney-referrals/public/request', variables.requestId, 'attorneys'] 
+        queryKey: ['/api/structured-intakes', variables.submissionId, 'attorneys'] 
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/legal-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/structured-intakes'] });
     }
   });
 
   // Mutation to send attorney notification emails (using public endpoint)
   const sendEmailMutation = useMutation({
-    mutationFn: async (requestId: number) => {
-      return apiRequest(`/api/public/requests/${requestId}/send-attorney-emails`, {
+    mutationFn: async (submissionId: number) => {
+      return apiRequest(`/api/structured-intakes/${submissionId}/send-attorney-emails`, {
         method: 'POST'
       });
     },
-    onSuccess: (data, requestId) => {
+    onSuccess: (data, submissionId) => {
       // Invalidate the assigned attorneys query to refresh email status
       queryClient.invalidateQueries({ 
-        queryKey: ['/api/attorney-referrals/public/request', requestId, 'attorneys'] 
+        queryKey: ['/api/structured-intakes', submissionId, 'attorneys'] 
       });
     }
   });
@@ -190,7 +188,7 @@ export default function QuotesPage() {
       
       // Assign ALL selected attorneys (both existing and newly selected) to maintain existing assignments
       await assignAttorneysMutation.mutateAsync({
-        requestId: request.data.id,
+        submissionId: request.data.id,
         attorneyIds: selectedQuotes
       });
       
