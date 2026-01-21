@@ -123,11 +123,11 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
   const [role, setRole] = useState<Role>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>(
-    initialBasicInfo ? { ...initialBasicInfo, phone: '', state: '' } : {
+    initialBasicInfo ? { ...initialBasicInfo, phone: '(555) 555-5555', state: 'WI' } : {
       fullName: 'Jim Mueller',
       email: 'jimmuell@aol.com',
-      phone: '',
-      state: ''
+      phone: '(555) 555-5555',
+      state: 'WI'
     }
   );
   const [currentNodeKey, setCurrentNodeKey] = useState<string>('');
@@ -211,6 +211,9 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       newErrors.email = 'Email address is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(basicInfo.email)) {
       newErrors.email = 'Please enter a valid email address';
+    }
+    if (!basicInfo.state) {
+      newErrors.state = 'State is required';
     }
 
     setErrors(newErrors);
@@ -550,7 +553,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     setCurrentStep('welcome');
     setCaseType('');
     setRole('');
-    setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com', phone: '', state: '' });
+    setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com', phone: '(555) 555-5555', state: 'WI' });
     setCurrentNodeKey('');
     setAnswers({});
     setAdditionalDetails('');
@@ -1133,7 +1136,9 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
               </div>
 
               <div>
-                <Label htmlFor="state">{isSpanish ? 'Estado' : 'State'}</Label>
+                <Label htmlFor="state">
+                  {isSpanish ? 'Estado' : 'State'} <span className="text-red-500">*</span>
+                </Label>
                 <Select
                   value={basicInfo.state}
                   onValueChange={(value) => setBasicInfo(prev => ({ ...prev, state: value }))}
@@ -1149,12 +1154,13 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
               </div>
             </div>
 
             <Button 
               onClick={handleBasicInfoNext} 
-              disabled={!basicInfo.fullName || !basicInfo.email} 
+              disabled={!basicInfo.fullName || !basicInfo.email || !basicInfo.state} 
               className="w-full bg-black hover:bg-gray-800 text-white py-6"
               data-testid="button-continue"
             >
