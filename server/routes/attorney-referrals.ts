@@ -21,57 +21,57 @@ import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
-// Get available referrals (unassigned legal requests)
+// Get available referrals (unassigned structured intake submissions)
 router.get("/available", requireAuth, async (req, res) => {
   try {
     const { caseType, location, status, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
     
-    // Build where conditions
-    const whereConditions = [isNull(referralAssignments.id)]; // Only unassigned requests
+    // Build where conditions - only unassigned submissions
+    const whereConditions = [isNull(referralAssignments.id)];
     
     if (caseType && typeof caseType === 'string' && caseType !== 'all') {
-      whereConditions.push(eq(legalRequests.caseType, caseType));
+      whereConditions.push(eq(structuredIntakes.caseType, caseType));
     }
     if (location && typeof location === 'string' && location !== 'all') {
-      whereConditions.push(eq(legalRequests.location, location));
+      whereConditions.push(eq(structuredIntakes.state, location));
     }
     if (status && typeof status === 'string' && status !== 'all') {
-      whereConditions.push(eq(legalRequests.status, status));
+      whereConditions.push(eq(structuredIntakes.status, status));
     }
 
     // Apply sorting
     let orderByClause;
     if (sortBy === 'firstName') {
-      orderByClause = sortOrder === 'asc' ? asc(legalRequests.firstName) : desc(legalRequests.firstName);
+      orderByClause = sortOrder === 'asc' ? asc(structuredIntakes.firstName) : desc(structuredIntakes.firstName);
     } else if (sortBy === 'lastName') {
-      orderByClause = sortOrder === 'asc' ? asc(legalRequests.lastName) : desc(legalRequests.lastName);
+      orderByClause = sortOrder === 'asc' ? asc(structuredIntakes.lastName) : desc(structuredIntakes.lastName);
     } else if (sortBy === 'caseType') {
-      orderByClause = sortOrder === 'asc' ? asc(legalRequests.caseType) : desc(legalRequests.caseType);
+      orderByClause = sortOrder === 'asc' ? asc(structuredIntakes.caseType) : desc(structuredIntakes.caseType);
     } else if (sortBy === 'location') {
-      orderByClause = sortOrder === 'asc' ? asc(legalRequests.location) : desc(legalRequests.location);
+      orderByClause = sortOrder === 'asc' ? asc(structuredIntakes.state) : desc(structuredIntakes.state);
     } else if (sortBy === 'status') {
-      orderByClause = sortOrder === 'asc' ? asc(legalRequests.status) : desc(legalRequests.status);
+      orderByClause = sortOrder === 'asc' ? asc(structuredIntakes.status) : desc(structuredIntakes.status);
     } else {
-      orderByClause = sortOrder === 'asc' ? asc(legalRequests.createdAt) : desc(legalRequests.createdAt);
+      orderByClause = sortOrder === 'asc' ? asc(structuredIntakes.createdAt) : desc(structuredIntakes.createdAt);
     }
 
     const query = db
       .select({
-        id: legalRequests.id,
-        requestNumber: legalRequests.requestNumber,
-        firstName: legalRequests.firstName,
-        lastName: legalRequests.lastName,
-        email: legalRequests.email,
-        phoneNumber: legalRequests.phoneNumber,
-        caseType: legalRequests.caseType,
-        caseDescription: legalRequests.caseDescription,
-        location: legalRequests.location,
-        status: legalRequests.status,
-        createdAt: legalRequests.createdAt,
-        updatedAt: legalRequests.updatedAt,
+        id: structuredIntakes.id,
+        requestNumber: structuredIntakes.requestNumber,
+        firstName: structuredIntakes.firstName,
+        lastName: structuredIntakes.lastName,
+        email: structuredIntakes.email,
+        phoneNumber: structuredIntakes.phoneNumber,
+        caseType: structuredIntakes.caseType,
+        caseDescription: sql<string>`''`.as('caseDescription'),
+        location: structuredIntakes.state,
+        status: structuredIntakes.status,
+        createdAt: structuredIntakes.createdAt,
+        updatedAt: structuredIntakes.updatedAt,
       })
-      .from(legalRequests)
-      .leftJoin(referralAssignments, eq(legalRequests.id, referralAssignments.requestId))
+      .from(structuredIntakes)
+      .leftJoin(referralAssignments, eq(structuredIntakes.id, referralAssignments.submissionId))
       .where(and(...whereConditions))
       .orderBy(orderByClause);
 
