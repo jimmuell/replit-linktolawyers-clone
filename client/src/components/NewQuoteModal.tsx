@@ -20,6 +20,7 @@ interface NewQuoteModalProps {
   initialBasicInfo?: { fullName: string; email: string };
   initialCaseType?: string;
   skipToQuestionnaire?: boolean;
+  language?: 'en' | 'es';
 }
 
 // Type definitions for the questionnaire system
@@ -118,7 +119,7 @@ const FLOW_CONFIG: Record<string, Flow> = buildFlowConfig('en') as unknown as Re
 // Spanish translations for all flow configurations (legacy)
 const FLOW_CONFIG_ES: Record<string, Flow> = buildFlowConfig('es') as unknown as Record<string, Flow>;
 
-export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false }: NewQuoteModalProps) {
+export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false, language = 'en' }: NewQuoteModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>(skipToQuestionnaire ? 'questionnaire' : 'welcome');
   const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
   const [role, setRole] = useState<Role>('');
@@ -482,7 +483,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
           additionalDetails,
           transcript,
           submittedAt: new Date().toISOString()
-        }
+        },
+        language
       };
 
       // POST to structured intakes endpoint
@@ -492,8 +494,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       });
 
       toast({
-        title: 'Quote Request Submitted',
-        description: 'Thank you! An experienced attorney will be in touch soon.',
+        title: language === 'es' ? 'Solicitud Enviada' : 'Quote Request Submitted',
+        description: language === 'es' ? '¡Gracias! Un abogado experimentado se pondrá en contacto pronto.' : 'Thank you! An experienced attorney will be in touch soon.',
         variant: 'default'
       });
 
@@ -527,7 +529,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
           answers,
           additionalDetails,
           submittedAt: new Date().toISOString()
-        }
+        },
+        language
       };
 
       await apiRequest('/api/structured-intakes', {

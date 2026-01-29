@@ -945,7 +945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Structured Intake API routes
   app.post("/api/structured-intakes", async (req, res) => {
     try {
-      const { firstName, lastName, email, caseType, formResponses } = req.body;
+      const { firstName, lastName, email, caseType, formResponses, language } = req.body;
       
       if (!firstName || !lastName || !email || !caseType || !formResponses) {
         return res.status(400).json({ success: false, error: "Missing required fields" });
@@ -992,7 +992,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Validate the data before creating legal request
       const validatedLegalRequestData = insertLegalRequestSchema.parse(legalRequestData);
-      await storage.createLegalRequest(validatedLegalRequestData);
+      const legalRequest = await storage.createLegalRequest(validatedLegalRequestData);
+
+      // Send confirmation email using existing templates
+      try {
+        const smtpSettings = await storage.getSmtpSettings();
+        if (smtpSettings) {
+          // Get case type data for template variables
+          const caseTypeData = await storage.getCaseTypeByValue(caseType);
+          
+          // Get template variables
+          const templateVariables = getLegalRequestConfirmationVariables(legalRequest, caseTypeData);
+          
+          // Determine which template to use based on language (default to English)
+          const templateKey = language === 'es' ? 'legal_request_confirmation_spanish' : 'legal_request_confirmation';
+          
+          // Get processed template from database
+          const processedTemplate = await getProcessedTemplate(templateKey, templateVariables);
+          
+          if (processedTemplate) {
+            await sendEmail(
+              email,
+              processedTemplate.subject,
+              processedTemplate.html,
+              processedTemplate.text || ''
+            );
+            
+            // Store successful email in history
+            await storage.createEmailHistory({
+              toAddress: email,
+              subject: processedTemplate.subject,
+              message: processedTemplate.html,
+              status: 'sent',
+              errorMessage: null,
+            });
+            
+            console.log(`Confirmation email sent to ${email} for intake ${requestNumber}`);
+          }
+        }
+      } catch (emailError: any) {
+        // Log email error but don't fail the submission
+        console.error('Error sending confirmation email:', emailError.message);
+        // Store failed email in history if we have template info
+        try {
+          await storage.createEmailHistory({
+            toAddress: email,
+            subject: 'Request Confirmation',
+            message: '',
+            status: 'failed',
+            errorMessage: emailError.message,
+          });
+        } catch (historyError) {
+          console.error('Error storing email history:', historyError);
+        }
+      }
 
       res.json({ success: true, data: structuredIntake });
     } catch (error) {

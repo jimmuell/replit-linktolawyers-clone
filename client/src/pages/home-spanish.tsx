@@ -392,6 +392,7 @@ export default function HomeSpanish() {
       <NewQuoteModal
         isOpen={isQuoteModalOpen}
         onClose={() => setIsQuoteModalOpen(false)}
+        language="es"
       />
 
       {/* Intake Modal */}
