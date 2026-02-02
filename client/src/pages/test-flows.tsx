@@ -66,6 +66,7 @@ export default function TestFlows() {
     totalPaths: number;
     totalSteps: number;
     nodeTypes: Record<string, number>;
+    nodeList: Array<{ type: string; content: string }>;
   } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -138,13 +139,24 @@ export default function TestFlows() {
 
     setIsAnalyzing(true);
 
-    // Count node types
+    // Count node types and extract content
     const nodeTypes: Record<string, number> = {};
     const nodesById: Record<string, any> = {};
+    const nodeList: Array<{ type: string; content: string }> = [];
+    
     parsedFlow.nodes.forEach(node => {
       const type = node.type || 'unknown';
       nodeTypes[type] = (nodeTypes[type] || 0) + 1;
       nodesById[node.id] = node;
+      
+      // Extract primary content for display
+      const content = node.question || 
+                     node.formTitle || 
+                     node.infoTitle || 
+                     node.infoDescription ||
+                     node.thankYouTitle ||
+                     '(no content)';
+      nodeList.push({ type, content: content.substring(0, 100) });
     });
 
     // Find all paths through the flow using DFS
@@ -209,7 +221,8 @@ export default function TestFlows() {
       totalNodes: parsedFlow.nodes.length,
       totalPaths: pathCount,
       totalSteps: totalSteps,
-      nodeTypes
+      nodeTypes,
+      nodeList
     });
 
     setIsAnalyzing(false);
@@ -540,6 +553,19 @@ export default function TestFlows() {
                       ))}
                     </div>
                   </div>
+                  <details className="mt-2 pt-2 border-t border-blue-200">
+                    <summary className="text-xs font-medium text-blue-700 cursor-pointer hover:text-blue-900">
+                      View All Nodes ({flowBenchmark.nodeList.length})
+                    </summary>
+                    <div className="mt-2 max-h-48 overflow-y-auto space-y-1">
+                      {flowBenchmark.nodeList.map((node, idx) => (
+                        <div key={idx} className="bg-white rounded p-2 text-xs">
+                          <Badge variant="outline" className="text-xs mr-2">{node.type}</Badge>
+                          <span className="text-gray-700">{node.content}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
                 </div>
               )}
             </div>
