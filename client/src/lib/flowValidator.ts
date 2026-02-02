@@ -107,6 +107,16 @@ function getNodePrimaryContent(node: FlowNode): string {
          '';
 }
 
+// Generic placeholders that test script generators commonly use
+const GENERIC_PLACEHOLDERS = new Set([
+  'welcome', 'start', 'begin', 'success', 'end', 'complete', 'completed', 
+  'congratulations', 'thank you', 'thanks', 'finish', 'done'
+]);
+
+function isGenericPlaceholder(text: string): boolean {
+  return GENERIC_PLACEHOLDERS.has(normalizeText(text));
+}
+
 function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: string): FlowNode | null {
   const expectedType = mapScreenTypeToNodeType(step.screenType);
   const normalizedQuestion = normalizeText(step.questionContent);
@@ -124,6 +134,15 @@ function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: strin
     const connectedCandidates = candidates.filter(n => connectedNodeIds.includes(n.id));
     if (connectedCandidates.length > 0) {
       candidates = connectedCandidates;
+    }
+  }
+
+  // For terminal node types (start, success, end, completion), if test uses generic placeholder,
+  // match by type only since test script generators often use placeholders
+  const terminalTypes = ['start', 'success', 'end', 'completion'];
+  if (terminalTypes.includes(expectedType) && isGenericPlaceholder(step.questionContent)) {
+    if (candidates.length > 0) {
+      return candidates[0]; // Return first matching type
     }
   }
 
@@ -148,6 +167,11 @@ function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: strin
     }
   }
 
+  // Third pass: for terminal types, match by type if only one candidate
+  if (terminalTypes.includes(expectedType) && candidates.length === 1) {
+    return candidates[0];
+  }
+
   return null;
 }
 
@@ -155,6 +179,12 @@ function validateStepQuestionMatch(step: TestStep, node: FlowNode): ValidationEr
   const stepQuestion = normalizeText(step.questionContent);
   const contentTexts = getNodeContentTexts(node);
   const primaryContent = getNodePrimaryContent(node);
+  
+  // Skip validation for terminal nodes with generic placeholders
+  const terminalTypes = ['start', 'success', 'end', 'completion'];
+  if (terminalTypes.includes(node.type.toLowerCase()) && isGenericPlaceholder(step.questionContent)) {
+    return null; // Accept match for terminal nodes with generic placeholders
+  }
   
   // Check if any content field matches
   for (const text of contentTexts) {
