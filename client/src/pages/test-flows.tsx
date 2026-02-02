@@ -26,6 +26,7 @@ import { parseTestScript, matchFlowToTestScript, type ParsedTestScript, type Tes
 import { useToast } from '@/hooks/use-toast';
 import { TestPathPreviewModal } from '@/components/TestPathPreviewModal';
 import { type ParsedFlow } from '@/lib/flowParser';
+import { validateFlowAgainstTestScript, getValidationSummaryMessage, type FlowValidationResult, type ValidationError } from '@/lib/flowValidator';
 import type { Flow } from '@shared/schema';
 
 type TestStatus = 'pending' | 'running' | 'passed' | 'failed';
@@ -127,11 +128,23 @@ export default function TestFlows() {
     }
   };
 
-  const simulateTestRun = async () => {
+  const [validationResult, setValidationResult] = useState<FlowValidationResult | null>(null);
+
+  const runValidation = async () => {
     if (!testScript || !selectedFlowSlug) return;
 
     const selectedFlow = flows.find(f => f.slug === selectedFlowSlug);
     if (!selectedFlow) return;
+
+    const parsedFlow = getSelectedParsedFlow();
+    if (!parsedFlow || parsedFlow.nodes.length === 0) {
+      toast({
+        title: 'Flow not imported',
+        description: 'Please import the flow in Flow Management first to run validation.',
+        variant: 'destructive'
+      });
+      return;
+    }
 
     setIsTestRunning(true);
 
@@ -155,8 +168,13 @@ export default function TestFlows() {
 
     setTestRun(run);
 
-    for (let i = 0; i < testScript.paths.length; i++) {
-      const path = testScript.paths[i];
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const validation = validateFlowAgainstTestScript(testScript, parsedFlow);
+    setValidationResult(validation);
+
+    for (let i = 0; i < validation.pathResults.length; i++) {
+      const pathResult = validation.pathResults[i];
       
       run.results[i] = {
         ...run.results[i],
@@ -164,8 +182,8 @@ export default function TestFlows() {
       };
       setTestRun({ ...run });
 
-      for (let stepIdx = 0; stepIdx < path.steps.length; stepIdx++) {
-        await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+      for (let stepIdx = 0; stepIdx < pathResult.stepResults.length; stepIdx++) {
+        await new Promise(resolve => setTimeout(resolve, 150));
         
         run.results[i] = {
           ...run.results[i],
@@ -174,21 +192,29 @@ export default function TestFlows() {
         setTestRun({ ...run });
       }
 
-      const passed = Math.random() > 0.15;
-      
-      if (passed) {
+      if (pathResult.isValid) {
         run.results[i] = {
           ...run.results[i],
           status: 'passed'
         };
         run.passedPaths++;
       } else {
-        const failedStep = Math.floor(Math.random() * path.steps.length) + 1;
+        const firstError = pathResult.errors[0];
+        const failedStep = firstError?.stepNumber || 1;
+        
+        let errorMessage = `Validation failed with ${pathResult.errors.length} error(s):`;
+        pathResult.errors.slice(0, 2).forEach(err => {
+          errorMessage += ` ${err.message}`;
+        });
+        if (pathResult.errors.length > 2) {
+          errorMessage += ` (+${pathResult.errors.length - 2} more)`;
+        }
+        
         run.results[i] = {
           ...run.results[i],
           status: 'failed',
-          failedStep,
-          errorMessage: `Step ${failedStep}: Expected screen type "${path.steps[failedStep - 1]?.screenType}" but found different content`
+          failedStep: failedStep > 0 ? failedStep : 1,
+          errorMessage
         };
         run.failedPaths++;
       }
@@ -201,9 +227,10 @@ export default function TestFlows() {
     setTestRun({ ...run });
     setIsTestRunning(false);
 
+    const summaryMessage = getValidationSummaryMessage(validation);
     toast({
-      title: run.failedPaths === 0 ? 'All tests passed!' : 'Tests completed with failures',
-      description: `${run.passedPaths}/${run.totalPaths} paths passed`,
+      title: run.failedPaths === 0 ? 'All validations passed!' : 'Validation completed with failures',
+      description: summaryMessage,
       variant: run.failedPaths === 0 ? 'default' : 'destructive'
     });
   };
@@ -421,7 +448,7 @@ export default function TestFlows() {
             <Button 
               className="w-full bg-orange-500 hover:bg-orange-600"
               disabled={!selectedFlowSlug || !testScript || isTestRunning}
-              onClick={simulateTestRun}
+              onClick={runValidation}
             >
               {isTestRunning ? (
                 <>
@@ -501,6 +528,53 @@ export default function TestFlows() {
                     {testRun.passedPaths + testRun.failedPaths}/{testRun.totalPaths}
                   </span>
                 </div>
+
+                {validationResult && !isTestRunning && (
+                  <div className="p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium text-gray-900 mb-3">Validation Summary</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div className="p-2 bg-white rounded border">
+                        <div className="text-gray-500">Total Paths</div>
+                        <div className="font-semibold">{validationResult.summary.totalPaths}</div>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <div className="text-gray-500">Valid Paths</div>
+                        <div className="font-semibold text-green-600">{validationResult.summary.validPaths}</div>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <div className="text-gray-500">Total Steps</div>
+                        <div className="font-semibold">{validationResult.summary.totalSteps}</div>
+                      </div>
+                      <div className="p-2 bg-white rounded border">
+                        <div className="text-gray-500">Valid Steps</div>
+                        <div className="font-semibold text-green-600">{validationResult.summary.validSteps}</div>
+                      </div>
+                      <div className="p-2 bg-white rounded border col-span-2">
+                        <div className="text-gray-500">Expected Nodes</div>
+                        <div className="font-semibold">{validationResult.summary.totalNodes.expected}</div>
+                      </div>
+                      <div className="p-2 bg-white rounded border col-span-2">
+                        <div className="text-gray-500">Matched Nodes</div>
+                        <div className={`font-semibold ${validationResult.summary.totalNodes.actual === validationResult.summary.totalNodes.expected ? 'text-green-600' : 'text-red-600'}`}>
+                          {validationResult.summary.totalNodes.actual}
+                        </div>
+                      </div>
+                    </div>
+                    {validationResult.errors.length > 0 && (
+                      <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-sm">
+                        <div className="font-medium text-red-700 mb-1">Validation Errors ({validationResult.errors.length})</div>
+                        <ul className="text-red-600 text-xs space-y-1 max-h-24 overflow-y-auto">
+                          {validationResult.errors.slice(0, 5).map((err, i) => (
+                            <li key={i}>Step {err.stepNumber}: {err.type.replace('_', ' ')}</li>
+                          ))}
+                          {validationResult.errors.length > 5 && (
+                            <li className="text-red-500">+{validationResult.errors.length - 5} more errors</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   {testRun.results.map((result, idx) => {
