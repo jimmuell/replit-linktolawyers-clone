@@ -1,5 +1,6 @@
 export interface TestStep {
   stepNumber: number;
+  nodeId?: string;
   screenType: string;
   questionContent: string;
   action: string;
@@ -40,18 +41,43 @@ function parseMarkdownTableRows(tableContent: string): TestStep[] {
   const steps: TestStep[] = [];
   const lines = tableContent.split('\n').filter(line => line.includes('|'));
   
+  // Detect if Node ID column is present by checking header row
+  let hasNodeIdColumn = false;
   for (const line of lines) {
     const cells = line.split('|').map(c => c.trim()).filter(c => c);
-    if (cells.length >= 5 && !cells[0].includes('---') && cells[0] !== 'Step') {
+    if (cells[0] === 'Step' && cells.some(c => c.toLowerCase() === 'node id')) {
+      hasNodeIdColumn = true;
+      break;
+    }
+  }
+  
+  for (const line of lines) {
+    const cells = line.split('|').map(c => c.trim()).filter(c => c);
+    const minCells = hasNodeIdColumn ? 6 : 5;
+    
+    if (cells.length >= minCells && !cells[0].includes('---') && cells[0] !== 'Step') {
       const stepNum = parseInt(cells[0]);
       if (!isNaN(stepNum)) {
-        steps.push({
-          stepNumber: stepNum,
-          screenType: cells[1] || '',
-          questionContent: cells[2] || '',
-          action: cells[3] || '',
-          expectedNext: cells[4] || ''
-        });
+        if (hasNodeIdColumn) {
+          // New format: Step | Node ID | Screen Type | Question/Content | Action | Expected Next
+          steps.push({
+            stepNumber: stepNum,
+            nodeId: cells[1] || undefined,
+            screenType: cells[2] || '',
+            questionContent: cells[3] || '',
+            action: cells[4] || '',
+            expectedNext: cells[5] || ''
+          });
+        } else {
+          // Old format: Step | Screen Type | Question/Content | Action | Expected Next
+          steps.push({
+            stepNumber: stepNum,
+            screenType: cells[1] || '',
+            questionContent: cells[2] || '',
+            action: cells[3] || '',
+            expectedNext: cells[4] || ''
+          });
+        }
       }
     }
   }

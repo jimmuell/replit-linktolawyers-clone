@@ -70,6 +70,8 @@ function mapScreenTypeToNodeType(screenType: string): string {
     'success': 'success',
     'end': 'end',
     'text': 'text',
+    'text-input': 'text',
+    'textinput': 'text',
     'date': 'date',
     'subflow': 'subflow'
   };
@@ -121,6 +123,15 @@ function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: strin
   const expectedType = mapScreenTypeToNodeType(step.screenType);
   const normalizedQuestion = normalizeText(step.questionContent);
   
+  // PRIORITY 1: Match by Node ID if provided (100% reliable)
+  if (step.nodeId) {
+    const nodeById = flow.nodes.find(node => node.id === step.nodeId);
+    if (nodeById) {
+      return nodeById;
+    }
+    // If node ID provided but not found, continue with fallback matching
+  }
+  
   let candidates = flow.nodes.filter(node => {
     const nodeType = node.type.toLowerCase();
     return nodeType === expectedType;
@@ -156,12 +167,16 @@ function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: strin
     }
   }
 
-  // Second pass: check if test question is contained in any content field
+  // Second pass: check if test question is contained in any content field (handles truncation)
   for (const node of candidates) {
     const contentTexts = getNodeContentTexts(node);
     for (const text of contentTexts) {
       const normalizedText = normalizeText(text);
-      if (normalizedText.includes(normalizedQuestion) || normalizedQuestion.includes(normalizedText)) {
+      // Strip trailing ellipsis for prefix matching
+      const questionWithoutEllipsis = normalizedQuestion.replace(/\.{3,}$/, '').trim();
+      if (normalizedText.includes(normalizedQuestion) || 
+          normalizedQuestion.includes(normalizedText) ||
+          normalizedText.startsWith(questionWithoutEllipsis)) {
         return node;
       }
     }
@@ -180,6 +195,11 @@ function validateStepQuestionMatch(step: TestStep, node: FlowNode): ValidationEr
   const contentTexts = getNodeContentTexts(node);
   const primaryContent = getNodePrimaryContent(node);
   
+  // Skip validation if matched by Node ID - ID match is authoritative
+  if (step.nodeId && step.nodeId === node.id) {
+    return null; // Node ID match is 100% reliable, skip content validation
+  }
+  
   // Skip validation for terminal nodes with generic placeholders
   const terminalTypes = ['start', 'success', 'end', 'completion'];
   if (terminalTypes.includes(node.type.toLowerCase()) && isGenericPlaceholder(step.questionContent)) {
@@ -189,9 +209,12 @@ function validateStepQuestionMatch(step: TestStep, node: FlowNode): ValidationEr
   // Check if any content field matches
   for (const text of contentTexts) {
     const normalizedText = normalizeText(text);
+    // Also handle truncated text with ellipsis
+    const questionWithoutEllipsis = stepQuestion.replace(/\.{3,}$/, '').trim();
     if (normalizedText === stepQuestion || 
         normalizedText.includes(stepQuestion) || 
-        stepQuestion.includes(normalizedText)) {
+        stepQuestion.includes(normalizedText) ||
+        normalizedText.startsWith(questionWithoutEllipsis)) {
       return null;
     }
   }
