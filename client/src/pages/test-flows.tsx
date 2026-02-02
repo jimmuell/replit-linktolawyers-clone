@@ -140,64 +140,70 @@ export default function TestFlows() {
 
     // Count node types
     const nodeTypes: Record<string, number> = {};
+    const nodesById: Record<string, any> = {};
     parsedFlow.nodes.forEach(node => {
       const type = node.type || 'unknown';
       nodeTypes[type] = (nodeTypes[type] || 0) + 1;
+      nodesById[node.id] = node;
     });
 
     // Find all paths through the flow using DFS
     const connections = parsedFlow.connections || [];
     const startNodes = parsedFlow.nodes.filter(n => n.type === 'start');
-    const endNodes = new Set(parsedFlow.nodes.filter(n => 
-      n.type === 'end' || n.type === 'success' || n.type === 'completion'
-    ).map(n => n.id));
+    const endNodeTypes = new Set(['end', 'success', 'completion']);
 
-    // Build adjacency list
+    // Build adjacency list using correct field names
     const adjacency: Record<string, string[]> = {};
     connections.forEach((conn: any) => {
-      const from = conn.from || conn.source;
-      const to = conn.to || conn.target;
+      const from = conn.sourceNodeId || conn.from || conn.source;
+      const to = conn.targetNodeId || conn.to || conn.target;
       if (from && to) {
         if (!adjacency[from]) adjacency[from] = [];
-        adjacency[from].push(to);
+        // Only add unique connections
+        if (!adjacency[from].includes(to)) {
+          adjacency[from].push(to);
+        }
       }
     });
 
-    // Count paths using DFS
-    let pathCount = 0;
-    let totalSteps = 0;
-
-    const countPaths = (nodeId: string, visited: Set<string>, depth: number) => {
-      if (visited.has(nodeId)) return; // Prevent cycles
-      if (endNodes.has(nodeId)) {
-        pathCount++;
-        totalSteps += depth;
+    // Count unique paths using DFS with full path tracking
+    const allPaths: string[][] = [];
+    
+    const findPaths = (nodeId: string, currentPath: string[]) => {
+      // Prevent infinite loops on cycles
+      if (currentPath.includes(nodeId)) return;
+      
+      const newPath = [...currentPath, nodeId];
+      const node = nodesById[nodeId];
+      const nodeType = node?.type || '';
+      
+      // Check if this is an end node
+      if (endNodeTypes.has(nodeType)) {
+        allPaths.push(newPath);
         return;
       }
 
-      visited.add(nodeId);
       const neighbors = adjacency[nodeId] || [];
       
-      if (neighbors.length === 0 && depth > 0) {
-        // Dead end - count as path
-        pathCount++;
-        totalSteps += depth;
+      if (neighbors.length === 0) {
+        // Dead end - count as path end
+        allPaths.push(newPath);
       } else {
+        // Continue exploring each branch
         neighbors.forEach(next => {
-          countPaths(next, new Set(visited), depth + 1);
+          findPaths(next, newPath);
         });
       }
     };
 
+    // Start from all start nodes
     startNodes.forEach(start => {
-      countPaths(start.id, new Set(), 0);
+      findPaths(start.id, []);
     });
 
-    // If no paths found, estimate from node count
-    if (pathCount === 0) {
-      pathCount = 1;
-      totalSteps = parsedFlow.nodes.length;
-    }
+    // Calculate totals
+    const pathCount = allPaths.length || 1;
+    const totalSteps = allPaths.reduce((sum, path) => sum + path.length, 0) || parsedFlow.nodes.length;
 
     setFlowBenchmark({
       totalNodes: parsedFlow.nodes.length,
