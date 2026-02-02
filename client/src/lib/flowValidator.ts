@@ -78,6 +78,35 @@ function mapScreenTypeToNodeType(screenType: string): string {
   return mapping[normalized] || normalized;
 }
 
+function getNodeContentTexts(node: FlowNode): string[] {
+  const texts: string[] = [];
+  
+  // Add all possible content fields
+  if (node.question) texts.push(node.question);
+  if (node.formTitle) texts.push(node.formTitle);
+  if (node.infoTitle) texts.push(node.infoTitle);
+  if (node.infoDescription) texts.push(node.infoDescription);
+  if (node.formDescription) texts.push(node.formDescription);
+  if (node.welcomeDescription) texts.push(node.welcomeDescription);
+  if (node.thankYouTitle) texts.push(node.thankYouTitle);
+  if (node.thankYouMessage) texts.push(node.thankYouMessage);
+  
+  return texts.filter(t => t && t.trim() !== '');
+}
+
+function getNodePrimaryContent(node: FlowNode): string {
+  // Priority order for primary content
+  return node.question || 
+         node.formTitle || 
+         node.infoTitle || 
+         node.infoDescription ||
+         node.formDescription ||
+         node.welcomeDescription ||
+         node.thankYouTitle ||
+         node.thankYouMessage ||
+         '';
+}
+
 function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: string): FlowNode | null {
   const expectedType = mapScreenTypeToNodeType(step.screenType);
   const normalizedQuestion = normalizeText(step.questionContent);
@@ -98,12 +127,24 @@ function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: strin
     }
   }
 
+  // First pass: exact match on any content field
   for (const node of candidates) {
-    const nodeQuestion = node.question || node.formTitle || '';
-    const normalizedNodeQuestion = normalizeText(nodeQuestion);
-    
-    if (normalizedNodeQuestion === normalizedQuestion) {
-      return node;
+    const contentTexts = getNodeContentTexts(node);
+    for (const text of contentTexts) {
+      if (normalizeText(text) === normalizedQuestion) {
+        return node;
+      }
+    }
+  }
+
+  // Second pass: check if test question is contained in any content field
+  for (const node of candidates) {
+    const contentTexts = getNodeContentTexts(node);
+    for (const text of contentTexts) {
+      const normalizedText = normalizeText(text);
+      if (normalizedText.includes(normalizedQuestion) || normalizedQuestion.includes(normalizedText)) {
+        return node;
+      }
     }
   }
 
@@ -112,18 +153,25 @@ function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: strin
 
 function validateStepQuestionMatch(step: TestStep, node: FlowNode): ValidationError | null {
   const stepQuestion = normalizeText(step.questionContent);
-  const nodeQuestion = normalizeText(node.question || node.formTitle || '');
+  const contentTexts = getNodeContentTexts(node);
+  const primaryContent = getNodePrimaryContent(node);
   
-  if (stepQuestion === nodeQuestion) {
-    return null;
+  // Check if any content field matches
+  for (const text of contentTexts) {
+    const normalizedText = normalizeText(text);
+    if (normalizedText === stepQuestion || 
+        normalizedText.includes(stepQuestion) || 
+        stepQuestion.includes(normalizedText)) {
+      return null;
+    }
   }
   
   return {
     type: 'question_mismatch',
     stepNumber: step.stepNumber,
     expected: step.questionContent,
-    actual: node.question || node.formTitle || '(no question)',
-    message: `Question text does not match exactly. Expected: "${step.questionContent}" but found: "${node.question || node.formTitle || '(no question)'}"`
+    actual: primaryContent || '(no question)',
+    message: `Question text does not match exactly. Expected: "${step.questionContent}" but found: "${primaryContent || '(no question)'}"`
   };
 }
 
