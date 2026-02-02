@@ -125,8 +125,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   const [role, setRole] = useState<Role>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>(
     initialBasicInfo ? { ...initialBasicInfo, phone: '(555) 555-5555', state: 'TX' } : {
-      fullName: 'Khaled Boubenider',
-      email: 'khaled.boubeniderrincon1@gmail.com',
+      fullName: 'Jim Mueller',
+      email: 'jimmuell@aol.com',
       phone: '(555) 555-5555',
       state: 'TX'
     }
@@ -556,7 +556,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     setCurrentStep('welcome');
     setCaseType('');
     setRole('');
-    setBasicInfo({ fullName: 'Khaled Boubenider', email: 'khaled.boubeniderrincon1@gmail.com', phone: '(555) 555-5555', state: 'TX' });
+    setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com', phone: '(555) 555-5555', state: 'TX' });
     setCurrentNodeKey('');
     setAnswers({});
     setAdditionalDetails('');
