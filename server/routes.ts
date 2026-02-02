@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import OpenAI from "openai";
+import { z } from "zod";
 import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
@@ -641,22 +642,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update flow test results
+  const testResultsSchema = z.object({
+    testStatus: z.enum(['passed', 'failed']),
+    testDetails: z.object({
+      totalPaths: z.number().optional(),
+      validPaths: z.number().optional(),
+      totalSteps: z.number().optional(),
+      validSteps: z.number().optional(),
+      errorCount: z.number().optional()
+    }).optional()
+  });
+
   app.patch("/api/admin/flows/:id/test-results", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const { testStatus, testDetails } = req.body;
+      
+      const parsed = testResultsSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid test results data", details: parsed.error.errors });
+      }
+      
+      const { testStatus, testDetails } = parsed.data;
       
       const flow = await storage.updateFlowTestResults(id, {
         testStatus,
         testDate: new Date(),
-        testDetails
+        testDetails: testDetails || null
       });
       
       // Also update any case types linked to this flow
       await storage.updateCaseTypeTestResultsByFlowId(id, {
         testStatus,
         testDate: new Date(),
-        testDetails
+        testDetails: testDetails || null
       });
       
       res.json(flow);

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import AdminLayout from '@/components/AdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -339,11 +340,9 @@ export default function TestFlows() {
 
     // Save test results to database
     try {
-      await fetch(`/api/admin/flows/${selectedFlow.id}/test-results`, {
+      const response = await apiRequest(`/api/admin/flows/${selectedFlow.id}/test-results`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
+        body: {
           testStatus: run.failedPaths === 0 ? 'passed' : 'failed',
           testDetails: {
             totalPaths: validation.summary.totalPaths,
@@ -352,10 +351,19 @@ export default function TestFlows() {
             validSteps: validation.summary.validSteps,
             errorCount: validation.errors.length
           }
-        })
+        }
       });
+      
+      // Invalidate flow cache to reflect updated test status
+      queryClient.invalidateQueries({ queryKey: ['/api/flows/active'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/flows'] });
     } catch (error) {
       console.error('Failed to save test results:', error);
+      toast({
+        title: 'Warning',
+        description: 'Test completed but failed to save results to database',
+        variant: 'destructive'
+      });
     }
   };
 
