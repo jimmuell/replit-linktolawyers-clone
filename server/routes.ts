@@ -640,6 +640,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update flow test results
+  app.patch("/api/admin/flows/:id/test-results", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { testStatus, testDetails } = req.body;
+      
+      const flow = await storage.updateFlowTestResults(id, {
+        testStatus,
+        testDate: new Date(),
+        testDetails
+      });
+      
+      // Also update any case types linked to this flow
+      await storage.updateCaseTypeTestResultsByFlowId(id, {
+        testStatus,
+        testDate: new Date(),
+        testDetails
+      });
+      
+      res.json(flow);
+    } catch (error) {
+      console.error("Error updating flow test results:", error);
+      res.status(500).json({ error: "Failed to update flow test results" });
+    }
+  });
+
   // Get active flows for dropdown selection
   app.get("/api/flows/active", async (req, res) => {
     try {

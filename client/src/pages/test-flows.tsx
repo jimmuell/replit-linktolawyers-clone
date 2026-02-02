@@ -336,6 +336,27 @@ export default function TestFlows() {
       description: summaryMessage,
       variant: run.failedPaths === 0 ? 'default' : 'destructive'
     });
+
+    // Save test results to database
+    try {
+      await fetch(`/api/admin/flows/${selectedFlow.id}/test-results`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          testStatus: run.failedPaths === 0 ? 'passed' : 'failed',
+          testDetails: {
+            totalPaths: validation.summary.totalPaths,
+            validPaths: validation.summary.validPaths,
+            totalSteps: validation.summary.totalSteps,
+            validSteps: validation.summary.validSteps,
+            errorCount: validation.errors.length
+          }
+        })
+      });
+    } catch (error) {
+      console.error('Failed to save test results:', error);
+    }
   };
 
   const getSelectedParsedFlow = (): ParsedFlow | null => {

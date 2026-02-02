@@ -109,6 +109,8 @@ export interface IStorage {
   updateFlow(id: number, updates: Partial<InsertFlow>): Promise<Flow>;
   deleteFlow(id: number): Promise<void>;
   getFlowsWithUsageStatus(): Promise<(Flow & { linkedCaseTypes: number })[]>;
+  updateFlowTestResults(id: number, testData: { testStatus: string; testDate: Date; testDetails: any }): Promise<Flow>;
+  updateCaseTypeTestResultsByFlowId(flowId: number, testData: { testStatus: string; testDate: Date; testDetails: any }): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1008,6 +1010,32 @@ export class DatabaseStorage implements IStorage {
     }
     
     return result;
+  }
+
+  async updateFlowTestResults(id: number, testData: { testStatus: string; testDate: Date; testDetails: any }): Promise<Flow> {
+    const [result] = await db
+      .update(flows)
+      .set({
+        testStatus: testData.testStatus as 'passed' | 'failed' | null,
+        testDate: testData.testDate,
+        testDetails: testData.testDetails,
+        updatedAt: new Date()
+      })
+      .where(eq(flows.id, id))
+      .returning();
+    return result;
+  }
+
+  async updateCaseTypeTestResultsByFlowId(flowId: number, testData: { testStatus: string; testDate: Date; testDetails: any }): Promise<void> {
+    await db
+      .update(caseTypes)
+      .set({
+        testStatus: testData.testStatus as 'passed' | 'failed' | null,
+        testDate: testData.testDate,
+        testDetails: testData.testDetails,
+        updatedAt: new Date()
+      })
+      .where(eq(caseTypes.flowId, flowId));
   }
 }
 

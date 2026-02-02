@@ -20,6 +20,15 @@ export const flows = pgTable("flows", {
     created?: string;
   }>(),
   isActive: boolean("is_active").default(true).notNull(),
+  testStatus: varchar("test_status", { length: 20 }).$type<'passed' | 'failed' | null>(),
+  testDate: timestamp("test_date"),
+  testDetails: jsonb("test_details").$type<{
+    totalPaths?: number;
+    validPaths?: number;
+    totalSteps?: number;
+    validSteps?: number;
+    errorCount?: number;
+  }>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -47,6 +56,15 @@ export const caseTypes = pgTable("case_types", {
   displayOrder: integer("display_order").default(0),
   isActive: boolean("is_active").default(true),
   flowId: integer("flow_id").references(() => flows.id, { onDelete: "set null" }),
+  testStatus: varchar("test_status", { length: 20 }).$type<'passed' | 'failed' | null>(),
+  testDate: timestamp("test_date"),
+  testDetails: jsonb("test_details").$type<{
+    totalPaths?: number;
+    validPaths?: number;
+    totalSteps?: number;
+    validSteps?: number;
+    errorCount?: number;
+  }>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
