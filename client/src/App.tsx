@@ -35,6 +35,7 @@ import AdminFlows from "@/pages/admin-flows";
 import FlowEdit from "@/pages/flow-edit";
 import FlowPreview from "@/pages/flow-preview";
 import AdminCategories from "@/pages/admin-categories";
+import TestFlows from "@/pages/test-flows";
 
 function Router() {
   return (
@@ -47,6 +48,7 @@ function Router() {
       <Route path="/admin/flows/:flowId" component={FlowEdit} />
       <Route path="/admin/flows/:flowId/preview" component={FlowPreview} />
       <Route path="/admin/categories" component={AdminCategories} />
+      <Route path="/admin/test-flows" component={TestFlows} />
       <Route path="/attorney-dashboard" component={AttorneyDashboard} />
       <Route path="/smtp-config" component={SmtpConfigPage} />
       <Route path="/submissions" component={SubmissionsPage} />
