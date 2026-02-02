@@ -61,6 +61,13 @@ export default function TestFlows() {
   const [isTestRunning, setIsTestRunning] = useState(false);
   const [testRun, setTestRun] = useState<TestRun | null>(null);
   const [previewPath, setPreviewPath] = useState<{ path: TestPath; result: PathTestResult } | null>(null);
+  const [flowBenchmark, setFlowBenchmark] = useState<{
+    totalNodes: number;
+    totalPaths: number;
+    totalSteps: number;
+    nodeTypes: Record<string, number>;
+  } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -117,6 +124,95 @@ export default function TestFlows() {
   };
 
   const [validationResult, setValidationResult] = useState<FlowValidationResult | null>(null);
+
+  const analyzeProductionFlow = () => {
+    const parsedFlow = getSelectedParsedFlow();
+    if (!parsedFlow || parsedFlow.nodes.length === 0) {
+      toast({
+        title: 'Flow has no nodes',
+        description: 'The selected flow has no node data to analyze.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+
+    // Count node types
+    const nodeTypes: Record<string, number> = {};
+    parsedFlow.nodes.forEach(node => {
+      const type = node.type || 'unknown';
+      nodeTypes[type] = (nodeTypes[type] || 0) + 1;
+    });
+
+    // Find all paths through the flow using DFS
+    const connections = parsedFlow.connections || [];
+    const startNodes = parsedFlow.nodes.filter(n => n.type === 'start');
+    const endNodes = new Set(parsedFlow.nodes.filter(n => 
+      n.type === 'end' || n.type === 'success' || n.type === 'completion'
+    ).map(n => n.id));
+
+    // Build adjacency list
+    const adjacency: Record<string, string[]> = {};
+    connections.forEach((conn: any) => {
+      const from = conn.from || conn.source;
+      const to = conn.to || conn.target;
+      if (from && to) {
+        if (!adjacency[from]) adjacency[from] = [];
+        adjacency[from].push(to);
+      }
+    });
+
+    // Count paths using DFS
+    let pathCount = 0;
+    let totalSteps = 0;
+
+    const countPaths = (nodeId: string, visited: Set<string>, depth: number) => {
+      if (visited.has(nodeId)) return; // Prevent cycles
+      if (endNodes.has(nodeId)) {
+        pathCount++;
+        totalSteps += depth;
+        return;
+      }
+
+      visited.add(nodeId);
+      const neighbors = adjacency[nodeId] || [];
+      
+      if (neighbors.length === 0 && depth > 0) {
+        // Dead end - count as path
+        pathCount++;
+        totalSteps += depth;
+      } else {
+        neighbors.forEach(next => {
+          countPaths(next, new Set(visited), depth + 1);
+        });
+      }
+    };
+
+    startNodes.forEach(start => {
+      countPaths(start.id, new Set(), 0);
+    });
+
+    // If no paths found, estimate from node count
+    if (pathCount === 0) {
+      pathCount = 1;
+      totalSteps = parsedFlow.nodes.length;
+    }
+
+    setFlowBenchmark({
+      totalNodes: parsedFlow.nodes.length,
+      totalPaths: pathCount,
+      totalSteps: totalSteps,
+      nodeTypes
+    });
+
+    setIsAnalyzing(false);
+
+    toast({
+      title: 'Flow analyzed',
+      description: `Found ${parsedFlow.nodes.length} nodes across ${pathCount} paths`
+    });
+  };
 
   const runValidation = async () => {
     if (!testScript || !selectedFlowSlug) return;
@@ -376,7 +472,10 @@ export default function TestFlows() {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Select Flow</label>
-              <Select value={selectedFlowSlug} onValueChange={setSelectedFlowSlug}>
+              <Select value={selectedFlowSlug} onValueChange={(value) => {
+                setSelectedFlowSlug(value);
+                setFlowBenchmark(null); // Reset benchmark when flow changes
+              }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a flow to test" />
                 </SelectTrigger>
@@ -388,6 +487,55 @@ export default function TestFlows() {
                   ))}
                 </SelectContent>
               </Select>
+              
+              <Button 
+                variant="secondary" 
+                className="w-full mt-2"
+                onClick={analyzeProductionFlow}
+                disabled={!selectedFlowSlug || isAnalyzing}
+              >
+                {isAnalyzing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Run Test (Get Benchmarks)
+                  </>
+                )}
+              </Button>
+
+              {flowBenchmark && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm font-medium text-blue-800 mb-2">Production Flow Benchmarks</p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-white rounded p-2">
+                      <p className="text-lg font-bold text-blue-700">{flowBenchmark.totalNodes}</p>
+                      <p className="text-xs text-blue-600">Total Nodes</p>
+                    </div>
+                    <div className="bg-white rounded p-2">
+                      <p className="text-lg font-bold text-blue-700">{flowBenchmark.totalPaths}</p>
+                      <p className="text-xs text-blue-600">Paths</p>
+                    </div>
+                    <div className="bg-white rounded p-2">
+                      <p className="text-lg font-bold text-blue-700">{flowBenchmark.totalSteps}</p>
+                      <p className="text-xs text-blue-600">Total Steps</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-blue-200">
+                    <p className="text-xs font-medium text-blue-700 mb-1">Node Types:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(flowBenchmark.nodeTypes).map(([type, count]) => (
+                        <Badge key={type} variant="secondary" className="text-xs">
+                          {type}: {count}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <Separator />
