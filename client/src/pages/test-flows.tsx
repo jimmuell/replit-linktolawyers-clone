@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import AdminLayout from '@/components/AdminLayout';
@@ -61,24 +61,12 @@ export default function TestFlows() {
   const [isTestRunning, setIsTestRunning] = useState(false);
   const [testRun, setTestRun] = useState<TestRun | null>(null);
   const [previewPath, setPreviewPath] = useState<{ path: TestPath; result: PathTestResult } | null>(null);
-  const [parsedFlows, setParsedFlows] = useState<ParsedFlow[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const { data: flows = [], isLoading } = useQuery<Flow[]>({
     queryKey: ['/api/flows/active'],
   });
-
-  useEffect(() => {
-    const storedFlows = localStorage.getItem('importedFlows');
-    if (storedFlows) {
-      try {
-        setParsedFlows(JSON.parse(storedFlows));
-      } catch (e) {
-        console.error('Failed to parse stored flows:', e);
-      }
-    }
-  }, []);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -139,8 +127,8 @@ export default function TestFlows() {
     const parsedFlow = getSelectedParsedFlow();
     if (!parsedFlow || parsedFlow.nodes.length === 0) {
       toast({
-        title: 'Flow not imported',
-        description: 'Please import the flow in Flow Management first to run validation.',
+        title: 'Flow has no nodes',
+        description: 'The selected flow has no node data. Please ensure the flow was properly imported with nodes and connections.',
         variant: 'destructive'
       });
       return;
@@ -240,11 +228,17 @@ export default function TestFlows() {
     const selectedFlow = flows.find(f => f.slug === selectedFlowSlug);
     if (!selectedFlow) return null;
     
-    return parsedFlows.find(pf => 
-      pf.metadata?.flowId === selectedFlow.slug ||
-      pf.name.toLowerCase().replace(/\s+/g, '-') === selectedFlow.slug ||
-      pf.name.toLowerCase() === selectedFlow.name.toLowerCase()
-    ) || null;
+    if (!selectedFlow.nodes || !Array.isArray(selectedFlow.nodes) || selectedFlow.nodes.length === 0) {
+      return null;
+    }
+    
+    return {
+      name: selectedFlow.name,
+      description: selectedFlow.description || '',
+      nodes: selectedFlow.nodes as any[],
+      connections: (selectedFlow.connections || []) as any[],
+      metadata: selectedFlow.metadata as ParsedFlow['metadata']
+    };
   };
 
   const handleViewPath = (path: TestPath, result: PathTestResult) => {
