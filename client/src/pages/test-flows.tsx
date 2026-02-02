@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import AdminLayout from '@/components/AdminLayout';
@@ -19,10 +19,13 @@ import {
   ArrowLeft,
   FlaskConical,
   AlertCircle,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react';
 import { parseTestScript, matchFlowToTestScript, type ParsedTestScript, type TestPath } from '@/lib/testScriptParser';
 import { useToast } from '@/hooks/use-toast';
+import { TestPathPreviewModal } from '@/components/TestPathPreviewModal';
+import { type ParsedFlow } from '@/lib/flowParser';
 import type { Flow } from '@shared/schema';
 
 type TestStatus = 'pending' | 'running' | 'passed' | 'failed';
@@ -56,12 +59,25 @@ export default function TestFlows() {
   const [parseError, setParseError] = useState<string | null>(null);
   const [isTestRunning, setIsTestRunning] = useState(false);
   const [testRun, setTestRun] = useState<TestRun | null>(null);
+  const [previewPath, setPreviewPath] = useState<{ path: TestPath; result: PathTestResult } | null>(null);
+  const [parsedFlows, setParsedFlows] = useState<ParsedFlow[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const { data: flows = [], isLoading } = useQuery<Flow[]>({
     queryKey: ['/api/flows/active'],
   });
+
+  useEffect(() => {
+    const storedFlows = localStorage.getItem('importedFlows');
+    if (storedFlows) {
+      try {
+        setParsedFlows(JSON.parse(storedFlows));
+      } catch (e) {
+        console.error('Failed to parse stored flows:', e);
+      }
+    }
+  }, []);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -190,6 +206,22 @@ export default function TestFlows() {
       description: `${run.passedPaths}/${run.totalPaths} paths passed`,
       variant: run.failedPaths === 0 ? 'default' : 'destructive'
     });
+  };
+
+  const getSelectedParsedFlow = (): ParsedFlow | null => {
+    if (!selectedFlowSlug) return null;
+    const selectedFlow = flows.find(f => f.slug === selectedFlowSlug);
+    if (!selectedFlow) return null;
+    
+    return parsedFlows.find(pf => 
+      pf.metadata?.flowId === selectedFlow.slug ||
+      pf.name.toLowerCase().replace(/\s+/g, '-') === selectedFlow.slug ||
+      pf.name.toLowerCase() === selectedFlow.name.toLowerCase()
+    ) || null;
+  };
+
+  const handleViewPath = (path: TestPath, result: PathTestResult) => {
+    setPreviewPath({ path, result });
   };
 
   const generateReport = () => {
@@ -508,6 +540,18 @@ export default function TestFlows() {
                             {result.errorMessage}
                           </div>
                         )}
+
+                        {path && (result.status === 'passed' || result.status === 'failed') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-3"
+                            onClick={() => handleViewPath(path, result)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Path
+                          </Button>
+                        )}
                       </div>
                     );
                   })}
@@ -517,6 +561,17 @@ export default function TestFlows() {
           </CardContent>
         </Card>
       </div>
+
+      {previewPath && testScript && (
+        <TestPathPreviewModal
+          isOpen={!!previewPath}
+          onClose={() => setPreviewPath(null)}
+          testPath={previewPath.path}
+          flow={getSelectedParsedFlow() || { name: '', description: '', nodes: [], connections: [] }}
+          pathStatus={previewPath.result.status === 'passed' ? 'passed' : previewPath.result.status === 'failed' ? 'failed' : 'pending'}
+          failedAtStep={previewPath.result.failedStep}
+        />
+      )}
     </AdminLayout>
   );
 }
