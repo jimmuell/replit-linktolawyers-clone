@@ -105,18 +105,9 @@ function findNodeByStep(flow: ParsedFlow, step: TestStep, previousNodeId?: strin
     if (normalizedNodeQuestion === normalizedQuestion) {
       return node;
     }
-    
-    if (normalizedNodeQuestion.includes(normalizedQuestion) || 
-        normalizedQuestion.includes(normalizedNodeQuestion)) {
-      return node;
-    }
   }
 
-  if (candidates.length === 1) {
-    return candidates[0];
-  }
-
-  return candidates[0] || null;
+  return null;
 }
 
 function validateStepQuestionMatch(step: TestStep, node: FlowNode): ValidationError | null {
@@ -127,18 +118,13 @@ function validateStepQuestionMatch(step: TestStep, node: FlowNode): ValidationEr
     return null;
   }
   
-  const similarity = calculateSimilarity(stepQuestion, nodeQuestion);
-  if (similarity < 0.7) {
-    return {
-      type: 'question_mismatch',
-      stepNumber: step.stepNumber,
-      expected: step.questionContent,
-      actual: node.question || node.formTitle || '(no question)',
-      message: `Question text does not match. Expected: "${step.questionContent}" but found: "${node.question || node.formTitle || '(no question)'}"`
-    };
-  }
-  
-  return null;
+  return {
+    type: 'question_mismatch',
+    stepNumber: step.stepNumber,
+    expected: step.questionContent,
+    actual: node.question || node.formTitle || '(no question)',
+    message: `Question text does not match exactly. Expected: "${step.questionContent}" but found: "${node.question || node.formTitle || '(no question)'}"`
+  };
 }
 
 function validateStepTypeMatch(step: TestStep, node: FlowNode): ValidationError | null {
@@ -156,24 +142,6 @@ function validateStepTypeMatch(step: TestStep, node: FlowNode): ValidationError 
   }
   
   return null;
-}
-
-function calculateSimilarity(str1: string, str2: string): number {
-  if (str1 === str2) return 1;
-  if (str1.length === 0 || str2.length === 0) return 0;
-  
-  const longer = str1.length > str2.length ? str1 : str2;
-  const shorter = str1.length > str2.length ? str2 : str1;
-  
-  if (longer.includes(shorter)) {
-    return shorter.length / longer.length;
-  }
-  
-  const words1 = str1.split(' ');
-  const words2 = str2.split(' ');
-  const commonWords = words1.filter(w => words2.includes(w));
-  
-  return commonWords.length / Math.max(words1.length, words2.length);
 }
 
 export function validateStep(
