@@ -124,11 +124,11 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
   const [role, setRole] = useState<Role>('');
   const [basicInfo, setBasicInfo] = useState<BasicInfo>(
-    initialBasicInfo ? { ...initialBasicInfo, phone: '(555) 555-5555', state: 'TX' } : {
-      fullName: 'Jim Mueller',
-      email: 'jimmuell@aol.com',
-      phone: '(555) 555-5555',
-      state: 'TX'
+    initialBasicInfo ? { ...initialBasicInfo, phone: '', state: '' } : {
+      fullName: '',
+      email: '',
+      phone: '',
+      state: ''
     }
   );
   const [currentNodeKey, setCurrentNodeKey] = useState<string>('');
@@ -556,7 +556,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     setCurrentStep('welcome');
     setCaseType('');
     setRole('');
-    setBasicInfo({ fullName: 'Jim Mueller', email: 'jimmuell@aol.com', phone: '(555) 555-5555', state: 'TX' });
+    setBasicInfo({ fullName: '', email: '', phone: '', state: '' });
     setCurrentNodeKey('');
     setAnswers({});
     setAdditionalDetails('');
