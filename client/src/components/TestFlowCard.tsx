@@ -12,14 +12,14 @@ export default function TestFlowCard() {
 
   return (
     <AdminCard
-      title="Test Flows"
-      description="Upload test scripts and validate flow logic"
+      title="Flow Management"
+      description="Upload flow scripts and validate flow logic"
       icon={FlaskConical}
       iconColor="text-orange-600"
       route="/admin/test-flows"
       isLoading={isLoading}
       error={null}
-      actionText="Test"
+      actionText="Manage"
     >
       <div className="grid grid-cols-3 gap-6 mb-4">
         <div className="text-center">
