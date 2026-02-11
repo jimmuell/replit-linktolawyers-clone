@@ -717,7 +717,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Legal Request API routes
   app.post("/api/legal-requests", async (req, res) => {
     try {
-      // Use the request number from the frontend, or generate one if not provided
       const requestNumber = req.body.requestNumber || generateRequestNumber();
       const validatedData = insertLegalRequestSchema.parse({
         ...req.body,
@@ -726,6 +725,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const legalRequest = await storage.createLegalRequest(validatedData);
       res.json({ success: true, data: legalRequest });
+
+      // Fire-and-forget: send developer notification emails
+      try {
+        const smtpSettings = await storage.getSmtpSettings();
+        const notifyEmails = smtpSettings?.notificationEmails || [];
+        if (notifyEmails.length > 0 && smtpSettings) {
+          const subject = `New Legal Request Submitted - ${legalRequest.requestNumber}`;
+          const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #1a1a1a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Legal Request Submitted</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                <tr><td style="padding: 8px 0; color: #6b7280; width: 140px;">Request Number:</td><td style="padding: 8px 0; font-weight: 600;">${legalRequest.requestNumber}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Name:</td><td style="padding: 8px 0;">${legalRequest.firstName} ${legalRequest.lastName}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Email:</td><td style="padding: 8px 0;">${legalRequest.email}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Phone:</td><td style="padding: 8px 0;">${legalRequest.phoneNumber || 'Not provided'}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Case Type:</td><td style="padding: 8px 0;">${legalRequest.caseType}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">State:</td><td style="padding: 8px 0;">${legalRequest.state || 'Not provided'}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Submitted:</td><td style="padding: 8px 0;">${new Date().toLocaleString()}</td></tr>
+              </table>
+              <div style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                <p style="color: #6b7280; margin: 0 0 4px 0; font-size: 13px;">Case Description:</p>
+                <p style="margin: 0; color: #1a1a1a;">${legalRequest.caseDescription}</p>
+              </div>
+              <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">This is an automated notification from LinkToLawyers.</p>
+            </div>
+          `;
+          for (const email of notifyEmails) {
+            sendEmail(email, subject, html).catch(err => {
+              console.error(`Failed to send notification to ${email}:`, err.message);
+            });
+          }
+        }
+      } catch (notifyErr) {
+        console.error('Error sending notification emails:', notifyErr);
+      }
     } catch (error) {
       console.error("Error creating legal request:", error);
       res.status(500).json({ success: false, error: "Failed to create legal request" });
@@ -1412,6 +1446,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting user:', error);
       res.status(500).json({ error: 'Failed to delete user' });
+    }
+  });
+
+  // Notification emails management
+  app.get('/api/admin/notification-emails', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const settings = await storage.getSmtpSettings();
+      res.json({ emails: settings?.notificationEmails || [] });
+    } catch (error) {
+      console.error('Error fetching notification emails:', error);
+      res.status(500).json({ error: 'Failed to fetch notification emails' });
+    }
+  });
+
+  app.put('/api/admin/notification-emails', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const schema = z.object({
+        emails: z.array(z.string().email('Invalid email address')),
+      });
+      const { emails } = schema.parse(req.body);
+      const settings = await storage.getSmtpSettings();
+      if (!settings) {
+        return res.status(400).json({ error: 'SMTP settings must be configured first' });
+      }
+      const updated = await storage.updateSmtpSettings(settings.id, { notificationEmails: emails } as any);
+      res.json({ emails: updated.notificationEmails || [] });
+    } catch (error: any) {
+      console.error('Error updating notification emails:', error);
+      res.status(400).json({ error: error.message || 'Failed to update notification emails' });
     }
   });
 

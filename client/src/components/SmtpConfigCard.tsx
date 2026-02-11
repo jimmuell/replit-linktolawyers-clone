@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Mail, Send, CheckCircle, XCircle, Settings, History } from 'lucide-react';
+import { Mail, Send, CheckCircle, XCircle, Settings, History, Bell, Plus, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 
@@ -56,6 +56,7 @@ export default function SmtpConfigCard() {
   
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
   const [connectionMessage, setConnectionMessage] = useState('');
+  const [newNotifyEmail, setNewNotifyEmail] = useState('');
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -73,6 +74,48 @@ export default function SmtpConfigCard() {
     enabled: true,
     retry: false,
   });
+
+  // Fetch notification emails
+  const { data: notifyData } = useQuery<{ emails: string[] }>({
+    queryKey: ['/api/admin/notification-emails'],
+    retry: false,
+  });
+  const notificationEmails = notifyData?.emails || [];
+
+  const saveNotifyMutation = useMutation({
+    mutationFn: async (emails: string[]) => {
+      await apiRequest('/api/admin/notification-emails', {
+        method: 'PUT',
+        body: { emails },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/notification-emails'] });
+      toast({ title: 'Saved', description: 'Notification emails updated successfully.' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'Error', description: error.message || 'Failed to update notification emails', variant: 'destructive' });
+    },
+  });
+
+  const handleAddNotifyEmail = () => {
+    const email = newNotifyEmail.trim().toLowerCase();
+    if (!email) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast({ title: 'Invalid email', description: 'Please enter a valid email address.', variant: 'destructive' });
+      return;
+    }
+    if (notificationEmails.includes(email)) {
+      toast({ title: 'Duplicate', description: 'This email is already in the list.', variant: 'destructive' });
+      return;
+    }
+    saveNotifyMutation.mutate([...notificationEmails, email]);
+    setNewNotifyEmail('');
+  };
+
+  const handleRemoveNotifyEmail = (emailToRemove: string) => {
+    saveNotifyMutation.mutate(notificationEmails.filter(e => e !== emailToRemove));
+  };
 
   // Update form data when settings are loaded
   useEffect(() => {
@@ -208,8 +251,9 @@ export default function SmtpConfigCard() {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="settings" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="test">Test</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
@@ -279,6 +323,62 @@ export default function SmtpConfigCard() {
                 {saveSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
               </Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-2">
+                <Bell className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-medium text-amber-900 mb-1">Developer Notifications</h3>
+                  <p className="text-sm text-amber-700">
+                    Add email addresses below to receive notifications when a new legal request is submitted. All listed addresses will receive an email with the request details.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Input
+                placeholder="Enter email address..."
+                type="email"
+                value={newNotifyEmail}
+                onChange={(e) => setNewNotifyEmail(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNotifyEmail(); } }}
+                className="flex-1"
+              />
+              <Button onClick={handleAddNotifyEmail} disabled={saveNotifyMutation.isPending} className="bg-black hover:bg-gray-800 text-white">
+                <Plus className="w-4 h-4 mr-1" /> Add
+              </Button>
+            </div>
+
+            {notificationEmails.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Bell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                <p>No notification emails configured</p>
+                <p className="text-sm">Add email addresses above to start receiving notifications</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600 font-medium">{notificationEmails.length} recipient{notificationEmails.length !== 1 ? 's' : ''} configured</p>
+                {notificationEmails.map((email) => (
+                  <div key={email} className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 border">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm">{email}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleRemoveNotifyEmail(email)}
+                      disabled={saveNotifyMutation.isPending}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="test" className="space-y-6">
