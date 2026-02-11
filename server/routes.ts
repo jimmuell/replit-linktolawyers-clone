@@ -1323,8 +1323,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Admin only routes
   app.get('/api/admin/users', requireAuth, requireRole(['admin']), async (req, res) => {
-    // This would get all users - implement as needed
-    res.json({ message: 'Admin users endpoint' });
+    try {
+      const allUsers = await storage.getAllUsers();
+      const usersWithoutPasswords = allUsers.map(({ password, ...u }) => u);
+      res.json(usersWithoutPasswords);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
+  app.post('/api/admin/users', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(400).json({ error: 'A user with this email already exists' });
+      }
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const user = await storage.createUser({ ...userData, password: hashedPassword });
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      res.status(400).json({ error: 'Failed to create user' });
+    }
+  });
+
+  app.put('/api/admin/users/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateSchema = z.object({
+        email: z.string().email().optional(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+        role: z.enum(['client', 'attorney', 'admin']).optional(),
+      });
+      const updates = updateSchema.parse(req.body);
+      const currentUser = req.user as any;
+      if (currentUser.userId === id && updates.role && updates.role !== 'admin') {
+        return res.status(400).json({ error: 'You cannot change your own role' });
+      }
+      if (updates.email) {
+        const existing = await storage.getUserByEmail(updates.email);
+        if (existing && existing.id !== id) {
+          return res.status(400).json({ error: 'A user with this email already exists' });
+        }
+      }
+      const safeUpdates: Record<string, string> = {};
+      if (updates.email) safeUpdates.email = updates.email;
+      if (updates.firstName !== undefined) safeUpdates.firstName = updates.firstName;
+      if (updates.lastName !== undefined) safeUpdates.lastName = updates.lastName;
+      if (updates.role) safeUpdates.role = updates.role;
+      const user = await storage.updateUser(id, safeUpdates);
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      res.status(400).json({ error: 'Failed to update user' });
+    }
+  });
+
+  app.patch('/api/admin/users/:id/password', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const passwordSchema = z.object({
+        newPassword: z.string().min(6, 'Password must be at least 6 characters'),
+      });
+      const { newPassword } = passwordSchema.parse(req.body);
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await storage.updateUser(id, { password: hashedPassword });
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error changing password:', error);
+      res.status(400).json({ error: 'Failed to change password' });
+    }
+  });
+
+  app.delete('/api/admin/users/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const currentUser = req.user as any;
+      if (currentUser.userId === id) {
+        return res.status(400).json({ error: 'You cannot delete your own account' });
+      }
+      await storage.deleteUser(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ error: 'Failed to delete user' });
+    }
   });
 
   // SMTP Configuration routes
