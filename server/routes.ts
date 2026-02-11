@@ -1126,6 +1126,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json({ success: true, data: structuredIntake });
+
+      // Fire-and-forget: send developer notification emails
+      try {
+        const notifySettings = await storage.getSmtpSettings();
+        const notifyEmails = notifySettings?.notificationEmails || [];
+        if (notifyEmails.length > 0 && notifySettings) {
+          const subject = `New Legal Request Submitted - ${requestNumber}`;
+          const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #1a1a1a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Legal Request Submitted</h2>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                <tr><td style="padding: 8px 0; color: #6b7280; width: 140px;">Request Number:</td><td style="padding: 8px 0; font-weight: 600;">${requestNumber}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Name:</td><td style="padding: 8px 0;">${firstName} ${lastName}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Email:</td><td style="padding: 8px 0;">${email}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Case Type:</td><td style="padding: 8px 0;">${caseType}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Submitted:</td><td style="padding: 8px 0;">${new Date().toLocaleString()}</td></tr>
+              </table>
+              <div style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
+                <p style="color: #6b7280; margin: 0 0 4px 0; font-size: 13px;">Attorney Intake Summary:</p>
+                <p style="margin: 0; color: #1a1a1a; white-space: pre-wrap;">${attorneyIntakeSummary}</p>
+              </div>
+              <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">This is an automated notification from LinkToLawyers.</p>
+            </div>
+          `;
+          for (const notifyEmail of notifyEmails) {
+            sendEmail(notifyEmail, subject, html).catch(err => {
+              console.error(`Failed to send notification to ${notifyEmail}:`, err.message);
+            });
+          }
+          console.log(`Developer notifications sent to ${notifyEmails.length} recipient(s) for intake ${requestNumber}`);
+        }
+      } catch (notifyErr) {
+        console.error('Error sending notification emails:', notifyErr);
+      }
     } catch (error) {
       console.error("Error creating structured intake:", error);
       res.status(500).json({ success: false, error: "Failed to create structured intake" });
