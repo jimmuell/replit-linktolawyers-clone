@@ -426,18 +426,12 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         questionOrder.forEach((nodeId) => {
           const node = dbFlow.nodes?.find((n: any) => n.id === nodeId);
           const answer = answers[nodeId];
-          if (node && answer !== undefined && node.type !== 'start') {
+          if (node && answer !== undefined && node.type !== 'start' && !['completion', 'success', 'end', 'info'].includes(node.type)) {
             let answerText = '';
             if (typeof answer === 'object') {
-              // Form fields
               answerText = Object.entries(answer).map(([k, v]) => `${k}: ${v}`).join(', ');
             } else {
               answerText = String(answer);
-              // For multiple choice, find the label
-              if (node.type === 'multiple-choice' && node.options) {
-                const option = node.options.find((opt: any) => opt.id === answer);
-                answerText = option?.label || answerText;
-              }
             }
             transcript.push({
               question: node.question || node.formTitle || 'Question',
@@ -663,9 +657,13 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     if (currentNode.type === 'form') {
       newAnswers[currentNode.id] = formValues as any;
     } else if (currentNode.type === 'yes-no') {
-      newAnswers[currentNode.id] = condition || yesNoValue;
+      const rawVal = condition || yesNoValue;
+      const label = rawVal === 'yes' ? (currentNode.yesLabel || 'Yes') : (currentNode.noLabel || 'No');
+      newAnswers[currentNode.id] = label.trim();
     } else if (currentNode.type === 'multiple-choice') {
-      newAnswers[currentNode.id] = condition || choiceValue;
+      const rawChoice = condition || choiceValue;
+      const choiceOpt = (currentNode.options || []).find((opt: any) => opt.id === rawChoice);
+      newAnswers[currentNode.id] = choiceOpt?.label?.trim() || rawChoice;
     } else if (currentNode.type === 'text') {
       newAnswers[currentNode.id] = formValues['text-input'] || '';
     } else if (currentNode.type === 'date') {
