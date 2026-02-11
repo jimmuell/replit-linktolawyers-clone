@@ -8,8 +8,10 @@ import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User>;
+  deleteUser(id: number): Promise<void>;
   getCaseType(id: number): Promise<CaseType | undefined>;
   getCaseTypeByValue(value: string): Promise<CaseType | undefined>;
   getAllCaseTypes(includeInactive?: boolean): Promise<CaseType[]>;
@@ -122,6 +124,14 @@ export class DatabaseStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
   }
 
   async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
