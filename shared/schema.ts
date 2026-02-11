@@ -99,6 +99,7 @@ export const smtpSettings = pgTable("smtp_settings", {
   fromName: text("from_name").notNull().default("LinkToLawyers"),
   useSsl: boolean("use_ssl").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
+  notificationEmails: text("notification_emails").array().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
