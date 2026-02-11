@@ -656,6 +656,26 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
   };
 
   // Handle next in database flow
+  const captureCurrentNodeAnswer = (currentNode: any, condition?: string) => {
+    const newAnswers = { ...answers };
+    if (!currentNode) return newAnswers;
+
+    if (currentNode.type === 'form') {
+      newAnswers[currentNode.id] = formValues as any;
+    } else if (currentNode.type === 'yes-no') {
+      newAnswers[currentNode.id] = condition || yesNoValue;
+    } else if (currentNode.type === 'multiple-choice') {
+      newAnswers[currentNode.id] = condition || choiceValue;
+    } else if (currentNode.type === 'text') {
+      newAnswers[currentNode.id] = formValues['text-input'] || '';
+    } else if (currentNode.type === 'date') {
+      newAnswers[currentNode.id] = formValues['date-input'] || '';
+    } else if (currentNode.type === 'start') {
+      newAnswers[currentNode.id] = { started: true } as any;
+    }
+    return newAnswers;
+  };
+
   const handleDbFlowNext = (condition?: string) => {
     if (!dbFlow) return;
     
@@ -663,17 +683,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     const nextNode = getDbNextNode(condition);
     
     if (nextNode) {
-      const newAnswers = { ...answers };
-      
-      if (currentNode?.type === 'form') {
-        newAnswers[currentNode.id] = formValues as any;
-      } else if (currentNode?.type === 'yes-no') {
-        newAnswers[currentNode.id] = condition || yesNoValue;
-      } else if (currentNode?.type === 'multiple-choice') {
-        newAnswers[currentNode.id] = condition || choiceValue;
-      } else if (currentNode?.type === 'start') {
-        newAnswers[currentNode.id] = { started: true } as any;
-      }
+      const newAnswers = captureCurrentNodeAnswer(currentNode, condition);
       
       setDbNodeHistory(prev => [...prev, dbCurrentNodeId]);
       setDbCurrentNodeId(nextNode.id);
@@ -682,7 +692,9 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
       setYesNoValue('');
       setChoiceValue('');
     } else {
-      // No next node - go to wrap-up
+      // No next node - capture final answer before going to wrap-up
+      const newAnswers = captureCurrentNodeAnswer(currentNode, condition);
+      setAnswers(newAnswers);
       setCurrentStep('wrap-up');
     }
   };
@@ -708,6 +720,8 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
     
     if (currentNode.type === 'yes-no') return !!yesNoValue;
     if (currentNode.type === 'multiple-choice') return !!choiceValue;
+    if (currentNode.type === 'text') return !!(formValues['text-input'] || '').trim();
+    if (currentNode.type === 'date') return !!(formValues['date-input'] || '').trim();
     if (currentNode.type === 'form') {
       return (currentNode.formFields || []).every((field: any) => !field.required || formValues[field.id]);
     }
