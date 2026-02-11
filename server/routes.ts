@@ -735,10 +735,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const legalRequest = await storage.createLegalRequest(validatedData);
       res.json({ success: true, data: legalRequest });
 
-      // Fire-and-forget: send developer notification emails
+      // Send developer notification emails (after response)
       try {
         const smtpSettings = await storage.getSmtpSettings();
         const notifyEmails = smtpSettings?.notificationEmails || [];
+        console.log(`[Notification] Found ${notifyEmails.length} notification recipient(s) for ${legalRequest.requestNumber}:`, notifyEmails);
         if (notifyEmails.length > 0 && smtpSettings) {
           const subject = `New Legal Request Submitted - ${legalRequest.requestNumber}`;
           const html = `
@@ -746,28 +747,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
               <h2 style="color: #1a1a1a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Legal Request Submitted</h2>
               <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
                 <tr><td style="padding: 8px 0; color: #6b7280; width: 140px;">Request Number:</td><td style="padding: 8px 0; font-weight: 600;">${legalRequest.requestNumber}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">Name:</td><td style="padding: 8px 0;">${legalRequest.firstName} ${legalRequest.lastName}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">Email:</td><td style="padding: 8px 0;">${legalRequest.email}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">Phone:</td><td style="padding: 8px 0;">${legalRequest.phoneNumber || 'Not provided'}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">Case Type:</td><td style="padding: 8px 0;">${legalRequest.caseType}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">State:</td><td style="padding: 8px 0;">${legalRequest.state || 'Not provided'}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Name:</td><td style="padding: 8px 0;">${escapeHtml(legalRequest.firstName)} ${escapeHtml(legalRequest.lastName)}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Email:</td><td style="padding: 8px 0;">${escapeHtml(legalRequest.email)}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Phone:</td><td style="padding: 8px 0;">${escapeHtml(legalRequest.phoneNumber || 'Not provided')}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Case Type:</td><td style="padding: 8px 0;">${escapeHtml(legalRequest.caseType)}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">State:</td><td style="padding: 8px 0;">${escapeHtml(legalRequest.state || 'Not provided')}</td></tr>
                 <tr><td style="padding: 8px 0; color: #6b7280;">Submitted:</td><td style="padding: 8px 0;">${new Date().toLocaleString()}</td></tr>
               </table>
               <div style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
                 <p style="color: #6b7280; margin: 0 0 4px 0; font-size: 13px;">Case Description:</p>
-                <p style="margin: 0; color: #1a1a1a;">${legalRequest.caseDescription}</p>
+                <p style="margin: 0; color: #1a1a1a;">${escapeHtml(legalRequest.caseDescription)}</p>
               </div>
               <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">This is an automated notification from LinkToLawyers.</p>
             </div>
           `;
-          for (const email of notifyEmails) {
-            sendEmail(email, subject, html).catch(err => {
-              console.error(`Failed to send notification to ${email}:`, err.message);
-            });
+          for (const notifyAddr of notifyEmails) {
+            try {
+              await sendEmail(notifyAddr, subject, html);
+              console.log(`[Notification] Successfully sent to ${notifyAddr} for ${legalRequest.requestNumber}`);
+              await storage.createEmailHistory({
+                toAddress: notifyAddr,
+                subject,
+                message: html,
+                status: 'sent',
+                errorMessage: null,
+              });
+            } catch (sendErr: any) {
+              console.error(`[Notification] Failed to send to ${notifyAddr} for ${legalRequest.requestNumber}:`, sendErr.message);
+              await storage.createEmailHistory({
+                toAddress: notifyAddr,
+                subject,
+                message: html,
+                status: 'failed',
+                errorMessage: sendErr.message,
+              }).catch(() => {});
+            }
           }
         }
       } catch (notifyErr) {
-        console.error('Error sending notification emails:', notifyErr);
+        console.error('[Notification] Error in notification block:', notifyErr);
       }
     } catch (error) {
       console.error("Error creating legal request:", error);
@@ -1145,10 +1163,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ success: true, data: structuredIntake });
 
-      // Fire-and-forget: send developer notification emails
+      // Send developer notification emails (after response)
       try {
         const notifySettings = await storage.getSmtpSettings();
         const notifyEmails = notifySettings?.notificationEmails || [];
+        console.log(`[Notification] Found ${notifyEmails.length} notification recipient(s) for intake ${requestNumber}:`, notifyEmails);
         if (notifyEmails.length > 0 && notifySettings) {
           const subject = `New Legal Request Submitted - ${requestNumber}`;
           const transcriptItems = Array.isArray(transcript) && transcript.length > 0
@@ -1164,9 +1183,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               <h2 style="color: #1a1a1a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Legal Request Submitted</h2>
               <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
                 <tr><td style="padding: 8px 0; color: #6b7280; width: 140px;">Request Number:</td><td style="padding: 8px 0; font-weight: 600;">${requestNumber}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">Name:</td><td style="padding: 8px 0;">${firstName} ${lastName}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">Email:</td><td style="padding: 8px 0;">${email}</td></tr>
-                <tr><td style="padding: 8px 0; color: #6b7280;">Case Type:</td><td style="padding: 8px 0;">${caseType}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Name:</td><td style="padding: 8px 0;">${escapeHtml(firstName)} ${escapeHtml(lastName)}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Email:</td><td style="padding: 8px 0;">${escapeHtml(email)}</td></tr>
+                <tr><td style="padding: 8px 0; color: #6b7280;">Case Type:</td><td style="padding: 8px 0;">${escapeHtml(caseType)}</td></tr>
                 <tr><td style="padding: 8px 0; color: #6b7280;">Submitted:</td><td style="padding: 8px 0;">${new Date().toLocaleString()}</td></tr>
               </table>
               <div style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
@@ -1177,15 +1196,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
               <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">This is an automated notification from LinkToLawyers.</p>
             </div>
           `;
-          for (const notifyEmail of notifyEmails) {
-            sendEmail(notifyEmail, subject, html).catch(err => {
-              console.error(`Failed to send notification to ${notifyEmail}:`, err.message);
-            });
+          for (const notifyAddr of notifyEmails) {
+            try {
+              await sendEmail(notifyAddr, subject, html);
+              console.log(`[Notification] Successfully sent to ${notifyAddr} for intake ${requestNumber}`);
+              await storage.createEmailHistory({
+                toAddress: notifyAddr,
+                subject,
+                message: html,
+                status: 'sent',
+                errorMessage: null,
+              });
+            } catch (sendErr: any) {
+              console.error(`[Notification] Failed to send to ${notifyAddr} for intake ${requestNumber}:`, sendErr.message);
+              await storage.createEmailHistory({
+                toAddress: notifyAddr,
+                subject,
+                message: html,
+                status: 'failed',
+                errorMessage: sendErr.message,
+              }).catch(() => {});
+            }
           }
-          console.log(`Developer notifications sent to ${notifyEmails.length} recipient(s) for intake ${requestNumber}`);
         }
       } catch (notifyErr) {
-        console.error('Error sending notification emails:', notifyErr);
+        console.error('[Notification] Error in notification block:', notifyErr);
       }
     } catch (error) {
       console.error("Error creating structured intake:", error);
