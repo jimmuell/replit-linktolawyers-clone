@@ -15,6 +15,15 @@ import { setSession, getSession, removeSession, requireAuth, requireRole } from 
 import attorneyReferralsRouter from "./routes/attorney-referrals";
 import { ObjectStorageService, ObjectNotFoundError, isLocalStorageMode } from "./objectStorage";
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Multer configuration for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -1032,14 +1041,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate request number
       const requestNumber = generateRequestNumber();
       
-      // Generate Attorney Intake Summary based on prompt format
-      const attorneyIntakeSummary = generateAttorneyIntakeSummary({
-        firstName,
-        lastName,
-        email,
-        caseType,
-        formResponses
-      });
+      // Build attorney intake summary from User Journey transcript (HTML for emails)
+      const transcript = formResponses?.transcript;
+      let userJourneyHtml = '';
+      if (Array.isArray(transcript) && transcript.length > 0) {
+        const items = transcript.map((entry: { question: string; answer: string }, idx: number) =>
+          `<li style="margin-bottom: 8px;"><strong>${escapeHtml(entry.question)}</strong><br/><span style="color: #2563eb;">${escapeHtml(entry.answer)}</span></li>`
+        ).join('');
+        userJourneyHtml = `<ol style="padding-left: 20px; margin: 8px 0;">${items}</ol>`;
+      } else {
+        userJourneyHtml = '<p>No user journey responses recorded.</p>';
+      }
+
+      const additionalDetailsHtml = formResponses?.additionalDetails
+        ? `<p style="margin-top: 12px;"><strong>Additional Details:</strong> ${escapeHtml(formResponses.additionalDetails)}</p>`
+        : '';
+
+      const attorneyIntakeSummary = `<div><h4 style="margin: 0 0 8px 0; color: #1e40af;">User Journey</h4>${userJourneyHtml}${additionalDetailsHtml}</div>`;
 
       // Create structured intake
       const structuredIntakeData = {
@@ -1133,6 +1151,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const notifyEmails = notifySettings?.notificationEmails || [];
         if (notifyEmails.length > 0 && notifySettings) {
           const subject = `New Legal Request Submitted - ${requestNumber}`;
+          const transcriptItems = Array.isArray(transcript) && transcript.length > 0
+            ? transcript.map((entry: { question: string; answer: string }, idx: number) =>
+                `<tr><td style="padding: 8px 12px; color: #6b7280; vertical-align: top; width: 30px; font-weight: 600;">${idx + 1}.</td><td style="padding: 8px 0;"><strong>${escapeHtml(entry.question)}</strong><br/><span style="color: #2563eb;">${escapeHtml(entry.answer)}</span></td></tr>`
+              ).join('')
+            : '<tr><td style="padding: 8px 12px; color: #6b7280;" colspan="2">No user journey responses recorded.</td></tr>';
+          const notifyAdditionalHtml = formResponses?.additionalDetails
+            ? `<div style="margin-top: 12px; padding: 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px;"><p style="color: #9a3412; margin: 0 0 4px 0; font-size: 13px; font-weight: 600;">Additional Details:</p><p style="margin: 0; color: #1a1a1a;">${escapeHtml(formResponses.additionalDetails)}</p></div>`
+            : '';
           const html = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
               <h2 style="color: #1a1a1a; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">New Legal Request Submitted</h2>
@@ -1144,9 +1170,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 <tr><td style="padding: 8px 0; color: #6b7280;">Submitted:</td><td style="padding: 8px 0;">${new Date().toLocaleString()}</td></tr>
               </table>
               <div style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
-                <p style="color: #6b7280; margin: 0 0 4px 0; font-size: 13px;">Attorney Intake Summary:</p>
-                <p style="margin: 0; color: #1a1a1a; white-space: pre-wrap;">${attorneyIntakeSummary}</p>
+                <p style="color: #6b7280; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">User Journey:</p>
+                <table style="width: 100%; border-collapse: collapse;">${transcriptItems}</table>
               </div>
+              ${notifyAdditionalHtml}
               <p style="margin-top: 24px; font-size: 12px; color: #9ca3af;">This is an automated notification from LinkToLawyers.</p>
             </div>
           `;
