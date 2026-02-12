@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Eye, FileText, Calendar, DollarSign } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Eye, FileText, Calendar, DollarSign, CheckCircle } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 
 interface ActiveCase {
   caseId: number;
@@ -33,6 +36,9 @@ interface ActiveCase {
 
 export default function ActiveCasesList() {
   const [selectedCase, setSelectedCase] = useState<ActiveCase | null>(null);
+  const [closeCaseConfirm, setCloseCaseConfirm] = useState<ActiveCase | null>(null);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: casesData, isLoading } = useQuery({
     queryKey: ['/api/attorney-referrals/cases'],
@@ -53,6 +59,34 @@ export default function ActiveCasesList() {
   });
 
   const cases: ActiveCase[] = casesData?.data || [];
+
+  const closeCaseMutation = useMutation({
+    mutationFn: async (caseId: number) => {
+      return await apiRequest(`/api/attorney-referrals/cases/${caseId}`, {
+        method: 'PATCH',
+        body: { status: 'completed' },
+      });
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Case Closed",
+        description: `Case ${closeCaseConfirm?.caseNumber} has been marked as completed.`,
+      });
+      setCloseCaseConfirm(null);
+      if (selectedCase && selectedCase.caseId === closeCaseConfirm?.caseId) {
+        setSelectedCase({ ...selectedCase, caseStatus: 'completed', completedDate: new Date().toISOString() });
+      }
+      queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/cases'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to close the case. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
@@ -209,9 +243,11 @@ export default function ActiveCasesList() {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium text-gray-500">Status</label>
-                                  <Badge variant={getStatusBadgeVariant(selectedCase.caseStatus)}>
-                                    {selectedCase.caseStatus.replace('_', ' ')}
-                                  </Badge>
+                                  <div className="mt-1">
+                                    <Badge variant={getStatusBadgeVariant(selectedCase.caseStatus)}>
+                                      {selectedCase.caseStatus.replace('_', ' ')}
+                                    </Badge>
+                                  </div>
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium text-gray-500">Start Date</label>
@@ -268,6 +304,30 @@ export default function ActiveCasesList() {
                                   )}
                                 </div>
                               </div>
+
+                              {selectedCase.caseStatus === 'completed' ? (
+                                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                                  <div className="flex items-center space-x-2 text-green-700">
+                                    <CheckCircle className="h-5 w-5" />
+                                    <span className="font-medium">Case Completed</span>
+                                    {selectedCase.completedDate && (
+                                      <span className="text-sm text-green-600">
+                                        on {formatDate(selectedCase.completedDate)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : selectedCase.caseStatus === 'active' ? (
+                                <div className="flex justify-end pt-4 border-t">
+                                  <Button
+                                    onClick={() => setCloseCaseConfirm(selectedCase)}
+                                    className="bg-green-600 hover:bg-green-700 text-white"
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Close Case (Completed)
+                                  </Button>
+                                </div>
+                              ) : null}
                             </div>
                           )}
                         </DialogContent>
@@ -280,6 +340,27 @@ export default function ActiveCasesList() {
           </div>
         )}
       </CardContent>
+
+      <AlertDialog open={!!closeCaseConfirm} onOpenChange={(open) => { if (!open) setCloseCaseConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Close Case {closeCaseConfirm?.caseNumber}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will mark the case as completed. The case for {closeCaseConfirm?.request?.firstName} {closeCaseConfirm?.request?.lastName} will be moved to completed status with today's date as the completion date.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={closeCaseMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => closeCaseConfirm && closeCaseMutation.mutate(closeCaseConfirm.caseId)}
+              disabled={closeCaseMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {closeCaseMutation.isPending ? 'Closing...' : 'Yes, Close Case'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
