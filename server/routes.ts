@@ -1937,6 +1937,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/attorney/organization', requireAuth, requireRole(['attorney']), async (req, res) => {
+    try {
+      const user = req.user as unknown as User;
+      const attorney = await storage.getAttorneyByUserId(user.id);
+      if (!attorney || !attorney.organizationId) {
+        return res.json(null);
+      }
+      const org = await storage.getOrganization(attorney.organizationId);
+      res.json(org || null);
+    } catch (error) {
+      console.error('Error fetching attorney organization:', error);
+      res.status(500).json({ error: 'Failed to fetch organization' });
+    }
+  });
+
   app.put('/api/attorney/profile', requireAuth, requireRole(['attorney']), async (req, res) => {
     try {
       const user = req.user as unknown as User;

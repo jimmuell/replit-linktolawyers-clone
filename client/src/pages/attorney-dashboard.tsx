@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Briefcase, Clock, DollarSign, Users, MessageSquare, FileText, CheckCircle } from 'lucide-react';
+import { Briefcase, Clock, DollarSign, Users, MessageSquare, FileText, CheckCircle, Building2 } from 'lucide-react';
 import AttorneyAppBar from '@/components/AttorneyAppBar';
 import SubmissionsList from '@/components/SubmissionsList';
 import MyReferralsList from '@/components/MyReferralsList';
@@ -54,6 +54,11 @@ function formatTimeAgo(dateString: string): string {
   return `${diffDays} days ago`;
 }
 
+interface Organization {
+  id: number;
+  name: string;
+}
+
 export default function AttorneyDashboard() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
@@ -67,6 +72,11 @@ export default function AttorneyDashboard() {
       }
     }
   }, [user, loading]);
+
+  const { data: orgData } = useQuery<Organization>({
+    queryKey: ['/api/attorney/organization'],
+    enabled: !!user && user.role === 'attorney',
+  });
 
   const { data: referralsData, isLoading: referralsLoading } = useQuery({
     queryKey: ['/api/attorney-referrals/my-referrals'],
@@ -179,7 +189,15 @@ export default function AttorneyDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Attorney Dashboard</h1>
-          <p className="text-gray-600 mt-2">Manage your legal referrals and cases</p>
+          <div className="flex items-center gap-3 mt-2">
+            <p className="text-gray-600">Manage your legal referrals and cases</p>
+            {orgData?.name && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                <Building2 className="w-3 h-3" />
+                {orgData.name}
+              </span>
+            )}
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">

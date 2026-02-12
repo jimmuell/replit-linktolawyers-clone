@@ -7,13 +7,34 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, LogOut, Scale, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, Scale, LayoutDashboard, Building2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+
+interface AttorneyProfile {
+  id: number;
+  organizationId: number | null;
+}
+
+interface Organization {
+  id: number;
+  name: string;
+}
 
 export default function AttorneyAppBar() {
   const { user, logout } = useAuth();
   const [, setLocation] = useLocation();
+
+  const { data: profile } = useQuery<AttorneyProfile>({
+    queryKey: ['/api/attorney/profile'],
+    enabled: user?.role === 'attorney',
+  });
+
+  const { data: orgData } = useQuery<Organization>({
+    queryKey: ['/api/attorney/organization'],
+    enabled: user?.role === 'attorney' && !!profile?.organizationId,
+  });
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName && !lastName) return 'A';
@@ -24,7 +45,6 @@ export default function AttorneyAppBar() {
     <div className="bg-white border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Brand */}
           <div className="flex items-center">
             <Scale className="h-8 w-8 text-blue-600 mr-3" />
             <div>
@@ -33,8 +53,13 @@ export default function AttorneyAppBar() {
             </div>
           </div>
 
-          {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {orgData?.name && (
+              <div className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500">
+                <Building2 className="w-4 h-4" />
+                <span>{orgData.name}</span>
+              </div>
+            )}
             <span className="text-sm text-gray-700">
               Welcome, {user?.firstName || 'Attorney'}
             </span>
@@ -53,6 +78,12 @@ export default function AttorneyAppBar() {
                 <div className="flex flex-col space-y-1 p-2">
                   <p className="text-sm font-medium leading-none">{user?.firstName} {user?.lastName}</p>
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                  {orgData?.name && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Building2 className="w-3 h-3 text-muted-foreground" />
+                      <p className="text-xs leading-none text-muted-foreground">{orgData.name}</p>
+                    </div>
+                  )}
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer" onClick={() => setLocation('/attorney-dashboard')}>
