@@ -1020,7 +1020,7 @@ router.get("/cases", requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Attorney profile not found' });
     }
 
-    // Get cases for this attorney with related data
+    // Get cases for this attorney with related data (supports both legacy legal_requests and structured intakes)
     const attorneyCases = await db.execute(sql`
       SELECT 
         c.id as case_id,
@@ -1033,19 +1033,20 @@ router.get("/cases", requireAuth, async (req, res) => {
         c.quote_id,
         q.service_fee,
         q.description as quote_description,
-        lr.id as request_id,
-        lr.request_number,
-        lr.first_name,
-        lr.last_name,
-        lr.email,
-        lr.phone_number,
-        lr.case_type,
+        COALESCE(lr.id, si.id) as request_id,
+        COALESCE(lr.request_number, si.request_number) as request_number,
+        COALESCE(lr.first_name, si.first_name) as first_name,
+        COALESCE(lr.last_name, si.last_name) as last_name,
+        COALESCE(lr.email, si.email) as email,
+        COALESCE(lr.phone_number, si.phone_number) as phone_number,
+        COALESCE(lr.case_type, si.case_type) as case_type,
         lr.case_description,
         lr.location
       FROM cases c
       JOIN quotes q ON c.quote_id = q.id
       JOIN referral_assignments ra ON c.assignment_id = ra.id
-      JOIN legal_requests lr ON ra.request_id = lr.id
+      LEFT JOIN legal_requests lr ON ra.request_id = lr.id
+      LEFT JOIN structured_intakes si ON ra.submission_id = si.id
       WHERE ra.attorney_id = ${attorney.id}
       ORDER BY c.start_date DESC
     `);
@@ -1070,8 +1071,8 @@ router.get("/cases", requireAuth, async (req, res) => {
         email: row.email,
         phoneNumber: row.phone_number,
         caseType: row.case_type,
-        caseDescription: row.case_description,
-        location: row.location,
+        caseDescription: row.case_description || '',
+        location: row.location || '',
       }
     }));
 
