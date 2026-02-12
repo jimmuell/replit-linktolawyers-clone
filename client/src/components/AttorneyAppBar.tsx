@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, LogOut, Scale } from 'lucide-react';
+import { User, LogOut, Scale, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from 'wouter';
 
@@ -55,6 +55,10 @@ export default function AttorneyAppBar() {
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setLocation('/attorney-dashboard')}>
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  <span>Dashboard</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer" onClick={() => setLocation('/attorney-profile')}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
