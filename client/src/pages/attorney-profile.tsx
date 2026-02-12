@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/contexts/AuthContext';
 import AttorneyAppBar from '@/components/AttorneyAppBar';
@@ -48,6 +49,7 @@ interface AttorneyProfile {
 export default function AttorneyProfilePage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -63,8 +65,14 @@ export default function AttorneyProfilePage() {
 
   const { data: profile, isLoading, error } = useQuery<AttorneyProfile>({
     queryKey: ['/api/attorney/profile'],
-    enabled: !!user,
+    enabled: user?.role === 'attorney',
   });
+
+  useEffect(() => {
+    if (!user || user.role !== 'attorney') {
+      setLocation('/');
+    }
+  }, [user, setLocation]);
 
   useEffect(() => {
     if (profile) {
@@ -111,6 +119,10 @@ export default function AttorneyProfilePage() {
       setFormData({ ...formData, practiceAreas: formData.practiceAreas.filter(a => a !== area) });
     }
   };
+
+  if (!user || user.role !== 'attorney') {
+    return null;
+  }
 
   const handleCancel = () => {
     if (profile) {

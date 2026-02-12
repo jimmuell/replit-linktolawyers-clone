@@ -36,7 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **Primary Database**: PostgreSQL (configured for Neon serverless)
 - **ORM**: Drizzle ORM for type-safe queries and schema management (Drizzle Kit)
 - **Session Storage**: PostgreSQL-backed session store
-- **Schema**: Includes tables for users, legal requests, attorney assignments, quotes, cases, attorney notes, blog posts, SMTP settings, and email history. Legal request forms have been streamlined, removing `urgency_level` and `budget_range` fields.
+- **Schema**: Includes tables for users, legal requests, attorney assignments, quotes, cases, attorney notes, blog posts, SMTP settings, email history, and organizations. Organizations table stores law firm data (name, address, phone, email, website). Attorneys have an `organizationId` FK linking them to organizations. Legal request forms have been streamlined, removing `urgency_level` and `budget_range` fields.
 
 ### Key Architectural Decisions
 1.  **Monorepo Structure**: Shared schema and types between frontend and backend.
