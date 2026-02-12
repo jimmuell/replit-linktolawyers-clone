@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, chatbotPrompts, conversations, messages, structuredIntakes, flows, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage, type StructuredIntake, type InsertStructuredIntake, type Flow, type InsertFlow } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, attorneyNotes, chatbotPrompts, conversations, messages, structuredIntakes, flows, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage, type StructuredIntake, type InsertStructuredIntake, type Flow, type InsertFlow } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 
@@ -941,12 +941,49 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteStructuredIntake(id: number): Promise<void> {
-    await db.delete(structuredIntakes).where(eq(structuredIntakes.id, id));
+    await db.transaction(async (tx) => {
+      const assignments = await tx.select({ id: referralAssignments.id })
+        .from(referralAssignments)
+        .where(eq(referralAssignments.submissionId, id));
+      
+      if (assignments.length > 0) {
+        const assignmentIds = assignments.map(a => a.id);
+        const relatedQuotes = await tx.select({ id: quotes.id })
+          .from(quotes)
+          .where(inArray(quotes.assignmentId, assignmentIds));
+        if (relatedQuotes.length > 0) {
+          const quoteIds = relatedQuotes.map(q => q.id);
+          const relatedCases = await tx.select({ id: cases.id })
+            .from(cases)
+            .where(inArray(cases.quoteId, quoteIds));
+          if (relatedCases.length > 0) {
+            const caseIds = relatedCases.map(c => c.id);
+            await tx.delete(attorneyNotes).where(inArray(attorneyNotes.caseId, caseIds));
+            await tx.delete(cases).where(inArray(cases.id, caseIds));
+          }
+        }
+        await tx.delete(attorneyNotes).where(inArray(attorneyNotes.assignmentId, assignmentIds));
+        await tx.delete(quotes).where(inArray(quotes.assignmentId, assignmentIds));
+        await tx.delete(referralAssignments).where(inArray(referralAssignments.id, assignmentIds));
+      }
+
+      const legacyAssignments = await tx.select({ id: requestAttorneyAssignments.id })
+        .from(requestAttorneyAssignments)
+        .where(eq(requestAttorneyAssignments.submissionId, id));
+      if (legacyAssignments.length > 0) {
+        const legacyIds = legacyAssignments.map(a => a.id);
+        await tx.delete(requestAttorneyAssignments).where(inArray(requestAttorneyAssignments.id, legacyIds));
+      }
+
+      await tx.delete(structuredIntakes).where(eq(structuredIntakes.id, id));
+    });
   }
 
   async deleteStructuredIntakesBulk(ids: number[]): Promise<void> {
     if (ids.length === 0) return;
-    await db.delete(structuredIntakes).where(inArray(structuredIntakes.id, ids));
+    for (const id of ids) {
+      await this.deleteStructuredIntake(id);
+    }
   }
 
   // Flows methods
