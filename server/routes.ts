@@ -1,9 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
 import OpenAI from "openai";
 import { z } from "zod";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
+import { eq, inArray, asc } from "drizzle-orm";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, requestAttorneyAssignments, referralAssignments, attorneys, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
@@ -1280,29 +1282,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
         formResponses: JSON.parse(intake.formResponses)
       }));
 
-      // Fetch assignment data for all submissions in bulk
-      const allAssignments = await Promise.all(
-        parsedIntakes.map(async (intake) => {
-          const assignments = await storage.getSubmissionAttorneyAssignments(intake.id);
-          return { id: intake.id, assignments };
-        })
-      );
-      const assignmentMap = new Map(allAssignments.map(a => [a.id, a.assignments]));
+      // Fetch both admin assignments (requestAttorneyAssignments) and self-assignments (referralAssignments) in bulk
+      const submissionIds = parsedIntakes.map(i => i.id);
+
+      // Admin assignments from requestAttorneyAssignments table
+      const adminAssignmentsRaw = submissionIds.length > 0
+        ? await db.select({ assignment: requestAttorneyAssignments, attorney: attorneys })
+            .from(requestAttorneyAssignments)
+            .innerJoin(attorneys, eq(requestAttorneyAssignments.attorneyId, attorneys.id))
+            .where(inArray(requestAttorneyAssignments.submissionId, submissionIds))
+        : [];
+
+      // Self-assignments from referralAssignments table
+      const selfAssignmentsRaw = submissionIds.length > 0
+        ? await db.select({ assignment: referralAssignments, attorney: attorneys })
+            .from(referralAssignments)
+            .innerJoin(attorneys, eq(referralAssignments.attorneyId, attorneys.id))
+            .where(inArray(referralAssignments.submissionId, submissionIds))
+        : [];
+
+      // Build a combined map keyed by submissionId
+      const assignmentMap = new Map<number, Array<{
+        assignmentId: number;
+        attorneyId: number;
+        firstName: string;
+        lastName: string;
+        email: string;
+        firmName: string;
+        status: string;
+        emailSent: boolean;
+        emailSentAt: string | null;
+        assignedAt: Date;
+        source: string;
+      }>>();
+
+      for (const { assignment, attorney } of adminAssignmentsRaw) {
+        const sid = assignment.submissionId!;
+        if (!assignmentMap.has(sid)) assignmentMap.set(sid, []);
+        assignmentMap.get(sid)!.push({
+          assignmentId: assignment.id,
+          attorneyId: assignment.attorneyId,
+          firstName: attorney.firstName,
+          lastName: attorney.lastName,
+          email: attorney.email,
+          firmName: attorney.firmName || '',
+          status: assignment.status,
+          emailSent: assignment.emailSent,
+          emailSentAt: assignment.emailSentAt?.toISOString() || null,
+          assignedAt: assignment.assignedAt,
+          source: 'admin',
+        });
+      }
+
+      for (const { assignment, attorney } of selfAssignmentsRaw) {
+        const sid = assignment.submissionId!;
+        if (!assignmentMap.has(sid)) assignmentMap.set(sid, []);
+        // Avoid duplicates if same attorney is in both tables
+        const existing = assignmentMap.get(sid)!;
+        if (!existing.some(a => a.attorneyId === assignment.attorneyId)) {
+          existing.push({
+            assignmentId: assignment.id,
+            attorneyId: assignment.attorneyId,
+            firstName: attorney.firstName,
+            lastName: attorney.lastName,
+            email: attorney.email,
+            firmName: attorney.firmName || '',
+            status: assignment.status,
+            emailSent: false,
+            emailSentAt: null,
+            assignedAt: assignment.assignedAt,
+            source: 'self',
+          });
+        }
+      }
 
       const intakesWithAssignments = parsedIntakes.map(intake => ({
         ...intake,
-        assignedAttorneys: (assignmentMap.get(intake.id) || []).map(a => ({
-          assignmentId: a.id,
-          attorneyId: a.attorneyId,
-          firstName: a.attorney?.firstName || '',
-          lastName: a.attorney?.lastName || '',
-          email: a.attorney?.email || '',
-          firmName: a.attorney?.firmName || '',
-          status: a.status,
-          emailSent: a.emailSent,
-          emailSentAt: a.emailSentAt,
-          assignedAt: a.assignedAt,
-        })),
+        assignedAttorneys: assignmentMap.get(intake.id) || [],
       }));
 
       res.json({ success: true, data: intakesWithAssignments });

@@ -38,6 +38,7 @@ interface AssignedAttorney {
   emailSent: boolean;
   emailSentAt: string | null;
   assignedAt: string;
+  source: 'admin' | 'self';
 }
 
 interface Attorney {
@@ -605,7 +606,12 @@ export default function SubmissionsPage() {
                     {selectedSubmission.assignedAttorneys.map((attorney) => (
                       <div key={attorney.attorneyId} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3">
                         <div>
-                          <div className="font-medium text-gray-900">{attorney.firstName} {attorney.lastName}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-gray-900">{attorney.firstName} {attorney.lastName}</span>
+                            <Badge variant="outline" className={`text-xs ${attorney.source === 'self' ? 'border-purple-300 text-purple-700' : 'border-blue-300 text-blue-700'}`}>
+                              {attorney.source === 'self' ? 'Self-assigned' : 'Admin-assigned'}
+                            </Badge>
+                          </div>
                           <div className="text-sm text-gray-500">{attorney.email}</div>
                           {attorney.firmName && <div className="text-sm text-gray-400">{attorney.firmName}</div>}
                         </div>
