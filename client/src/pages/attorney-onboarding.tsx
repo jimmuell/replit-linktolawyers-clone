@@ -20,6 +20,8 @@ import { format } from 'date-fns';
 
 interface Attorney {
   id: number;
+  userId: number | null;
+  organizationId: number | null;
   firstName: string;
   lastName: string;
   email: string;
@@ -94,7 +96,7 @@ export default function AttorneyOnboarding() {
     }
   }, [user, setLocation]);
 
-  const { data: attorneys = [], isLoading, error } = useQuery({
+  const { data: attorneys = [], isLoading, error } = useQuery<Attorney[]>({
     queryKey: ['/api/attorneys'],
     enabled: user?.role === 'admin',
   });
