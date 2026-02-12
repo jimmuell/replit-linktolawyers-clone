@@ -122,10 +122,10 @@ export default function AttorneyOnboarding() {
         description: 'Attorney created successfully',
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: 'Error',
-        description: 'Failed to create attorney',
+        description: error?.message || 'Failed to create attorney',
         variant: 'destructive',
       });
     },
