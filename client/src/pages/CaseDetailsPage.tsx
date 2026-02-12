@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { ArrowLeft, Download, FileText, Users, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,17 +26,38 @@ interface LegalRequest {
   };
 }
 
+interface StructuredIntake {
+  success: boolean;
+  data: {
+    id: number;
+    requestNumber: string;
+    formResponses: Record<string, any>;
+    [key: string]: any;
+  };
+}
+
 const CaseDetailsPage: React.FC = () => {
   const [match, params] = useRoute('/case-details/:requestNumber');
   const [, navigate] = useLocation();
 
   const requestNumber = params?.requestNumber;
 
-  // Fetch legal request details
   const { data: request, isLoading } = useQuery<LegalRequest>({
-    queryKey: [`/api/legal-requests/${requestNumber}`],
+    queryKey: ['/api/legal-requests', requestNumber],
+    queryFn: () => fetch(`/api/legal-requests/${requestNumber}`).then(r => r.json()),
     enabled: !!requestNumber,
   });
+
+  const { data: structuredIntake } = useQuery<StructuredIntake>({
+    queryKey: ['/api/structured-intakes', requestNumber],
+    queryFn: () => fetch(`/api/structured-intakes/${requestNumber}`).then(r => r.json()),
+    enabled: !!requestNumber,
+  });
+
+  const questionsCount = useMemo(() => {
+    if (!structuredIntake?.data?.formResponses) return null;
+    return Object.keys(structuredIntake.data.formResponses).length;
+  }, [structuredIntake]);
 
   const handleBackToQuotes = () => {
     navigate(`/quotes/${requestNumber}`);
@@ -124,7 +145,19 @@ const CaseDetailsPage: React.FC = () => {
       doc.line(margin, yPosition, pageWidth - margin, yPosition);
       yPosition += 10;
       
-      addText(request.data.caseDescription, 10, 'normal');
+      const plainDescription = request.data.caseDescription
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/li>/gi, '\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&#039;/g, "'")
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+      addText(plainDescription, 10, 'normal');
       
       yPosition += 15;
       
@@ -311,9 +344,10 @@ const CaseDetailsPage: React.FC = () => {
               <CardContent>
                 <div className="prose prose-sm max-w-none">
                   <div className="bg-gray-50 p-4 rounded-lg border">
-                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                      {request.data.caseDescription}
-                    </p>
+                    <div 
+                      className="text-gray-700 leading-relaxed [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-2 [&_strong]:font-semibold [&_span]:text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: request.data.caseDescription }}
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -357,10 +391,12 @@ const CaseDetailsPage: React.FC = () => {
                   <div className="text-sm font-medium text-gray-600 mb-1">Case Number</div>
                   <div className="text-gray-900 font-mono">{request.data.requestNumber.toUpperCase()}</div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-600 mb-1">Questions Asked</div>
-                  <div className="text-gray-900">7</div>
-                </div>
+                {questionsCount !== null && (
+                  <div>
+                    <div className="text-sm font-medium text-gray-600 mb-1">Questions Asked</div>
+                    <div className="text-gray-900">{questionsCount}</div>
+                  </div>
+                )}
                 <div>
                   <div className="text-sm font-medium text-gray-600 mb-1">Created</div>
                   <div className="text-gray-900">{new Date(request.data.createdAt).toLocaleDateString()}</div>
