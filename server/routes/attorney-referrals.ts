@@ -893,11 +893,19 @@ router.patch("/quotes/:quoteId/status", async (req, res) => {
           })
           .where(eq(referralAssignments.id, updatedQuote.assignmentId));
 
-        // Get all other assignments for the same request
-        const otherAssignments = assignment.requestId ? await db
-          .select()
-          .from(referralAssignments)
-          .where(eq(referralAssignments.requestId, assignment.requestId)) : [];
+        // Get all other assignments for the same request (supports both legacy requestId and structured submissionId)
+        let otherAssignments: any[] = [];
+        if (assignment.submissionId) {
+          otherAssignments = await db
+            .select()
+            .from(referralAssignments)
+            .where(eq(referralAssignments.submissionId, assignment.submissionId));
+        } else if (assignment.requestId) {
+          otherAssignments = await db
+            .select()
+            .from(referralAssignments)
+            .where(eq(referralAssignments.requestId, assignment.requestId));
+        }
 
         // Decline all other quotes for this request
         for (const otherAssignment of otherAssignments) {

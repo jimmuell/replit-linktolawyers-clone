@@ -66,6 +66,7 @@ export default function QuotesPage() {
   const [isAssigning, setIsAssigning] = useState(false);
   const [showProcessingOverlay, setShowProcessingOverlay] = useState(false);
   const [processingStep, setProcessingStep] = useState(1);
+  const [quoteActionDialog, setQuoteActionDialog] = useState<{open: boolean, quoteId: number | null, action: 'accepted' | 'declined' | null, attorneyName: string, fee: number}>({open: false, quoteId: null, action: null, attorneyName: '', fee: 0});
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -176,6 +177,45 @@ export default function QuotesPage() {
       });
     }
   });
+
+  const quoteActionMutation = useMutation({
+    mutationFn: async ({ quoteId, status }: { quoteId: number; status: 'accepted' | 'declined' }) => {
+      return apiRequest(`/api/attorney-referrals/quotes/${quoteId}/status`, {
+        method: 'PATCH',
+        body: { status }
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/structured-intakes', request?.data?.id, 'quotes'] 
+      });
+      const action = quoteActionDialog.action;
+      toast({
+        title: action === 'accepted' ? 'Quote Accepted' : 'Quote Declined',
+        description: action === 'accepted' 
+          ? `You've accepted the quote from ${quoteActionDialog.attorneyName}. They will be notified.`
+          : `You've declined the quote from ${quoteActionDialog.attorneyName}.`,
+      });
+      setQuoteActionDialog({open: false, quoteId: null, action: null, attorneyName: '', fee: 0});
+    },
+    onError: () => {
+      toast({
+        title: 'Error',
+        description: 'Failed to update quote status. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const handleQuoteAction = (quoteId: number, action: 'accepted' | 'declined', attorneyName: string, fee: number) => {
+    setQuoteActionDialog({open: true, quoteId, action, attorneyName, fee});
+  };
+
+  const confirmQuoteAction = () => {
+    if (quoteActionDialog.quoteId && quoteActionDialog.action) {
+      quoteActionMutation.mutate({ quoteId: quoteActionDialog.quoteId, status: quoteActionDialog.action });
+    }
+  };
 
   const handleConnectWithAttorneys = async () => {
     const newlySelectedAttorneys = getNewlySelectedAttorneys();
@@ -512,7 +552,7 @@ export default function QuotesPage() {
               {submittedQuotes.map((quote: any) => {
                 const attorney = quote.attorney;
                 return (
-                  <Card key={quote.id} className="border border-green-200 bg-green-50">
+                  <Card key={quote.id} className={`border ${quote.status === 'accepted' ? 'border-green-400 bg-green-50 ring-1 ring-green-400' : quote.status === 'declined' ? 'border-gray-200 bg-gray-50 opacity-75' : 'border-green-200 bg-green-50'}`}>
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-start space-x-4">
@@ -521,9 +561,13 @@ export default function QuotesPage() {
                               <h3 className="text-lg font-semibold text-gray-900">
                                 {attorney.firstName} {attorney.lastName}
                               </h3>
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <DollarSign className="w-3 h-3 mr-1" />
-                                Quote Submitted
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                quote.status === 'accepted' ? 'bg-green-200 text-green-900' : 
+                                quote.status === 'declined' ? 'bg-red-100 text-red-800' : 
+                                'bg-green-100 text-green-800'
+                              }`}>
+                                {quote.status === 'accepted' ? <CheckCircle className="w-3 h-3 mr-1" /> : <DollarSign className="w-3 h-3 mr-1" />}
+                                {quote.status === 'accepted' ? 'Accepted' : quote.status === 'declined' ? 'Declined' : 'Quote Submitted'}
                               </span>
                               {attorney.isVerified && (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -575,44 +619,76 @@ export default function QuotesPage() {
                         <p className="text-sm text-gray-600 mb-4">{attorney.bio}</p>
                       )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          {attorney.practiceAreas && attorney.practiceAreas.length > 0 && (
-                            <div>
-                              <span className="text-sm font-medium text-gray-600">Specialties</span>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {attorney.practiceAreas.map((area: string, index: number) => (
-                                  <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    {area}
-                                  </span>
-                                ))}
-                              </div>
+                      {attorney.practiceAreas && attorney.practiceAreas.length > 0 && (
+                        <div className="mb-4">
+                          <span className="text-sm font-medium text-gray-600">Specialties</span>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {attorney.practiceAreas.map((area: string, index: number) => (
+                              <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {area}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {quote.status === 'pending' ? (
+                        <div className="flex items-center justify-between pt-4 border-t border-green-200">
+                          <div className="flex items-center space-x-2 text-sm text-gray-500">
+                            <Clock className="w-4 h-4" />
+                            <span>
+                              {quote.validUntil 
+                                ? `Valid until ${new Date(quote.validUntil).toLocaleDateString()}`
+                                : 'Awaiting your response'}
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-200 hover:bg-red-50"
+                              onClick={() => handleQuoteAction(quote.id, 'declined', `${attorney.firstName} ${attorney.lastName}`, quote.serviceFee)}
+                            >
+                              Decline
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              onClick={() => handleQuoteAction(quote.id, 'accepted', `${attorney.firstName} ${attorney.lastName}`, quote.serviceFee)}
+                            >
+                              Accept Quote
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center pt-4 border-t border-green-200">
+                          {quote.status === 'accepted' ? (
+                            <div className="flex items-center space-x-2 text-green-700">
+                              <CheckCircle className="w-5 h-5" />
+                              <span className="font-medium">Quote Accepted</span>
+                              {quote.respondedAt && (
+                                <span className="text-sm text-gray-500 ml-2">
+                                  on {new Date(quote.respondedAt).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          ) : quote.status === 'declined' ? (
+                            <div className="flex items-center space-x-2 text-red-600">
+                              <span className="font-medium">Quote Declined</span>
+                              {quote.respondedAt && (
+                                <span className="text-sm text-gray-500 ml-2">
+                                  on {new Date(quote.respondedAt).toLocaleDateString()}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2 text-gray-500">
+                              <Clock className="w-4 h-4" />
+                              <span>{quote.status}</span>
                             </div>
                           )}
                         </div>
-
-                        <div>
-                          <span className="text-sm font-medium text-gray-600">Quote Status</span>
-                          <div className="mt-2 space-y-1">
-                            <div className="flex items-center space-x-2">
-                              <CheckCircle className="w-3 h-3 text-green-500" />
-                              <span className="text-xs text-gray-600">Attorney has reviewed your case</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <CheckCircle className="w-3 h-3 text-green-500" />
-                              <span className="text-xs text-gray-600">Quote has been submitted</span>
-                            </div>
-                            {quote.validUntil && (
-                              <div className="flex items-center space-x-2">
-                                <Clock className="w-3 h-3 text-blue-500" />
-                                <span className="text-xs text-gray-600">
-                                  Valid until {new Date(quote.validUntil).toLocaleDateString()}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
@@ -839,6 +915,38 @@ export default function QuotesPage() {
             </div>
           </div>
         )}
+
+        {/* Quote Accept/Decline Confirmation Dialog */}
+        <Dialog open={quoteActionDialog.open} onOpenChange={(open) => { if (!open) setQuoteActionDialog({open: false, quoteId: null, action: null, attorneyName: '', fee: 0}); }}>
+          <DialogContent className="sm:max-w-[450px]">
+            <DialogHeader>
+              <DialogTitle>
+                {quoteActionDialog.action === 'accepted' ? 'Accept This Quote?' : 'Decline This Quote?'}
+              </DialogTitle>
+              <DialogDescription>
+                {quoteActionDialog.action === 'accepted' 
+                  ? `You are about to accept the quote of $${(quoteActionDialog.fee / 100).toLocaleString()} from ${quoteActionDialog.attorneyName}. Any other pending quotes for this case will be automatically declined.`
+                  : `Are you sure you want to decline the quote from ${quoteActionDialog.attorneyName}?`}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex gap-2 sm:gap-0">
+              <Button 
+                variant="outline" 
+                onClick={() => setQuoteActionDialog({open: false, quoteId: null, action: null, attorneyName: '', fee: 0})}
+                disabled={quoteActionMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={confirmQuoteAction}
+                disabled={quoteActionMutation.isPending}
+                className={quoteActionDialog.action === 'accepted' ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}
+              >
+                {quoteActionMutation.isPending ? 'Processing...' : quoteActionDialog.action === 'accepted' ? 'Yes, Accept Quote' : 'Yes, Decline'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Confirmation Dialog */}
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
