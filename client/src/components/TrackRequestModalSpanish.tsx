@@ -15,16 +15,16 @@ interface TrackRequestModalSpanishProps {
 }
 
 export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackRequestModalSpanishProps) {
+  const isDev = import.meta.env.DEV;
   const [searchType, setSearchType] = useState<'dropdown' | 'manual'>('manual');
   const [selectedRequest, setSelectedRequest] = useState<string>('');
   const [manualRequestNumber, setManualRequestNumber] = useState<string>('');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Fetch available structured intakes for dropdown
   const { data: structuredIntakes, isLoading } = useQuery<{data: Array<{id: number, requestNumber: string, firstName: string, lastName: string}>}>({
     queryKey: ['/api/structured-intakes/public'],
-    enabled: isOpen,
+    enabled: isOpen && isDev,
   });
 
   const handleTrackRequest = () => {
@@ -63,20 +63,22 @@ export default function TrackRequestModalSpanish({ isOpen, onClose }: TrackReque
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>¿Cómo quieres buscar?</Label>
-            <Select value={searchType} onValueChange={(value: 'dropdown' | 'manual') => setSearchType(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dropdown">Seleccionar de solicitudes recientes</SelectItem>
-                <SelectItem value="manual">Ingresar número manualmente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {isDev && (
+            <div className="space-y-2">
+              <Label>¿Cómo quieres buscar?</Label>
+              <Select value={searchType} onValueChange={(value: 'dropdown' | 'manual') => setSearchType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dropdown">Seleccionar de solicitudes recientes</SelectItem>
+                  <SelectItem value="manual">Ingresar número manualmente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          {searchType === 'dropdown' ? (
+          {isDev && searchType === 'dropdown' ? (
             <div className="space-y-2">
               <Label>Seleccionar Solicitud</Label>
               <Select value={selectedRequest} onValueChange={setSelectedRequest} disabled={isLoading}>

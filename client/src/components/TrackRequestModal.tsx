@@ -15,16 +15,16 @@ interface TrackRequestModalProps {
 }
 
 export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModalProps) {
+  const isDev = import.meta.env.DEV;
   const [searchType, setSearchType] = useState<'dropdown' | 'manual'>('manual');
   const [selectedRequest, setSelectedRequest] = useState<string>('');
   const [manualRequestNumber, setManualRequestNumber] = useState<string>('');
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Fetch available structured intakes for dropdown
   const { data: structuredIntakes, isLoading } = useQuery<{data: Array<{id: number, requestNumber: string, firstName: string, lastName: string}>}>({
     queryKey: ['/api/structured-intakes/public'],
-    enabled: isOpen,
+    enabled: isOpen && isDev,
   });
 
   const handleTrackRequest = () => {
@@ -66,20 +66,22 @@ export default function TrackRequestModal({ isOpen, onClose }: TrackRequestModal
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>How would you like to search?</Label>
-            <Select value={searchType} onValueChange={(value: 'dropdown' | 'manual') => setSearchType(value)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dropdown">Select from recent requests</SelectItem>
-                <SelectItem value="manual">Enter request number manually</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {isDev && (
+            <div className="space-y-2">
+              <Label>How would you like to search?</Label>
+              <Select value={searchType} onValueChange={(value: 'dropdown' | 'manual') => setSearchType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dropdown">Select from recent requests</SelectItem>
+                  <SelectItem value="manual">Enter request number manually</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          {searchType === 'dropdown' ? (
+          {isDev && searchType === 'dropdown' ? (
             <div className="space-y-2">
               <Label>Select Request</Label>
               <Select value={selectedRequest} onValueChange={setSelectedRequest} disabled={isLoading}>

@@ -1230,8 +1230,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint for tracking requests dropdown - must be before :requestNumber route
+  // Development-only endpoint for tracking requests dropdown - must be before :requestNumber route
   app.get("/api/structured-intakes/public", async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ success: false, error: "This endpoint is not available in production" });
+    }
     try {
       const structuredIntakes = await storage.getAllStructuredIntakes();
       const publicIntakes = structuredIntakes.map(intake => ({
