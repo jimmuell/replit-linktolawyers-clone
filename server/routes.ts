@@ -1279,7 +1279,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...intake,
         formResponses: JSON.parse(intake.formResponses)
       }));
-      res.json({ success: true, data: parsedIntakes });
+
+      // Fetch assignment data for all submissions in bulk
+      const allAssignments = await Promise.all(
+        parsedIntakes.map(async (intake) => {
+          const assignments = await storage.getSubmissionAttorneyAssignments(intake.id);
+          return { id: intake.id, assignments };
+        })
+      );
+      const assignmentMap = new Map(allAssignments.map(a => [a.id, a.assignments]));
+
+      const intakesWithAssignments = parsedIntakes.map(intake => ({
+        ...intake,
+        assignedAttorneys: (assignmentMap.get(intake.id) || []).map(a => ({
+          assignmentId: a.id,
+          attorneyId: a.attorneyId,
+          firstName: a.attorney?.firstName || '',
+          lastName: a.attorney?.lastName || '',
+          email: a.attorney?.email || '',
+          firmName: a.attorney?.firmName || '',
+          status: a.status,
+          emailSent: a.emailSent,
+          emailSentAt: a.emailSentAt,
+          assignedAt: a.assignedAt,
+        })),
+      }));
+
+      res.json({ success: true, data: intakesWithAssignments });
     } catch (error) {
       console.error("Error fetching structured intakes:", error);
       res.status(500).json({ success: false, error: "Failed to fetch structured intakes" });

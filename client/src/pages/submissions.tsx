@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import AdminNavbar from '@/components/AdminNavbar';
-import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, Clock } from 'lucide-react';
+import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, Clock, UserPlus, UserMinus, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -27,6 +27,28 @@ interface FormResponses {
   submittedAt: string;
 }
 
+interface AssignedAttorney {
+  assignmentId: number;
+  attorneyId: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  firmName: string;
+  status: string;
+  emailSent: boolean;
+  emailSentAt: string | null;
+  assignedAt: string;
+}
+
+interface Attorney {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  firmName: string;
+  isVerified: boolean;
+}
+
 interface StructuredIntake {
   id: number;
   requestNumber: string;
@@ -42,6 +64,7 @@ interface StructuredIntake {
   status: string;
   createdAt: string;
   updatedAt: string;
+  assignedAttorneys: AssignedAttorney[];
 }
 
 interface FormGroup {
@@ -62,6 +85,8 @@ export default function SubmissionsPage() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<number[]>([]);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedAttorneyIds, setSelectedAttorneyIds] = useState<number[]>([]);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
@@ -75,6 +100,13 @@ export default function SubmissionsPage() {
   });
 
   const intakes = intakesResponse?.data || [];
+
+  const { data: attorneysResponse } = useQuery<Attorney[]>({
+    queryKey: ['/api/attorneys'],
+    retry: false,
+  });
+
+  const allAttorneys: Attorney[] = Array.isArray(attorneysResponse) ? attorneysResponse : [];
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -126,6 +158,39 @@ export default function SubmissionsPage() {
     },
   });
 
+  const assignAttorneysMutation = useMutation({
+    mutationFn: async ({ submissionId, attorneyIds }: { submissionId: number; attorneyIds: number[] }) => {
+      return await apiRequest(`/api/structured-intakes/${submissionId}/attorneys`, {
+        method: 'POST',
+        body: { attorneyIds },
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['/api/structured-intakes'] });
+      toast({
+        title: "Attorneys updated",
+        description: "Attorney assignments have been updated successfully.",
+      });
+      setIsAssignModalOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Failed to update attorneys",
+        description: "An error occurred while updating attorney assignments.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (selectedSubmission && intakes.length > 0) {
+      const updated = intakes.find(i => i.id === selectedSubmission.id);
+      if (updated) {
+        setSelectedSubmission(updated);
+      }
+    }
+  }, [intakes]);
+
   if (loading || !user || user.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -137,7 +202,6 @@ export default function SubmissionsPage() {
     );
   }
 
-  // Group submissions by case type
   const formGroups: FormGroup[] = Object.values(
     intakes.reduce((acc: Record<string, FormGroup>, intake) => {
       const caseType = intake.caseType;
@@ -185,6 +249,34 @@ export default function SubmissionsPage() {
   const handleDeleteConfirm = () => {
     if (selectedSubmission) {
       deleteMutation.mutate(selectedSubmission.id);
+    }
+  };
+
+  const handleOpenAssignModal = () => {
+    if (selectedSubmission) {
+      setSelectedAttorneyIds(selectedSubmission.assignedAttorneys.map(a => a.attorneyId));
+      setIsAssignModalOpen(true);
+    }
+  };
+
+  const handleSaveAssignments = () => {
+    if (selectedSubmission) {
+      assignAttorneysMutation.mutate({
+        submissionId: selectedSubmission.id,
+        attorneyIds: selectedAttorneyIds,
+      });
+    }
+  };
+
+  const handleUnassignAttorney = (attorneyId: number) => {
+    if (selectedSubmission) {
+      const newIds = selectedSubmission.assignedAttorneys
+        .map(a => a.attorneyId)
+        .filter(id => id !== attorneyId);
+      assignAttorneysMutation.mutate({
+        submissionId: selectedSubmission.id,
+        attorneyIds: newIds,
+      });
     }
   };
 
@@ -243,7 +335,7 @@ export default function SubmissionsPage() {
   };
 
   const exportToCSV = (formGroup: FormGroup) => {
-    const headers = ['Request Number', 'Name', 'Email', 'Phone', 'State', 'Status', 'Submitted At'];
+    const headers = ['Request Number', 'Name', 'Email', 'Phone', 'State', 'Status', 'Assigned Attorneys', 'Submitted At'];
     const rows = formGroup.submissions.map(s => [
       s.requestNumber,
       `${s.firstName} ${s.lastName}`,
@@ -251,6 +343,7 @@ export default function SubmissionsPage() {
       s.phoneNumber || '',
       s.state || '',
       s.status,
+      s.assignedAttorneys?.map(a => `${a.firstName} ${a.lastName}`).join('; ') || 'Unassigned',
       format(new Date(s.createdAt), 'MMM d, yyyy h:mm a')
     ]);
     
@@ -404,8 +497,19 @@ export default function SubmissionsPage() {
                                     Completed in {calculateCompletionTime(submission)}
                                   </span>
                                 </div>
-                                <div className="text-gray-500 text-sm">
-                                  {Object.keys(submission.formResponses?.answers || {}).length} responses • {submission.formResponses?.transcript?.length || 0} nodes visited
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="text-gray-500">
+                                    {Object.keys(submission.formResponses?.answers || {}).length} responses • {submission.formResponses?.transcript?.length || 0} nodes visited
+                                  </span>
+                                  <span className="text-gray-300">•</span>
+                                  {submission.assignedAttorneys && submission.assignedAttorneys.length > 0 ? (
+                                    <span className="inline-flex items-center gap-1 text-green-700">
+                                      <Users className="w-3 h-3" />
+                                      {submission.assignedAttorneys.length} attorney{submission.assignedAttorneys.length !== 1 ? 's' : ''} assigned
+                                    </span>
+                                  ) : (
+                                    <span className="text-orange-600">Unassigned</span>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -484,6 +588,58 @@ export default function SubmissionsPage() {
                 </div>
               </div>
 
+              {/* Attorney Assignments */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                    <Users className="w-5 h-5 text-gray-500" />
+                    Assigned Attorneys
+                  </h3>
+                  <Button size="sm" onClick={handleOpenAssignModal}>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Manage Attorneys
+                  </Button>
+                </div>
+                {selectedSubmission.assignedAttorneys && selectedSubmission.assignedAttorneys.length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedSubmission.assignedAttorneys.map((attorney) => (
+                      <div key={attorney.attorneyId} className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3">
+                        <div>
+                          <div className="font-medium text-gray-900">{attorney.firstName} {attorney.lastName}</div>
+                          <div className="text-sm text-gray-500">{attorney.email}</div>
+                          {attorney.firmName && <div className="text-sm text-gray-400">{attorney.firmName}</div>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <Badge variant={attorney.emailSent ? 'default' : 'secondary'} className="text-xs">
+                              {attorney.emailSent ? 'Email Sent' : 'Not Notified'}
+                            </Badge>
+                            <div className="text-xs text-gray-400 mt-1">
+                              Assigned {formatDistanceToNow(new Date(attorney.assignedAt), { addSuffix: true })}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleUnassignAttorney(attorney.attorneyId)}
+                            disabled={assignAttorneysMutation.isPending}
+                          >
+                            <UserMinus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No attorneys assigned yet</p>
+                    <p className="text-xs text-gray-400">Click "Manage Attorneys" to assign attorneys to this submission</p>
+                  </div>
+                )}
+              </div>
+
               {/* User Journey */}
               {selectedSubmission.formResponses?.transcript && selectedSubmission.formResponses.transcript.length > 0 && (
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
@@ -530,12 +686,10 @@ export default function SubmissionsPage() {
                 </h3>
                 <div className="space-y-4">
                   {Object.entries(selectedSubmission.formResponses?.answers || {}).map(([nodeId, value]) => {
-                    // Format value: handle objects, arrays, and primitives
                     let displayValue: string;
                     if (value === null || value === undefined) {
                       displayValue = 'N/A';
                     } else if (typeof value === 'object') {
-                      // For objects like {"1": "tourist visa"} or {"started": true}
                       const entries = Object.entries(value as Record<string, unknown>);
                       if (entries.length === 1 && entries[0][0] === 'started') {
                         displayValue = '(started)';
@@ -568,6 +722,71 @@ export default function SubmissionsPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Attorneys Modal */}
+      <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5" />
+              Manage Attorney Assignments
+            </DialogTitle>
+            <p className="text-gray-500 text-sm">
+              Select attorneys to assign to submission {selectedSubmission?.requestNumber}
+            </p>
+          </DialogHeader>
+          <div className="space-y-3 mt-4">
+            {allAttorneys.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No attorneys available</p>
+            ) : (
+              allAttorneys.map((attorney) => {
+                const isSelected = selectedAttorneyIds.includes(attorney.id);
+                return (
+                  <div
+                    key={attorney.id}
+                    className={`flex items-center justify-between rounded-lg border px-4 py-3 cursor-pointer transition-colors ${
+                      isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:bg-gray-50'
+                    }`}
+                    onClick={() => {
+                      setSelectedAttorneyIds(prev =>
+                        isSelected
+                          ? prev.filter(id => id !== attorney.id)
+                          : [...prev, attorney.id]
+                      );
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Checkbox checked={isSelected} />
+                      <div>
+                        <div className="font-medium text-gray-900">{attorney.firstName} {attorney.lastName}</div>
+                        <div className="text-sm text-gray-500">{attorney.email}</div>
+                        {attorney.firmName && <div className="text-xs text-gray-400">{attorney.firmName}</div>}
+                      </div>
+                    </div>
+                    {attorney.isVerified && (
+                      <Badge variant="secondary" className="text-xs">Verified</Badge>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <div className="flex justify-between items-center mt-6 pt-4 border-t">
+            <p className="text-sm text-gray-500">{selectedAttorneyIds.length} attorney{selectedAttorneyIds.length !== 1 ? 's' : ''} selected</p>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setIsAssignModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveAssignments}
+                disabled={assignAttorneysMutation.isPending}
+              >
+                {assignAttorneysMutation.isPending ? 'Saving...' : 'Save Assignments'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
