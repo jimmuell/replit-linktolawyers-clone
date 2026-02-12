@@ -37,6 +37,7 @@ interface ActiveCase {
 export default function ActiveCasesList() {
   const [selectedCase, setSelectedCase] = useState<ActiveCase | null>(null);
   const [closeCaseConfirm, setCloseCaseConfirm] = useState<ActiveCase | null>(null);
+  const [closeCaseSuccess, setCloseCaseSuccess] = useState<{ caseNumber: string; clientName: string } | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -68,14 +69,15 @@ export default function ActiveCasesList() {
       });
     },
     onSuccess: (data: any) => {
-      toast({
-        title: "Case Closed",
-        description: `Case ${closeCaseConfirm?.caseNumber} has been marked as completed.`,
-      });
+      const successInfo = {
+        caseNumber: closeCaseConfirm?.caseNumber || '',
+        clientName: closeCaseConfirm ? `${closeCaseConfirm.request.firstName} ${closeCaseConfirm.request.lastName}` : '',
+      };
       setCloseCaseConfirm(null);
       if (selectedCase && selectedCase.caseId === closeCaseConfirm?.caseId) {
         setSelectedCase({ ...selectedCase, caseStatus: 'completed', completedDate: new Date().toISOString() });
       }
+      setCloseCaseSuccess(successInfo);
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/cases'] });
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
     },
@@ -357,6 +359,26 @@ export default function ActiveCasesList() {
               className="bg-green-600 hover:bg-green-700"
             >
               {closeCaseMutation.isPending ? 'Closing...' : 'Yes, Close Case'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!closeCaseSuccess} onOpenChange={(open) => { if (!open) setCloseCaseSuccess(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Case Closed Successfully
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Case <strong>{closeCaseSuccess?.caseNumber}</strong> for client <strong>{closeCaseSuccess?.clientName}</strong> has been marked as completed.</p>
+              <p>The completion date has been recorded as today's date.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-green-600 hover:bg-green-700">
+              OK
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

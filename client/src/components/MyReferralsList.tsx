@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Eye, MessageSquare, DollarSign, FileText, Clock, Edit2, Trash2, UserMinus, AlertTriangle } from 'lucide-react';
+import { Eye, MessageSquare, DollarSign, FileText, Clock, Edit2, Trash2, UserMinus, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -55,6 +55,7 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
   const [unassignWarning, setUnassignWarning] = useState<{ assignmentId: number; hasQuote: boolean } | null>(null);
   const [isStartCaseModalOpen, setIsStartCaseModalOpen] = useState(false);
   const [caseNotes, setCaseNotes] = useState('');
+  const [startCaseSuccess, setStartCaseSuccess] = useState<{ caseNumber: string; clientName: string } | null>(null);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -367,13 +368,13 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
       });
     },
     onSuccess: (data: any) => {
-      toast({
-        title: "Case Started",
-        description: `Case ${data.data.caseNumber} has been started successfully`,
-      });
       setIsStartCaseModalOpen(false);
       setCaseNotes('');
-      setExistingCase(data.data); // Update the case state to show case info instead of button
+      setExistingCase(data.data);
+      setStartCaseSuccess({
+        caseNumber: data.data.caseNumber,
+        clientName: selectedReferral ? `${selectedReferral.request.firstName} ${selectedReferral.request.lastName}` : '',
+      });
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
     },
     onError: (error: Error) => {
@@ -1254,6 +1255,26 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!startCaseSuccess} onOpenChange={(open) => { if (!open) setStartCaseSuccess(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Case Started Successfully
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Case <strong>{startCaseSuccess?.caseNumber}</strong> has been created for client <strong>{startCaseSuccess?.clientName}</strong>.</p>
+              <p>You can now manage this case from the Active Cases tab.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction className="bg-green-600 hover:bg-green-700">
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
