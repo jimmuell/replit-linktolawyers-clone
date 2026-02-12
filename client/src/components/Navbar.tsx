@@ -132,7 +132,7 @@ export default function Navbar({ activeSection, scrollToSection, setIsLoginModal
                 className="border-gray-300 text-black bg-white hover:bg-gray-50 rounded-full px-6"
                 onClick={() => setIsLoginModalOpen(true)}
               >
-                Sign In
+                For Attorneys
               </Button>
             )}
             <Link href="/es" className="text-gray-700 hover:text-primary transition-colors">
