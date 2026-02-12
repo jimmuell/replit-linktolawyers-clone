@@ -522,10 +522,6 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
       const caseForQuote = await fetchExistingCase(quote.id);
       if (caseForQuote) {
         setExistingCase(caseForQuote);
-        toast({
-          title: "Case Already Started",
-          description: `Case ${caseForQuote.caseNumber} already exists for this quote.`,
-        });
         return;
       }
       setSelectedReferral(referral);
@@ -696,9 +692,11 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Assignment Status</label>
-                                    <Badge variant={getStatusBadgeVariant(selectedReferral.assignmentStatus)}>
-                                      {selectedReferral.assignmentStatus.replace('_', ' ')}
-                                    </Badge>
+                                    <div className="mt-1">
+                                      <Badge variant={getStatusBadgeVariant(selectedReferral.assignmentStatus)}>
+                                        {selectedReferral.assignmentStatus.replace('_', ' ')}
+                                      </Badge>
+                                    </div>
                                   </div>
                                 </div>
 
@@ -889,11 +887,14 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                                         
                                         {existingQuote?.status === 'accepted' && (
                                           existingCase ? (
-                                            <div className="text-sm">
-                                              <Badge variant="default" className="bg-blue-100 text-blue-800">
-                                                Case Started: {existingCase.caseNumber}
-                                              </Badge>
-                                            </div>
+                                            <Button 
+                                              size="sm"
+                                              disabled
+                                              className="bg-gray-400 text-white cursor-not-allowed"
+                                            >
+                                              <FileText className="h-3 w-3 mr-1" />
+                                              Case Started
+                                            </Button>
                                           ) : (
                                             <Button 
                                               size="sm"
@@ -907,6 +908,14 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
                                           )
                                         )}
                                       </div>
+                                      
+                                      {existingCase && (
+                                        <div className="mt-3 p-2 bg-blue-50 rounded border border-blue-200">
+                                          <p className="text-sm text-blue-800">
+                                            Case <strong>{existingCase.caseNumber}</strong> has already been started for this quote.
+                                          </p>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
