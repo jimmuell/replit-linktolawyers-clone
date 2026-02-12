@@ -377,11 +377,19 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
       queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/my-referrals'] });
     },
     onError: (error: Error) => {
+      const isAlreadyExists = error.message?.toLowerCase().includes('already exists');
       toast({
-        title: "Error",
-        description: error.message || "Failed to start case",
-        variant: "destructive",
+        title: isAlreadyExists ? "Case Already Started" : "Error",
+        description: isAlreadyExists 
+          ? "A case has already been created for this quote." 
+          : (error.message || "Failed to start case"),
+        variant: isAlreadyExists ? "default" : "destructive",
       });
+      if (isAlreadyExists) {
+        setIsStartCaseModalOpen(false);
+        setCaseNotes('');
+        queryClient.invalidateQueries({ queryKey: ['/api/attorney-referrals/cases'] });
+      }
     },
   });
 
@@ -511,6 +519,15 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
   const handleStartCaseClick = async (referral: MyReferral) => {
     const quote = await fetchExistingQuote(referral.assignmentId);
     if (quote && quote.status === 'accepted') {
+      const caseForQuote = await fetchExistingCase(quote.id);
+      if (caseForQuote) {
+        setExistingCase(caseForQuote);
+        toast({
+          title: "Case Already Started",
+          description: `Case ${caseForQuote.caseNumber} already exists for this quote.`,
+        });
+        return;
+      }
       setSelectedReferral(referral);
       setExistingQuote(quote);
       setIsStartCaseModalOpen(true);
