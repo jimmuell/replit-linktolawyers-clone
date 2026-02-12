@@ -111,33 +111,58 @@ router.get("/my-referrals", requireAuth, async (req, res) => {
     
     const attorneyId = attorney[0].id;
 
-    const myReferrals = await db
-      .select({
-        assignmentId: referralAssignments.id,
-        assignmentStatus: referralAssignments.status,
-        assignedAt: referralAssignments.assignedAt,
-        notes: referralAssignments.notes,
-        quoteId: quotes.id,
-        quoteStatus: quotes.status,
-        request: {
-          id: legalRequests.id,
-          requestNumber: legalRequests.requestNumber,
-          firstName: legalRequests.firstName,
-          lastName: legalRequests.lastName,
-          email: legalRequests.email,
-          phoneNumber: legalRequests.phoneNumber,
-          caseType: legalRequests.caseType,
-          caseDescription: legalRequests.caseDescription,
-          location: legalRequests.location,
-          status: legalRequests.status,
-          createdAt: legalRequests.createdAt,
-        }
-      })
-      .from(referralAssignments)
-      .innerJoin(legalRequests, eq(referralAssignments.requestId, legalRequests.id))
-      .leftJoin(quotes, eq(quotes.assignmentId, referralAssignments.id))
-      .where(eq(referralAssignments.attorneyId, attorneyId))
-      .orderBy(desc(referralAssignments.assignedAt));
+    // Fetch referrals from both legacy legal_requests (via request_id) and structured_intakes (via submission_id)
+    const results = await db.execute(sql`
+      SELECT 
+        ra.id as assignment_id,
+        ra.status as assignment_status,
+        ra.assigned_at,
+        ra.notes,
+        ra.request_id,
+        ra.submission_id,
+        q.id as quote_id,
+        q.status as quote_status,
+        COALESCE(lr.id, si.id) as ref_id,
+        COALESCE(lr.request_number, si.request_number) as request_number,
+        COALESCE(lr.first_name, si.first_name) as first_name,
+        COALESCE(lr.last_name, si.last_name) as last_name,
+        COALESCE(lr.email, si.email) as email,
+        COALESCE(lr.phone_number, si.phone_number) as phone_number,
+        COALESCE(lr.case_type, si.case_type) as case_type,
+        COALESCE(lr.case_description, '') as case_description,
+        COALESCE(lr.location, si.state, '') as location,
+        COALESCE(lr.status, si.status) as ref_status,
+        COALESCE(lr.created_at, si.created_at) as ref_created_at
+      FROM referral_assignments ra
+      LEFT JOIN legal_requests lr ON ra.request_id = lr.id
+      LEFT JOIN structured_intakes si ON ra.submission_id = si.id
+      LEFT JOIN quotes q ON q.assignment_id = ra.id
+      WHERE ra.attorney_id = ${attorneyId}
+        AND (lr.id IS NOT NULL OR si.id IS NOT NULL)
+      ORDER BY ra.assigned_at DESC
+    `);
+
+    const myReferrals = results.rows.map((row: any) => ({
+      assignmentId: row.assignment_id,
+      assignmentStatus: row.assignment_status,
+      assignedAt: row.assigned_at,
+      notes: row.notes,
+      quoteId: row.quote_id,
+      quoteStatus: row.quote_status,
+      request: {
+        id: row.ref_id,
+        requestNumber: row.request_number,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        email: row.email,
+        phoneNumber: row.phone_number,
+        caseType: row.case_type,
+        caseDescription: row.case_description,
+        location: row.location,
+        status: row.ref_status,
+        createdAt: row.ref_created_at,
+      }
+    }));
 
     res.json({ success: true, data: myReferrals });
   } catch (error) {
