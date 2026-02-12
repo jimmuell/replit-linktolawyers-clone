@@ -5,7 +5,7 @@ import { db } from "./db";
 import OpenAI from "openai";
 import { z } from "zod";
 import { eq, inArray, asc } from "drizzle-orm";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, requestAttorneyAssignments, referralAssignments, attorneys, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, requestAttorneyAssignments, referralAssignments, attorneys, quotes, structuredIntakes, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
@@ -1412,6 +1412,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching submission attorney assignments:", error);
       res.status(500).json({ success: false, error: "Failed to fetch attorney assignments" });
+    }
+  });
+
+  // Get quotes submitted by attorneys for a submission (from referralAssignments + quotes tables)
+  app.get("/api/structured-intakes/:id/quotes", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ success: false, error: "Invalid ID" });
+      }
+
+      const result = await db
+        .select({
+          quote: quotes,
+          assignment: referralAssignments,
+          attorney: attorneys,
+        })
+        .from(quotes)
+        .innerJoin(referralAssignments, eq(quotes.assignmentId, referralAssignments.id))
+        .innerJoin(attorneys, eq(referralAssignments.attorneyId, attorneys.id))
+        .where(eq(referralAssignments.submissionId, id))
+        .orderBy(asc(quotes.sentAt));
+
+      const formattedQuotes = result.map(({ quote, assignment, attorney }) => ({
+        id: quote.id,
+        serviceFee: quote.serviceFee,
+        description: quote.description,
+        terms: quote.terms,
+        validUntil: quote.validUntil,
+        status: quote.status,
+        sentAt: quote.sentAt,
+        respondedAt: quote.respondedAt,
+        assignmentId: assignment.id,
+        assignmentStatus: assignment.status,
+        assignedAt: assignment.assignedAt,
+        attorney: {
+          id: attorney.id,
+          firstName: attorney.firstName,
+          lastName: attorney.lastName,
+          email: attorney.email,
+          firmName: attorney.firmName || '',
+          licenseState: attorney.licenseState || '',
+          practiceAreas: attorney.practiceAreas || [],
+          experienceYears: attorney.yearsOfExperience,
+          isVerified: attorney.isVerified,
+          bio: attorney.bio || '',
+        },
+      }));
+
+      res.json({ success: true, data: formattedQuotes });
+    } catch (error) {
+      console.error("Error fetching submission quotes:", error);
+      res.status(500).json({ success: false, error: "Failed to fetch quotes" });
     }
   });
 

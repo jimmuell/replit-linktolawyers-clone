@@ -96,6 +96,14 @@ export default function QuotesPage() {
 
   const assignedAttorneys = assignedAttorneysResponse?.data && Array.isArray(assignedAttorneysResponse.data) ? assignedAttorneysResponse.data : [];
 
+  // Fetch submitted quotes from attorneys (via referral self-assignment system)
+  const { data: submittedQuotesResponse } = useQuery<{success: boolean, data: any[]}>({
+    queryKey: ['/api/structured-intakes', request?.data?.id, 'quotes'],
+    enabled: !!request?.data?.id,
+  });
+
+  const submittedQuotes = submittedQuotesResponse?.data && Array.isArray(submittedQuotesResponse.data) ? submittedQuotesResponse.data : [];
+
   // Fetch attorney fee schedules for assigned attorneys
   const { data: feeSchedules } = useQuery<any[]>({
     queryKey: ['/api/public/attorney-fee-schedules', assignedAttorneys.map((a: any) => a.attorney.id).join(','), request?.data?.caseType],
@@ -272,9 +280,12 @@ export default function QuotesPage() {
     return feeSchedule ? (feeSchedule.fee / 100) : null; // Convert from cents to dollars
   };
 
-  // Filter attorneys that have quotes/assignments for this case type - exclude already assigned attorneys
+  // Get IDs of attorneys who have submitted quotes via the referral system
+  const quotedAttorneyIds = submittedQuotes.map((q: any) => q.attorney.id);
+
+  // Filter attorneys that have quotes/assignments for this case type - exclude already assigned and quoted attorneys
   const availableAttorneysWithQuotes = (availableAttorneys || []).filter((attorney: any) => 
-    !isAttorneyAssigned(attorney.id)
+    !isAttorneyAssigned(attorney.id) && !quotedAttorneyIds.includes(attorney.id)
   );
 
 
@@ -299,6 +310,7 @@ export default function QuotesPage() {
             </h1>
 
             <div className="text-sm text-gray-500">
+              {submittedQuotes.length > 0 && `${submittedQuotes.length} quote${submittedQuotes.length !== 1 ? 's' : ''} received · `}
               {availableAttorneysWithQuotes.length} additional attorneys available
             </div>
           </div>
@@ -479,6 +491,125 @@ export default function QuotesPage() {
                                 <span className="text-xs text-gray-600">Free consultation will be scheduled</span>
                               </div>
                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Submitted Quotes from Attorneys */}
+        {submittedQuotes.length > 0 && (
+          <div className="mb-8">
+            <h3 className="font-semibold text-lg mb-4">
+              Attorney Quotes ({submittedQuotes.length})
+            </h3>
+            <div className="space-y-6">
+              {submittedQuotes.map((quote: any) => {
+                const attorney = quote.attorney;
+                return (
+                  <Card key={quote.id} className="border border-green-200 bg-green-50">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-lg font-semibold text-gray-900">
+                                {attorney.firstName} {attorney.lastName}
+                              </h3>
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <DollarSign className="w-3 h-3 mr-1" />
+                                Quote Submitted
+                              </span>
+                              {attorney.isVerified && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  Verified
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{attorney.firmName}</p>
+                            <div className="flex items-center space-x-4 mt-1">
+                              {attorney.licenseState && (
+                                <span className="text-sm text-gray-500">
+                                  {attorney.licenseState}
+                                </span>
+                              )}
+                              {attorney.experienceYears && (
+                                <span className="text-sm text-gray-500">
+                                  {attorney.experienceYears}+ years
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-700">
+                            ${(quote.serviceFee / 100).toLocaleString()}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Quoted on {new Date(quote.sentAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+
+                      {quote.description && (
+                        <div className="mb-4 p-3 bg-white rounded-lg border border-green-200">
+                          <span className="text-sm font-medium text-gray-600 block mb-1">Quote Details</span>
+                          <p className="text-sm text-gray-900">{quote.description}</p>
+                        </div>
+                      )}
+
+                      {quote.terms && (
+                        <div className="mb-4 p-3 bg-white rounded-lg border border-green-200">
+                          <span className="text-sm font-medium text-gray-600 block mb-1">Terms</span>
+                          <p className="text-sm text-gray-900">{quote.terms}</p>
+                        </div>
+                      )}
+
+                      {attorney.bio && (
+                        <p className="text-sm text-gray-600 mb-4">{attorney.bio}</p>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          {attorney.practiceAreas && attorney.practiceAreas.length > 0 && (
+                            <div>
+                              <span className="text-sm font-medium text-gray-600">Specialties</span>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {attorney.practiceAreas.map((area: string, index: number) => (
+                                  <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {area}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <span className="text-sm font-medium text-gray-600">Quote Status</span>
+                          <div className="mt-2 space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="w-3 h-3 text-green-500" />
+                              <span className="text-xs text-gray-600">Attorney has reviewed your case</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="w-3 h-3 text-green-500" />
+                              <span className="text-xs text-gray-600">Quote has been submitted</span>
+                            </div>
+                            {quote.validUntil && (
+                              <div className="flex items-center space-x-2">
+                                <Clock className="w-3 h-3 text-blue-500" />
+                                <span className="text-xs text-gray-600">
+                                  Valid until {new Date(quote.validUntil).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
