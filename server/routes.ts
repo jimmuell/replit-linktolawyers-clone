@@ -5,7 +5,7 @@ import { db } from "./db";
 import OpenAI from "openai";
 import { z } from "zod";
 import { eq, inArray, asc } from "drizzle-orm";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, requestAttorneyAssignments, referralAssignments, attorneys, quotes, structuredIntakes, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, insertOrganizationSchema, requestAttorneyAssignments, referralAssignments, attorneys, quotes, structuredIntakes, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
@@ -1870,10 +1870,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Attorney Management Routes
   // Create attorney
+  // Organization CRUD routes
+  app.get('/api/organizations', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const orgs = await storage.getAllOrganizations();
+      res.json(orgs);
+    } catch (error) {
+      console.error('Error fetching organizations:', error);
+      res.status(500).json({ error: 'Failed to fetch organizations' });
+    }
+  });
+
+  app.get('/api/organizations/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const org = await storage.getOrganization(parseInt(req.params.id));
+      if (!org) return res.status(404).json({ error: 'Organization not found' });
+      res.json(org);
+    } catch (error) {
+      console.error('Error fetching organization:', error);
+      res.status(500).json({ error: 'Failed to fetch organization' });
+    }
+  });
+
+  app.post('/api/organizations', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const orgData = insertOrganizationSchema.parse(req.body);
+      const org = await storage.createOrganization(orgData);
+      res.json(org);
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      res.status(400).json({ error: 'Failed to create organization' });
+    }
+  });
+
+  app.put('/api/organizations/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const orgData = insertOrganizationSchema.partial().parse(req.body);
+      const org = await storage.updateOrganization(parseInt(req.params.id), orgData);
+      res.json(org);
+    } catch (error) {
+      console.error('Error updating organization:', error);
+      res.status(400).json({ error: 'Failed to update organization' });
+    }
+  });
+
+  app.delete('/api/organizations/:id', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      await storage.deleteOrganization(parseInt(req.params.id));
+      res.json({ message: 'Organization deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting organization:', error);
+      res.status(500).json({ error: 'Failed to delete organization' });
+    }
+  });
+
+  // Attorney self-profile update (attorneys can update their own profile)
+  app.get('/api/attorney/profile', requireAuth, requireRole(['attorney']), async (req, res) => {
+    try {
+      const user = req.user as unknown as User;
+      const attorney = await storage.getAttorneyByUserId(user.id);
+      if (!attorney) return res.status(404).json({ error: 'Attorney profile not found' });
+      res.json(attorney);
+    } catch (error) {
+      console.error('Error fetching attorney profile:', error);
+      res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+  });
+
+  app.put('/api/attorney/profile', requireAuth, requireRole(['attorney']), async (req, res) => {
+    try {
+      const user = req.user as unknown as User;
+      const attorney = await storage.getAttorneyByUserId(user.id);
+      if (!attorney) return res.status(404).json({ error: 'Attorney profile not found' });
+      const allowedFields = insertAttorneySchema.partial().pick({
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        barNumber: true,
+        licenseState: true,
+        practiceAreas: true,
+        yearsOfExperience: true,
+        hourlyRate: true,
+        bio: true,
+      });
+      const updates = allowedFields.parse(req.body);
+      const updated = await storage.updateAttorney(attorney.id, updates);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating attorney profile:', error);
+      res.status(400).json({ error: 'Failed to update profile' });
+    }
+  });
+
+  // Create attorney with user account (unified onboarding)
   app.post('/api/attorneys', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
-      const attorneyData = insertAttorneySchema.parse(req.body);
-      const attorney = await storage.createAttorney(attorneyData);
+      const { password, ...attorneyFields } = req.body;
+      const attorneyData = insertAttorneySchema.parse(attorneyFields);
+      
+      let userId: number | undefined;
+      if (password && attorneyData.email) {
+        const existingUser = await storage.getUserByEmail(attorneyData.email);
+        if (existingUser) {
+          return res.status(400).json({ error: 'A user with this email already exists' });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await storage.createUser({
+          email: attorneyData.email,
+          password: hashedPassword,
+          firstName: attorneyData.firstName,
+          lastName: attorneyData.lastName,
+          role: 'attorney',
+        });
+        userId = newUser.id;
+      }
+      
+      const attorney = await storage.createAttorney({
+        ...attorneyData,
+        userId: userId ?? attorneyData.userId,
+      });
       res.json(attorney);
     } catch (error) {
       console.error('Error creating attorney:', error);

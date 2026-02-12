@@ -73,12 +73,14 @@ export default function AttorneyOnboarding() {
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
     phoneNumber: '',
     barNumber: '',
     licenseState: '',
     practiceAreas: [] as string[],
     yearsOfExperience: 0,
     hourlyRate: 0,
+    organizationId: null as number | null,
     firmName: '',
     firmAddress: '',
     bio: '',
@@ -94,6 +96,11 @@ export default function AttorneyOnboarding() {
 
   const { data: attorneys = [], isLoading, error } = useQuery({
     queryKey: ['/api/attorneys'],
+    enabled: user?.role === 'admin',
+  });
+
+  const { data: organizations = [] } = useQuery<{ id: number; name: string; isActive: boolean | null }[]>({
+    queryKey: ['/api/organizations'],
     enabled: user?.role === 'admin',
   });
 
@@ -176,12 +183,14 @@ export default function AttorneyOnboarding() {
       firstName: '',
       lastName: '',
       email: '',
+      password: '',
       phoneNumber: '',
       barNumber: '',
       licenseState: '',
       practiceAreas: [],
       yearsOfExperience: 0,
       hourlyRate: 0,
+      organizationId: null,
       firmName: '',
       firmAddress: '',
       bio: '',
@@ -201,12 +210,14 @@ export default function AttorneyOnboarding() {
       firstName: attorney.firstName,
       lastName: attorney.lastName,
       email: attorney.email,
+      password: '',
       phoneNumber: attorney.phoneNumber || '',
       barNumber: attorney.barNumber || '',
       licenseState: attorney.licenseState || '',
       practiceAreas: attorney.practiceAreas || [],
       yearsOfExperience: attorney.yearsOfExperience || 0,
       hourlyRate: attorney.hourlyRate || 0,
+      organizationId: attorney.organizationId || null,
       firmName: attorney.firmName || '',
       firmAddress: attorney.firmAddress || '',
       bio: attorney.bio || '',
@@ -365,7 +376,11 @@ export default function AttorneyOnboarding() {
                             {attorney.firstName} {attorney.lastName}
                           </TableCell>
                           <TableCell>{attorney.email}</TableCell>
-                          <TableCell>{attorney.firmName || 'N/A'}</TableCell>
+                          <TableCell>
+                            {attorney.organizationId
+                              ? organizations.find((o: any) => o.id === attorney.organizationId)?.name || attorney.firmName || 'N/A'
+                              : attorney.firmName || 'N/A'}
+                          </TableCell>
                           <TableCell>{attorney.licenseState || 'N/A'}</TableCell>
                           <TableCell>{attorney.yearsOfExperience || 0} years</TableCell>
                           <TableCell>
@@ -459,6 +474,37 @@ export default function AttorneyOnboarding() {
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                 />
+              </div>
+              {isCreateModalOpen && (
+                <div>
+                  <Label htmlFor="password">Login Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    minLength={6}
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    placeholder="Min 6 characters"
+                  />
+                </div>
+              )}
+              <div>
+                <Label htmlFor="organizationId">Organization</Label>
+                <Select
+                  value={formData.organizationId ? String(formData.organizationId) : 'none'}
+                  onValueChange={(value) => setFormData({...formData, organizationId: value === 'none' ? null : parseInt(value)})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Organization</SelectItem>
+                    {organizations.filter(org => org.isActive !== false).map(org => (
+                      <SelectItem key={org.id} value={String(org.id)}>{org.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="phoneNumber">Phone Number</Label>
@@ -628,6 +674,12 @@ export default function AttorneyOnboarding() {
                 <div>
                   <Label className="text-sm font-medium text-gray-600">Hourly Rate</Label>
                   <p>${selectedAttorney.hourlyRate || 0}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-600">Organization</Label>
+                  <p>{selectedAttorney.organizationId
+                    ? organizations.find((o: any) => o.id === selectedAttorney.organizationId)?.name || 'Unknown'
+                    : 'None'}</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium text-gray-600">Firm Name</Label>

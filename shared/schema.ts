@@ -178,9 +178,22 @@ export const emailTemplates = pgTable("email_templates", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const organizations = pgTable("organizations", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: text("address"),
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 255 }),
+  website: varchar("website", { length: 255 }),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const attorneys = pgTable("attorneys", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
+  organizationId: integer("organization_id").references(() => organizations.id, { onDelete: "set null" }),
   firstName: varchar("first_name", { length: 255 }).notNull(),
   lastName: varchar("last_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -320,7 +333,18 @@ export const insertEmailHistorySchema = createInsertSchema(emailHistory).pick({
   errorMessage: true,
 });
 
+export const insertOrganizationSchema = createInsertSchema(organizations).pick({
+  name: true,
+  address: true,
+  phone: true,
+  email: true,
+  website: true,
+  isActive: true,
+});
+
 export const insertAttorneySchema = createInsertSchema(attorneys).pick({
+  userId: true,
+  organizationId: true,
   firstName: true,
   lastName: true,
   email: true,
@@ -479,6 +503,8 @@ export type InsertSmtpSettings = z.infer<typeof insertSmtpSettingsSchema>;
 export type SmtpSettings = typeof smtpSettings.$inferSelect;
 export type InsertEmailHistory = z.infer<typeof insertEmailHistorySchema>;
 export type EmailHistory = typeof emailHistory.$inferSelect;
+export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+export type Organization = typeof organizations.$inferSelect;
 export type InsertAttorney = z.infer<typeof insertAttorneySchema>;
 export type Attorney = typeof attorneys.$inferSelect;
 export type InsertAttorneyFeeSchedule = z.infer<typeof insertAttorneyFeeScheduleSchema>;

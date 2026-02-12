@@ -3,6 +3,7 @@ import AdminLayout from '@/components/AdminLayout';
 import SmtpStatusCard from '@/components/SmtpStatusCard';
 import PromptManagementCard from '@/components/PromptManagementCard';
 import SubmissionsCard from '@/components/SubmissionsCard';
+import OrganizationsCard from '@/components/OrganizationsCard';
 import AttorneyOnboardingCard from '@/components/AttorneyOnboardingCard';
 import AttorneyFeeScheduleCard from '@/components/AttorneyFeeScheduleCard';
 import BlogManagementCard from '@/components/BlogManagementCard';
@@ -25,6 +26,7 @@ export default function AdminDashboard() {
         <SmtpStatusCard />
         <PromptManagementCard />
         <SubmissionsCard />
+        <OrganizationsCard />
         <AttorneyOnboardingCard />
         <AttorneyFeeScheduleCard />
         <BlogManagementCard />

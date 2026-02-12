@@ -7,11 +7,13 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { User, Settings, LogOut, Scale } from 'lucide-react';
+import { User, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'wouter';
 
 export default function AttorneyAppBar() {
   const { user, logout } = useAuth();
+  const [, setLocation] = useLocation();
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName && !lastName) return 'A';
@@ -42,7 +44,7 @@ export default function AttorneyAppBar() {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-blue-100 text-blue-600 text-sm font-medium">
-                      {getInitials(user?.firstName, user?.lastName)}
+                      {getInitials(user?.firstName || undefined, user?.lastName || undefined)}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -53,13 +55,9 @@ export default function AttorneyAppBar() {
                   <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setLocation('/attorney-profile')}>
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 

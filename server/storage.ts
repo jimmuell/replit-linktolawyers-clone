@@ -1,4 +1,4 @@
-import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, attorneyNotes, chatbotPrompts, conversations, messages, structuredIntakes, flows, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage, type StructuredIntake, type InsertStructuredIntake, type Flow, type InsertFlow } from "@shared/schema";
+import { users, caseTypes, legalRequests, smtpSettings, emailHistory, attorneys, attorneyFeeSchedule, requestAttorneyAssignments, blogPosts, emailTemplates, referralAssignments, quotes, cases, attorneyNotes, chatbotPrompts, conversations, messages, structuredIntakes, flows, organizations, type User, type InsertUser, type CaseType, type InsertCaseType, type LegalRequest, type InsertLegalRequest, type SmtpSettings, type InsertSmtpSettings, type EmailHistory, type InsertEmailHistory, type Attorney, type InsertAttorney, type AttorneyFeeSchedule, type InsertAttorneyFeeSchedule, type SelectRequestAttorneyAssignment, type InsertRequestAttorneyAssignment, type RequestAttorneyAssignmentWithAttorney, type BlogPost, type InsertBlogPost, type EmailTemplate, type InsertEmailTemplate, type ChatbotPrompt, type InsertChatbotPrompt, type Conversation, type InsertConversation, type Message, type InsertMessage, type StructuredIntake, type InsertStructuredIntake, type Flow, type InsertFlow, type Organization, type InsertOrganization } from "@shared/schema";
 import { db } from "./db";
 import { eq, asc, desc, and, or, isNull, sql, inArray } from "drizzle-orm";
 
@@ -31,9 +31,16 @@ export interface IStorage {
   // Email History
   createEmailHistory(emailHistory: InsertEmailHistory): Promise<EmailHistory>;
   getAllEmailHistory(): Promise<EmailHistory[]>;
+  // Organization Management
+  createOrganization(org: InsertOrganization): Promise<Organization>;
+  getOrganization(id: number): Promise<Organization | undefined>;
+  getAllOrganizations(): Promise<Organization[]>;
+  updateOrganization(id: number, updates: Partial<InsertOrganization>): Promise<Organization>;
+  deleteOrganization(id: number): Promise<void>;
   // Attorney Management
   createAttorney(attorney: InsertAttorney): Promise<Attorney>;
   getAttorney(id: number): Promise<Attorney | undefined>;
+  getAttorneyByUserId(userId: number): Promise<Attorney | undefined>;
   getAllAttorneys(): Promise<Attorney[]>;
   updateAttorney(id: number, updates: Partial<InsertAttorney>): Promise<Attorney>;
   deleteAttorney(id: number): Promise<void>;
@@ -311,6 +318,43 @@ export class DatabaseStorage implements IStorage {
       .orderBy(asc(emailHistory.timestamp));
   }
 
+  // Organization Management operations
+  async createOrganization(insertOrg: InsertOrganization): Promise<Organization> {
+    const [org] = await db
+      .insert(organizations)
+      .values(insertOrg)
+      .returning();
+    return org;
+  }
+
+  async getOrganization(id: number): Promise<Organization | undefined> {
+    const [org] = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, id));
+    return org || undefined;
+  }
+
+  async getAllOrganizations(): Promise<Organization[]> {
+    return await db
+      .select()
+      .from(organizations)
+      .orderBy(asc(organizations.name));
+  }
+
+  async updateOrganization(id: number, updates: Partial<InsertOrganization>): Promise<Organization> {
+    const [org] = await db
+      .update(organizations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(organizations.id, id))
+      .returning();
+    return org;
+  }
+
+  async deleteOrganization(id: number): Promise<void> {
+    await db.delete(organizations).where(eq(organizations.id, id));
+  }
+
   // Attorney Management operations
   async createAttorney(insertAttorney: InsertAttorney): Promise<Attorney> {
     const [attorney] = await db
@@ -325,6 +369,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(attorneys)
       .where(eq(attorneys.id, id));
+    return attorney || undefined;
+  }
+
+  async getAttorneyByUserId(userId: number): Promise<Attorney | undefined> {
+    const [attorney] = await db
+      .select()
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId));
     return attorney || undefined;
   }
 
