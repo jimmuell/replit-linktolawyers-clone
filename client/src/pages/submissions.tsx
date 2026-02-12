@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import AdminNavbar from '@/components/AdminNavbar';
-import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, Clock, UserPlus, UserMinus, Users } from 'lucide-react';
+import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, Clock, UserPlus, UserMinus, Users, AlertTriangle, Loader2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -88,6 +88,8 @@ export default function SubmissionsPage() {
   const [selectedSubmissionIds, setSelectedSubmissionIds] = useState<number[]>([]);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedAttorneyIds, setSelectedAttorneyIds] = useState<number[]>([]);
+  const [relatedCounts, setRelatedCounts] = useState<{ referralAssignments: number; quotes: number; cases: number; attorneyNotes: number } | null>(null);
+  const [isLoadingCounts, setIsLoadingCounts] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
@@ -242,9 +244,24 @@ export default function SubmissionsPage() {
     setIsDetailsModalOpen(true);
   };
 
-  const handleDeleteClick = (submission: StructuredIntake) => {
+  const handleDeleteClick = async (submission: StructuredIntake) => {
     setSelectedSubmission(submission);
+    setRelatedCounts(null);
+    setIsLoadingCounts(true);
     setIsDeleteModalOpen(true);
+    try {
+      const response = await fetch(`/api/structured-intakes/${submission.id}/related-counts`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setRelatedCounts(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch related counts:', error);
+    } finally {
+      setIsLoadingCounts(false);
+    }
   };
 
   const handleDeleteConfirm = () => {
@@ -800,25 +817,72 @@ export default function SubmissionsPage() {
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Submission</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Delete Submission
+            </DialogTitle>
           </DialogHeader>
-          <p className="text-gray-600">
-            Are you sure you want to delete this submission? This action cannot be undone.
-          </p>
-          <div className="flex justify-end gap-3 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
-            </Button>
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              Are you sure you want to delete submission <strong>{selectedSubmission?.requestNumber}</strong>? This action cannot be undone.
+            </p>
+
+            {isLoadingCounts ? (
+              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                <span className="text-sm text-gray-500">Checking related records...</span>
+              </div>
+            ) : relatedCounts && (relatedCounts.referralAssignments > 0 || relatedCounts.quotes > 0 || relatedCounts.cases > 0 || relatedCounts.attorneyNotes > 0) ? (
+              <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                <p className="text-sm font-medium text-red-800 mb-2">The following related records will also be permanently deleted:</p>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {relatedCounts.referralAssignments > 0 && (
+                    <li className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full" />
+                      {relatedCounts.referralAssignments} attorney referral assignment{relatedCounts.referralAssignments !== 1 ? 's' : ''}
+                    </li>
+                  )}
+                  {relatedCounts.quotes > 0 && (
+                    <li className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full" />
+                      {relatedCounts.quotes} quote{relatedCounts.quotes !== 1 ? 's' : ''}
+                    </li>
+                  )}
+                  {relatedCounts.cases > 0 && (
+                    <li className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full" />
+                      {relatedCounts.cases} case{relatedCounts.cases !== 1 ? 's' : ''}
+                    </li>
+                  )}
+                  {relatedCounts.attorneyNotes > 0 && (
+                    <li className="flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full" />
+                      {relatedCounts.attorneyNotes} attorney note{relatedCounts.attorneyNotes !== 1 ? 's' : ''}
+                    </li>
+                  )}
+                </ul>
+              </div>
+            ) : relatedCounts ? (
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="text-sm text-gray-600">No related records found. Only the submission will be deleted.</p>
+              </div>
+            ) : null}
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsDeleteModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteConfirm}
+                disabled={deleteMutation.isPending || isLoadingCounts}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

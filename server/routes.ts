@@ -1368,6 +1368,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/structured-intakes/:id/related-counts", requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ success: false, error: "Invalid ID" });
+      }
+      const counts = await storage.getStructuredIntakeRelatedCounts(id);
+      res.json({ success: true, data: counts });
+    } catch (error) {
+      console.error("Error getting related counts:", error);
+      res.status(500).json({ success: false, error: "Failed to get related counts" });
+    }
+  });
+
   app.delete("/api/structured-intakes/:id", requireAuth, requireRole(['admin']), async (req, res) => {
     try {
       const id = parseInt(req.params.id);

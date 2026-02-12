@@ -100,6 +100,7 @@ export interface IStorage {
   getStructuredIntakeByRequestNumber(requestNumber: string): Promise<StructuredIntake | undefined>;
   getAllStructuredIntakes(): Promise<StructuredIntake[]>;
   updateStructuredIntake(id: number, updates: Partial<InsertStructuredIntake>): Promise<StructuredIntake>;
+  getStructuredIntakeRelatedCounts(id: number): Promise<{ referralAssignments: number; quotes: number; cases: number; attorneyNotes: number }>;
   deleteStructuredIntake(id: number): Promise<void>;
   deleteStructuredIntakesBulk(ids: number[]): Promise<void>;
   // Flows
@@ -938,6 +939,44 @@ export class DatabaseStorage implements IStorage {
       .where(eq(structuredIntakes.id, id))
       .returning();
     return result;
+  }
+
+  async getStructuredIntakeRelatedCounts(id: number): Promise<{ referralAssignments: number; quotes: number; cases: number; attorneyNotes: number }> {
+    const assignments = await db.select({ id: referralAssignments.id })
+      .from(referralAssignments)
+      .where(eq(referralAssignments.submissionId, id));
+
+    let quotesCount = 0;
+    let casesCount = 0;
+    let notesCount = 0;
+
+    if (assignments.length > 0) {
+      const assignmentIds = assignments.map(a => a.id);
+      const relatedQuotes = await db.select({ id: quotes.id })
+        .from(quotes)
+        .where(inArray(quotes.assignmentId, assignmentIds));
+      quotesCount = relatedQuotes.length;
+
+      if (relatedQuotes.length > 0) {
+        const quoteIds = relatedQuotes.map(q => q.id);
+        const relatedCases = await db.select({ id: cases.id })
+          .from(cases)
+          .where(inArray(cases.quoteId, quoteIds));
+        casesCount = relatedCases.length;
+      }
+
+      const relatedNotes = await db.select({ id: attorneyNotes.id })
+        .from(attorneyNotes)
+        .where(inArray(attorneyNotes.assignmentId, assignmentIds));
+      notesCount = relatedNotes.length;
+    }
+
+    return {
+      referralAssignments: assignments.length,
+      quotes: quotesCount,
+      cases: casesCount,
+      attorneyNotes: notesCount,
+    };
   }
 
   async deleteStructuredIntake(id: number): Promise<void> {
