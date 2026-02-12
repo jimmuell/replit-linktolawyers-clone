@@ -395,6 +395,8 @@ export default function SubmissionsPage() {
                               />
                               <div>
                                 <div className="flex items-center gap-2">
+                                  <span className="text-blue-700 font-semibold text-sm">{submission.requestNumber}</span>
+                                  <span className="text-gray-300">•</span>
                                   <span className="text-gray-900 font-medium">
                                     {format(new Date(submission.createdAt), 'MMM d, yyyy, h:mm a')}
                                   </span>
