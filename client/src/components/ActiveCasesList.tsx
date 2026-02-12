@@ -16,21 +16,24 @@ interface ActiveCase {
   caseNotes: string;
   serviceFee: number;
   quoteDescription: string;
-  requestId: number;
-  requestNumber: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  caseType: string;
-  caseDescription: string;
-  location: string;
+  quoteId: number;
+  caseUpdatedAt: string;
+  request: {
+    id: number;
+    requestNumber: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    caseType: string;
+    caseDescription: string;
+    location: string;
+  };
 }
 
 export default function ActiveCasesList() {
   const [selectedCase, setSelectedCase] = useState<ActiveCase | null>(null);
 
-  // Fetch active cases
   const { data: casesData, isLoading } = useQuery({
     queryKey: ['/api/attorney-referrals/cases'],
     queryFn: async () => {
@@ -49,7 +52,7 @@ export default function ActiveCasesList() {
     retry: false,
   });
 
-  const cases = casesData?.data || [];
+  const cases: ActiveCase[] = casesData?.data || [];
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();
@@ -113,7 +116,7 @@ export default function ActiveCasesList() {
                   <div>
                     <p className="text-sm font-medium text-blue-600">Active Cases</p>
                     <p className="text-2xl font-bold text-blue-800">
-                      {cases.filter((c: ActiveCase) => c.caseStatus === 'active').length}
+                      {cases.filter((c) => c.caseStatus === 'active').length}
                     </p>
                   </div>
                   <FileText className="h-8 w-8 text-blue-600" />
@@ -124,7 +127,7 @@ export default function ActiveCasesList() {
                   <div>
                     <p className="text-sm font-medium text-green-600">Total Revenue</p>
                     <p className="text-2xl font-bold text-green-800">
-                      {formatCurrency(cases.reduce((sum: number, c: ActiveCase) => sum + c.serviceFee, 0))}
+                      {formatCurrency(cases.reduce((sum, c) => sum + (c.serviceFee || 0), 0))}
                     </p>
                   </div>
                   <DollarSign className="h-8 w-8 text-green-600" />
@@ -135,7 +138,7 @@ export default function ActiveCasesList() {
                   <div>
                     <p className="text-sm font-medium text-purple-600">Completed Cases</p>
                     <p className="text-2xl font-bold text-purple-800">
-                      {cases.filter((c: ActiveCase) => c.caseStatus === 'completed').length}
+                      {cases.filter((c) => c.caseStatus === 'completed').length}
                     </p>
                   </div>
                   <Calendar className="h-8 w-8 text-purple-600" />
@@ -156,18 +159,18 @@ export default function ActiveCasesList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {cases.map((case_: ActiveCase) => (
+                {cases.map((case_) => (
                   <TableRow key={case_.caseId}>
                     <TableCell className="font-medium">{case_.caseNumber}</TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{case_.firstName} {case_.lastName}</div>
-                        <div className="text-sm text-gray-500">{case_.email}</div>
+                        <div className="font-medium">{case_.request?.firstName} {case_.request?.lastName}</div>
+                        <div className="text-sm text-gray-500">{case_.request?.email}</div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="max-w-32 truncate" title={case_.caseType}>
-                        {case_.caseType}
+                      <div className="max-w-32 truncate" title={case_.request?.caseType}>
+                        {case_.request?.caseType}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -176,7 +179,7 @@ export default function ActiveCasesList() {
                       </Badge>
                     </TableCell>
                     <TableCell>{formatDate(case_.startDate)}</TableCell>
-                    <TableCell className="font-medium">{formatCurrency(case_.serviceFee)}</TableCell>
+                    <TableCell className="font-medium">{formatCurrency(case_.serviceFee || 0)}</TableCell>
                     <TableCell>
                       <Dialog open={selectedCase?.caseId === case_.caseId} onOpenChange={(open) => {
                         if (!open) {
@@ -199,7 +202,6 @@ export default function ActiveCasesList() {
                           </DialogHeader>
                           {selectedCase && (
                             <div className="space-y-6">
-                              {/* Case Information */}
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
                                   <label className="text-sm font-medium text-gray-500">Case Number</label>
@@ -217,44 +219,42 @@ export default function ActiveCasesList() {
                                 </div>
                                 <div>
                                   <label className="text-sm font-medium text-gray-500">Service Fee</label>
-                                  <p className="text-sm font-medium">{formatCurrency(selectedCase.serviceFee)}</p>
+                                  <p className="text-sm font-medium">{formatCurrency(selectedCase.serviceFee || 0)}</p>
                                 </div>
                               </div>
 
-                              {/* Client Information */}
                               <div>
                                 <h3 className="text-lg font-medium mb-3">Client Information</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Client Name</label>
-                                    <p className="text-sm">{selectedCase.firstName} {selectedCase.lastName}</p>
+                                    <p className="text-sm">{selectedCase.request?.firstName} {selectedCase.request?.lastName}</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Email</label>
-                                    <p className="text-sm">{selectedCase.email}</p>
+                                    <p className="text-sm">{selectedCase.request?.email}</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Phone</label>
-                                    <p className="text-sm">{selectedCase.phoneNumber || 'Not provided'}</p>
+                                    <p className="text-sm">{selectedCase.request?.phoneNumber || 'Not provided'}</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Location</label>
-                                    <p className="text-sm">{selectedCase.location || 'Not specified'}</p>
+                                    <p className="text-sm">{selectedCase.request?.location || 'Not specified'}</p>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Case Details */}
                               <div>
                                 <h3 className="text-lg font-medium mb-3">Case Details</h3>
                                 <div className="space-y-4">
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Case Type</label>
-                                    <p className="text-sm">{selectedCase.caseType}</p>
+                                    <p className="text-sm">{selectedCase.request?.caseType}</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Case Description</label>
-                                    <p className="text-sm p-3 bg-gray-50 rounded-md">{selectedCase.caseDescription}</p>
+                                    <p className="text-sm p-3 bg-gray-50 rounded-md">{selectedCase.request?.caseDescription}</p>
                                   </div>
                                   <div>
                                     <label className="text-sm font-medium text-gray-500">Service Description</label>

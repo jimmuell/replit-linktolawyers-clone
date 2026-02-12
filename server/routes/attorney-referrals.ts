@@ -307,13 +307,15 @@ router.post("/assignment/:assignmentId/quote", requireAuth, async (req, res) => 
       .where(eq(referralAssignments.id, assignmentId));
 
     // Update the request status to quotes_received (first quote makes it "Quotes Available")
-    await db
-      .update(legalRequests)
-      .set({
-        status: 'quotes_received',
-        updatedAt: new Date(),
-      })
-      .where(eq(legalRequests.id, assignment[0].requestId));
+    if (assignment[0].requestId) {
+      await db
+        .update(legalRequests)
+        .set({
+          status: 'quotes_received',
+          updatedAt: new Date(),
+        })
+        .where(eq(legalRequests.id, assignment[0].requestId));
+    }
 
     res.json({ success: true, data: quote });
   } catch (error) {
@@ -867,10 +869,10 @@ router.patch("/quotes/:quoteId/status", async (req, res) => {
           .where(eq(referralAssignments.id, updatedQuote.assignmentId));
 
         // Get all other assignments for the same request
-        const otherAssignments = await db
+        const otherAssignments = assignment.requestId ? await db
           .select()
           .from(referralAssignments)
-          .where(eq(referralAssignments.requestId, assignment.requestId));
+          .where(eq(referralAssignments.requestId, assignment.requestId)) : [];
 
         // Decline all other quotes for this request
         for (const otherAssignment of otherAssignments) {
