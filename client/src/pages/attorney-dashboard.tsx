@@ -63,7 +63,7 @@ export default function AttorneyDashboard() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [referralSubTab, setReferralSubTab] = useState<'available' | 'assigned'>('available');
-  const [quotesSubTab, setQuotesSubTab] = useState<'pending' | 'accepted'>('pending');
+  const [quotesSubTab, setQuotesSubTab] = useState<'pending' | 'accepted' | 'declined'>('pending');
 
   useEffect(() => {
     if (!loading && user && user.role !== 'attorney') {
@@ -134,7 +134,8 @@ export default function AttorneyDashboard() {
   const acceptedQuotes = referrals.filter((r) => r.assignmentStatus === 'accepted');
   const activeCaseQuoteIds = new Set(cases.filter((c) => c.caseStatus === 'active').map((c: any) => c.quoteId || c.quote_id));
   const acceptedNotCased = acceptedQuotes.filter((r) => !r.quoteId || !activeCaseQuoteIds.has(r.quoteId));
-  const allQuotesCount = quotedReferrals.length + acceptedNotCased.length;
+  const declinedReferrals = referrals.filter((r) => r.assignmentStatus === 'rejected');
+  const allQuotesCount = quotedReferrals.length + acceptedNotCased.length + declinedReferrals.length;
   const activeCases = cases.filter((c) => c.caseStatus === 'active');
   const totalReferralsCount = availableCount + assignedReferrals.length;
 
@@ -282,7 +283,7 @@ export default function AttorneyDashboard() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-2xl font-bold">{allQuotesCount}</div>
-                      <p className="text-xs text-muted-foreground">{quotedReferrals.length} pending, {acceptedNotCased.length} accepted</p>
+                      <p className="text-xs text-muted-foreground">{quotedReferrals.length} pending, {acceptedNotCased.length} accepted, {declinedReferrals.length} declined</p>
                     </CardContent>
                   </Card>
 
@@ -423,6 +424,17 @@ export default function AttorneyDashboard() {
                     <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${quotesSubTab === 'accepted' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{acceptedNotCased.length}</Badge>
                   )}
                 </Button>
+                <Button
+                  variant={quotesSubTab === 'declined' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setQuotesSubTab('declined')}
+                  className="gap-1.5"
+                >
+                  Declined
+                  {declinedReferrals.length > 0 && (
+                    <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${quotesSubTab === 'declined' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{declinedReferrals.length}</Badge>
+                  )}
+                </Button>
               </div>
 
               {quotesSubTab === 'pending' ? (
@@ -432,12 +444,19 @@ export default function AttorneyDashboard() {
                   emptyMessage="No submitted quotes yet."
                   emptySubMessage="Submit quotes from your assigned referrals."
                 />
-              ) : (
+              ) : quotesSubTab === 'accepted' ? (
                 <MyReferralsList 
                   filterStatus="accepted"
                   title="Accepted Quotes"
                   emptyMessage="No accepted quotes yet."
                   emptySubMessage="Quotes accepted by clients will appear here."
+                />
+              ) : (
+                <MyReferralsList 
+                  filterStatus="rejected"
+                  title="Declined Quotes"
+                  emptyMessage="No declined quotes."
+                  emptySubMessage="Quotes declined by clients will appear here."
                 />
               )}
             </div>
