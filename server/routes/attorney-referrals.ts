@@ -356,7 +356,19 @@ router.post("/assignment/:assignmentId/quote", requireAuth, async (req, res) => 
 router.post("/assignment/:assignmentId/note", requireAuth, async (req, res) => {
   try {
     const assignmentId = parseInt(req.params.assignmentId);
-    const attorneyId = req.user!.id;
+    const userId = req.user!.id;
+
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+
+    const attorneyId = attorney[0].id;
     
     const validatedData = insertAttorneyNoteSchema.parse({
       attorneyId,
@@ -452,7 +464,19 @@ router.get("/fee-schedule/:caseType", requireAuth, async (req, res) => {
 router.get("/assignment/:assignmentId/notes", requireAuth, async (req, res) => {
   try {
     const assignmentId = parseInt(req.params.assignmentId);
-    const attorneyId = req.user!.id;
+    const userId = req.user!.id;
+
+    const attorney = await db
+      .select({ id: attorneys.id })
+      .from(attorneys)
+      .where(eq(attorneys.userId, userId))
+      .limit(1);
+
+    if (attorney.length === 0) {
+      return res.status(404).json({ error: 'Attorney profile not found' });
+    }
+
+    const attorneyId = attorney[0].id;
 
     // Verify the assignment belongs to this attorney
     const assignment = await db
