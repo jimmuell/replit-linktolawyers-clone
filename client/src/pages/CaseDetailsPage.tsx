@@ -219,7 +219,7 @@ const CaseDetailsPage: React.FC = () => {
       drawInfoRow('Case Type', getCaseTypeLabel(request.data.caseType), col1X, colWidth);
       const afterCol1Row2 = y;
       y = savedY2;
-      drawInfoRow('Consultation Date', createdDate, col2X, colWidth);
+      drawInfoRow('Request Date', createdDate, col2X, colWidth);
       y = Math.max(afterCol1Row2, y);
 
       if (request.data.phoneNumber) {
