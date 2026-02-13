@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Eye, MessageSquare, DollarSign, FileText, Clock, Edit2, Trash2, UserMinus, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Eye, MessageSquare, DollarSign, FileText, Clock, Edit2, Trash2, UserMinus, AlertTriangle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -59,6 +59,9 @@ export default function MyReferralsList({ filterStatus, title, emptyMessage, emp
   const [isStartCaseModalOpen, setIsStartCaseModalOpen] = useState(false);
   const [caseNotes, setCaseNotes] = useState('');
   const [startCaseSuccess, setStartCaseSuccess] = useState<{ caseNumber: string; clientName: string } | null>(null);
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
+  const [fetchedNotes, setFetchedNotes] = useState<any[]>([]);
+  const [notesLoading, setNotesLoading] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -104,6 +107,28 @@ export default function MyReferralsList({ filterStatus, title, emptyMessage, emp
       console.error('Error fetching quote:', error);
     }
     return null;
+  };
+
+  const fetchNotesForAssignment = async (assignmentId: number) => {
+    setNotesLoading(true);
+    try {
+      const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/notes`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFetchedNotes(data.data || []);
+      } else {
+        setFetchedNotes([]);
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      setFetchedNotes([]);
+    } finally {
+      setNotesLoading(false);
+    }
   };
 
   // Fetch existing case for a quote
@@ -348,13 +373,16 @@ export default function MyReferralsList({ filterStatus, title, emptyMessage, emp
         body: { note, isPrivate: true },
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data: any, variables: { assignmentId: number; note: string }) => {
       toast({
         title: "Success",
         description: "Note added successfully",
       });
       setIsNotesModalOpen(false);
       setNote('');
+      if (showNotesPanel) {
+        fetchNotesForAssignment(variables.assignmentId);
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -642,6 +670,8 @@ export default function MyReferralsList({ filterStatus, title, emptyMessage, emp
                             setSelectedReferral(null);
                             setExistingQuote(null);
                             setExistingCase(null);
+                            setShowNotesPanel(false);
+                            setFetchedNotes([]);
                           }
                         }}>
                           <DialogTrigger asChild>
@@ -732,6 +762,50 @@ export default function MyReferralsList({ filterStatus, title, emptyMessage, emp
                                     <p className="text-sm mt-1 p-3 bg-blue-50 rounded-md">{selectedReferral.notes}</p>
                                   </div>
                                 )}
+
+                                {/* Private Notes - Collapsible */}
+                                <div className="border rounded-lg">
+                                  <button
+                                    type="button"
+                                    className="w-full flex items-center justify-between p-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors rounded-lg"
+                                    onClick={() => {
+                                      const next = !showNotesPanel;
+                                      setShowNotesPanel(next);
+                                      if (next && fetchedNotes.length === 0) {
+                                        fetchNotesForAssignment(selectedReferral.assignmentId);
+                                      }
+                                    }}
+                                  >
+                                    <span className="flex items-center gap-2">
+                                      <FileText className="h-4 w-4" />
+                                      Private Notes
+                                      {fetchedNotes.length > 0 && (
+                                        <Badge variant="secondary" className="text-xs">{fetchedNotes.length}</Badge>
+                                      )}
+                                    </span>
+                                    {showNotesPanel ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                  </button>
+                                  {showNotesPanel && (
+                                    <div className="border-t px-3 pb-3">
+                                      {notesLoading ? (
+                                        <div className="flex items-center justify-center py-4">
+                                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                                        </div>
+                                      ) : fetchedNotes.length === 0 ? (
+                                        <p className="text-sm text-gray-400 py-3 text-center">No notes yet</p>
+                                      ) : (
+                                        <div className="max-h-48 overflow-y-auto space-y-2 pt-2">
+                                          {fetchedNotes.map((n: any, idx: number) => (
+                                            <div key={n.id || idx} className="p-2 bg-gray-50 rounded text-sm">
+                                              <p className="text-gray-800">{n.note}</p>
+                                              <p className="text-xs text-gray-400 mt-1">{formatDate(n.createdAt)}</p>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
 
                                 {/* Actions Section */}
                                 <div className="border-t pt-4">
