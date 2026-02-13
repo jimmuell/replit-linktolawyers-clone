@@ -39,6 +39,7 @@ import TestFlows from "@/pages/test-flows";
 import AdminUsers from "@/pages/admin-users";
 import Organizations from "@/pages/organizations";
 import AttorneyProfile from "@/pages/attorney-profile";
+import ReferralDetailsPage from "@/pages/ReferralDetailsPage";
 
 function Router() {
   return (
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/organizations" component={Organizations} />
       <Route path="/attorney-dashboard" component={AttorneyDashboard} />
       <Route path="/attorney-profile" component={AttorneyProfile} />
+      <Route path="/attorney/referral/:assignmentId" component={ReferralDetailsPage} />
       <Route path="/smtp-config" component={SmtpConfigPage} />
       <Route path="/submissions" component={SubmissionsPage} />
       <Route path="/attorney-onboarding" component={AttorneyOnboarding} />
