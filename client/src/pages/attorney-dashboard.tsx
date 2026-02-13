@@ -367,7 +367,7 @@ export default function AttorneyDashboard() {
                 >
                   Available
                   {availableCount > 0 && (
-                    <Badge variant={referralSubTab === 'available' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{availableCount}</Badge>
+                    <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${referralSubTab === 'available' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{availableCount}</Badge>
                   )}
                 </Button>
                 <Button
@@ -378,7 +378,7 @@ export default function AttorneyDashboard() {
                 >
                   Assigned to Me
                   {assignedReferrals.length > 0 && (
-                    <Badge variant={referralSubTab === 'assigned' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{assignedReferrals.length}</Badge>
+                    <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${referralSubTab === 'assigned' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{assignedReferrals.length}</Badge>
                   )}
                 </Button>
               </div>
@@ -409,7 +409,7 @@ export default function AttorneyDashboard() {
                 >
                   Submitted
                   {quotedReferrals.length > 0 && (
-                    <Badge variant={quotesSubTab === 'pending' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{quotedReferrals.length}</Badge>
+                    <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${quotesSubTab === 'pending' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{quotedReferrals.length}</Badge>
                   )}
                 </Button>
                 <Button
@@ -420,7 +420,7 @@ export default function AttorneyDashboard() {
                 >
                   Accepted
                   {acceptedNotCased.length > 0 && (
-                    <Badge variant={quotesSubTab === 'accepted' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{acceptedNotCased.length}</Badge>
+                    <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${quotesSubTab === 'accepted' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{acceptedNotCased.length}</Badge>
                   )}
                 </Button>
               </div>
