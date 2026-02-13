@@ -79,7 +79,7 @@ export default function MyReferralsList({ filterStatus, title, emptyMessage, emp
     const hasActiveCase = activeCaseQuoteIds.size > 0 && referral.quoteId && activeCaseQuoteIds.has(referral.quoteId);
 
     if (!filterStatus) {
-      return referral.assignmentStatus !== 'accepted' && referral.assignmentStatus !== 'quoted';
+      return referral.assignmentStatus !== 'accepted' && referral.assignmentStatus !== 'quoted' && referral.assignmentStatus !== 'rejected';
     }
 
     if (filterStatus === 'accepted') {

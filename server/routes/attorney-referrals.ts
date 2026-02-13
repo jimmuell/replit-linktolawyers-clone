@@ -899,55 +899,64 @@ router.patch("/quotes/:quoteId/status", async (req, res) => {
       });
     }
 
-    // If quote is accepted, update assignment status and decline all other quotes for the same request
-    if (status === 'accepted') {
-      // First, get the assignment to find the request
-      const [assignment] = await db
-        .select()
-        .from(referralAssignments)
+    const [assignment] = await db
+      .select()
+      .from(referralAssignments)
+      .where(eq(referralAssignments.id, updatedQuote.assignmentId));
+
+    if (status === 'accepted' && assignment) {
+      await db
+        .update(referralAssignments)
+        .set({
+          status: 'accepted',
+          updatedAt: new Date(),
+        })
         .where(eq(referralAssignments.id, updatedQuote.assignmentId));
 
-      if (assignment) {
-        // Update the assignment status to "accepted"
-        await db
-          .update(referralAssignments)
-          .set({
-            status: 'accepted',
-            updatedAt: new Date(),
-          })
-          .where(eq(referralAssignments.id, updatedQuote.assignmentId));
+      let otherAssignments: any[] = [];
+      if (assignment.submissionId) {
+        otherAssignments = await db
+          .select()
+          .from(referralAssignments)
+          .where(eq(referralAssignments.submissionId, assignment.submissionId));
+      } else if (assignment.requestId) {
+        otherAssignments = await db
+          .select()
+          .from(referralAssignments)
+          .where(eq(referralAssignments.requestId, assignment.requestId));
+      }
 
-        // Get all other assignments for the same request (supports both legacy requestId and structured submissionId)
-        let otherAssignments: any[] = [];
-        if (assignment.submissionId) {
-          otherAssignments = await db
-            .select()
-            .from(referralAssignments)
-            .where(eq(referralAssignments.submissionId, assignment.submissionId));
-        } else if (assignment.requestId) {
-          otherAssignments = await db
-            .select()
-            .from(referralAssignments)
-            .where(eq(referralAssignments.requestId, assignment.requestId));
-        }
+      for (const otherAssignment of otherAssignments) {
+        if (otherAssignment.id !== updatedQuote.assignmentId) {
+          await db
+            .update(quotes)
+            .set({
+              status: 'declined',
+              respondedAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(and(
+              eq(quotes.assignmentId, otherAssignment.id),
+              eq(quotes.status, 'pending')
+            ));
 
-        // Decline all other quotes for this request
-        for (const otherAssignment of otherAssignments) {
-          if (otherAssignment.id !== updatedQuote.assignmentId) {
-            await db
-              .update(quotes)
-              .set({
-                status: 'declined',
-                respondedAt: new Date(),
-                updatedAt: new Date(),
-              })
-              .where(and(
-                eq(quotes.assignmentId, otherAssignment.id),
-                eq(quotes.status, 'pending')
-              ));
-          }
+          await db
+            .update(referralAssignments)
+            .set({
+              status: 'rejected',
+              updatedAt: new Date(),
+            })
+            .where(eq(referralAssignments.id, otherAssignment.id));
         }
       }
+    } else if (status === 'declined' && assignment) {
+      await db
+        .update(referralAssignments)
+        .set({
+          status: 'rejected',
+          updatedAt: new Date(),
+        })
+        .where(eq(referralAssignments.id, updatedQuote.assignmentId));
     }
 
     res.json({ success: true, data: updatedQuote });
