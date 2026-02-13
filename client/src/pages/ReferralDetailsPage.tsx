@@ -10,10 +10,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, Clock, MessageSquare, DollarSign, FileText, Edit2, Trash2, UserMinus, AlertTriangle, CheckCircle, Eye } from 'lucide-react';
+import { ArrowLeft, Clock, MessageSquare, DollarSign, FileText, Edit2, Trash2, UserMinus, AlertTriangle, CheckCircle, Eye, Upload, File, Image, Download, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import AttorneyAppBar from '@/components/AttorneyAppBar';
+import { Progress } from '@/components/ui/progress';
 
 interface MyReferral {
   assignmentId: number;
@@ -82,6 +83,8 @@ export default function ReferralDetailsPage() {
   const [deleteQuoteConfirm, setDeleteQuoteConfirm] = useState<{ quoteId: number } | null>(null);
   const [isStartCaseModalOpen, setIsStartCaseModalOpen] = useState(false);
   const [caseNotes, setCaseNotes] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [deleteDocConfirm, setDeleteDocConfirm] = useState<number | null>(null);
 
   const { data: referralsData, isLoading } = useQuery({
     queryKey: ['/api/attorney-referrals/my-referrals'],
@@ -163,6 +166,72 @@ export default function ReferralDetailsPage() {
   });
 
   const existingCase = casesData?.data?.find((c: any) => c.quoteId === existingQuote?.id || c.quote_id === existingQuote?.id) || null;
+
+  const { data: documentsData, refetch: refetchDocuments } = useQuery({
+    queryKey: ['/api/attorney-referrals/assignment', assignmentId, 'documents'],
+    queryFn: async () => {
+      const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/documents`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
+      });
+      if (!response.ok) return { data: [] };
+      return response.json();
+    },
+    enabled: !!assignmentId,
+  });
+
+  const documents = documentsData?.data || [];
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setIsUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/documents`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
+          body: formData,
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Upload failed');
+        }
+      }
+      toast({ title: "Success", description: `${files.length} file(s) uploaded successfully` });
+      refetchDocuments();
+    } catch (error: any) {
+      toast({ title: "Upload Failed", description: error.message || "Failed to upload file", variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (documentId: number) => {
+      return await apiRequest(`/api/attorney-referrals/documents/${documentId}`, { method: 'DELETE' });
+    },
+    onSuccess: () => {
+      toast({ title: "Deleted", description: "Document deleted successfully" });
+      refetchDocuments();
+      setDeleteDocConfirm(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message || "Failed to delete document", variant: "destructive" });
+    },
+  });
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType === 'application/pdf') return <File className="h-5 w-5 text-red-500" />;
+    if (mimeType.startsWith('image/')) return <Image className="h-5 w-5 text-blue-500" />;
+    return <FileText className="h-5 w-5 text-gray-500" />;
+  };
 
   useEffect(() => {
     if (feeScheduleData && !existingQuote && quote.serviceFee === '' && quote.description === '') {
@@ -395,7 +464,7 @@ export default function ReferralDetailsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="details" className="gap-1.5">
               <FileText className="h-4 w-4" />
               Details
@@ -407,6 +476,10 @@ export default function ReferralDetailsPage() {
             <TabsTrigger value="quote" className="gap-1.5">
               <DollarSign className="h-4 w-4" />
               Quote
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="gap-1.5">
+              <Upload className="h-4 w-4" />
+              Docs {documents.length > 0 && <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">{documents.length}</Badge>}
             </TabsTrigger>
           </TabsList>
 
@@ -795,6 +868,86 @@ export default function ReferralDetailsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="documents">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Documents</span>
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      multiple
+                      accept=".pdf,image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e.target.files)}
+                      disabled={isUploading}
+                    />
+                    <Button asChild disabled={isUploading} size="sm">
+                      <span>
+                        {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                        {isUploading ? 'Uploading...' : 'Upload Files'}
+                      </span>
+                    </Button>
+                  </label>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="border-2 border-dashed rounded-lg p-8 text-center mb-6 transition-colors hover:border-blue-400 hover:bg-blue-50/50"
+                  onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleFileUpload(e.dataTransfer.files); }}
+                >
+                  <Upload className="h-8 w-8 mx-auto mb-3 text-gray-400" />
+                  <p className="text-sm font-medium text-gray-600">Drag & drop files here</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF and image files up to 15MB</p>
+                </div>
+
+                {documents.length === 0 ? (
+                  <div className="text-center py-6 text-gray-500">
+                    <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No documents uploaded yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {documents.map((doc: any) => (
+                      <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {getFileIcon(doc.fileType)}
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{doc.fileName}</p>
+                            <p className="text-xs text-gray-500">
+                              {formatFileSize(doc.fileSize)} &middot; {formatDate(doc.uploadedAt)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 ml-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              const token = localStorage.getItem('sessionId');
+                              window.open(`/api/attorney-referrals/documents/${doc.id}/download?token=${token}`, '_blank');
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteDocConfirm(doc.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -875,6 +1028,26 @@ export default function ReferralDetailsPage() {
               className="bg-red-600 hover:bg-red-700"
             >
               {deleteQuoteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!deleteDocConfirm} onOpenChange={(open) => !open && setDeleteDocConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this document? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteDocConfirm && deleteDocumentMutation.mutate(deleteDocConfirm)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteDocumentMutation.isPending ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

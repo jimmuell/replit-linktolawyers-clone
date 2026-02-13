@@ -11,6 +11,7 @@ import {
   cases,
   attorneyNotes,
   structuredIntakes,
+  caseDocuments,
   insertReferralAssignmentSchema,
   insertQuoteSchema,
   insertCaseSchema,
@@ -18,6 +19,24 @@ import {
 } from "@shared/schema";
 import { eq, and, isNull, desc, asc, sql } from "drizzle-orm";
 import { requireAuth } from "../middleware/auth";
+import multer from "multer";
+import { ObjectStorageService } from "../objectStorage";
+
+const documentUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 15 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'image/heic', 'image/heif',
+    ];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return cb(new Error('Only PDF and image files are allowed'));
+    }
+    cb(null, true);
+  },
+});
 
 const router = Router();
 
@@ -1221,6 +1240,166 @@ router.post("/assign-submission/:submissionId", requireAuth, async (req, res) =>
   } catch (error) {
     console.error('Error assigning submission:', error);
     res.status(500).json({ error: 'Failed to assign submission' });
+  }
+});
+
+// ============ DOCUMENT UPLOAD ENDPOINTS ============
+
+router.post("/assignment/:assignmentId/documents", requireAuth, documentUpload.single('file'), async (req, res) => {
+  try {
+    const assignmentId = parseInt(req.params.assignmentId);
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, req.user!.userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+    const attorneyId = attorney.id;
+
+    const [assignment] = await db.select().from(referralAssignments)
+      .where(and(eq(referralAssignments.id, assignmentId), eq(referralAssignments.attorneyId, attorneyId)));
+    if (!assignment) {
+      return res.status(404).json({ error: 'Assignment not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const objectStorageService = new ObjectStorageService();
+    let storagePath: string;
+
+    if (objectStorageService.isLocalMode()) {
+      storagePath = await objectStorageService.uploadLocalFile(req.file.buffer, req.file.mimetype);
+    } else {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: req.file.buffer,
+        headers: { 'Content-Type': req.file.mimetype },
+      });
+      if (!uploadResponse.ok) {
+        throw new Error(`Upload failed: ${uploadResponse.status}`);
+      }
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(uploadURL, {
+        owner: `attorney-${attorneyId}`,
+        visibility: 'private' as any,
+      });
+      storagePath = objectPath;
+    }
+
+    const existingCase = await db.select().from(cases)
+      .where(eq(cases.assignmentId, assignmentId));
+    const caseId = existingCase.length > 0 ? existingCase[0].id : null;
+
+    const [document] = await db.insert(caseDocuments).values({
+      assignmentId,
+      caseId,
+      attorneyId,
+      fileName: req.file.originalname,
+      fileType: req.file.mimetype,
+      fileSize: req.file.size,
+      storagePath,
+    }).returning();
+
+    res.json({ success: true, data: document });
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    res.status(500).json({ error: 'Failed to upload document' });
+  }
+});
+
+router.get("/assignment/:assignmentId/documents", requireAuth, async (req, res) => {
+  try {
+    const assignmentId = parseInt(req.params.assignmentId);
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, req.user!.userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    const [assignment] = await db.select().from(referralAssignments)
+      .where(and(eq(referralAssignments.id, assignmentId), eq(referralAssignments.attorneyId, attorney.id)));
+    if (!assignment) {
+      return res.status(404).json({ error: 'Assignment not found' });
+    }
+
+    const docs = await db.select().from(caseDocuments)
+      .where(eq(caseDocuments.assignmentId, assignmentId))
+      .orderBy(desc(caseDocuments.uploadedAt));
+
+    res.json({ success: true, data: docs });
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    res.status(500).json({ error: 'Failed to fetch documents' });
+  }
+});
+
+router.get("/documents/:documentId/download", async (req, res) => {
+  try {
+    const documentId = parseInt(req.params.documentId);
+    const sessionId = req.headers.authorization?.replace('Bearer ', '') || (req.query.token as string);
+    if (!sessionId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const { getSession } = await import('../middleware/auth');
+    const sessionData = getSession(sessionId);
+    if (!sessionData) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, sessionData.userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney access required' });
+    }
+    const attorneyId = attorney.id;
+
+    const [doc] = await db.select().from(caseDocuments)
+      .where(and(eq(caseDocuments.id, documentId), eq(caseDocuments.attorneyId, attorneyId)));
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    const objectStorageService = new ObjectStorageService();
+    const encodedFileName = encodeURIComponent(doc.fileName);
+
+    if (objectStorageService.isLocalMode()) {
+      const filePath = objectStorageService.getLocalFilePath(doc.storagePath);
+      const fs = await import('fs');
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+      res.setHeader('Content-Type', doc.fileType);
+      res.setHeader('Content-Disposition', `inline; filename="${encodedFileName}"`);
+      fs.createReadStream(filePath).pipe(res);
+    } else {
+      const objectFile = await objectStorageService.getObjectEntityFile(doc.storagePath);
+      res.setHeader('Content-Disposition', `inline; filename="${encodedFileName}"`);
+      await objectStorageService.downloadObject(objectFile, res);
+    }
+  } catch (error) {
+    console.error('Error downloading document:', error);
+    res.status(500).json({ error: 'Failed to download document' });
+  }
+});
+
+router.delete("/documents/:documentId", requireAuth, async (req, res) => {
+  try {
+    const documentId = parseInt(req.params.documentId);
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, req.user!.userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    const [doc] = await db.select().from(caseDocuments)
+      .where(and(eq(caseDocuments.id, documentId), eq(caseDocuments.attorneyId, attorney.id)));
+    if (!doc) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+
+    await db.delete(caseDocuments).where(eq(caseDocuments.id, documentId));
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting document:', error);
+    res.status(500).json({ error: 'Failed to delete document' });
   }
 });
 
