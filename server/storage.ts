@@ -1066,6 +1066,44 @@ export class DatabaseStorage implements IStorage {
         await tx.delete(requestAttorneyAssignments).where(inArray(requestAttorneyAssignments.id, legacyIds));
       }
 
+      const [intake] = await tx.select({ requestNumber: structuredIntakes.requestNumber })
+        .from(structuredIntakes)
+        .where(eq(structuredIntakes.id, id));
+
+      if (intake?.requestNumber) {
+        const [matchingLR] = await tx.select({ id: legalRequests.id })
+          .from(legalRequests)
+          .where(eq(legalRequests.requestNumber, intake.requestNumber));
+
+        if (matchingLR) {
+          const lrAssignments = await tx.select({ id: referralAssignments.id })
+            .from(referralAssignments)
+            .where(eq(referralAssignments.requestId, matchingLR.id));
+
+          if (lrAssignments.length > 0) {
+            const lrAssignmentIds = lrAssignments.map(a => a.id);
+            const lrQuotes = await tx.select({ id: quotes.id })
+              .from(quotes)
+              .where(inArray(quotes.assignmentId, lrAssignmentIds));
+            if (lrQuotes.length > 0) {
+              const lrQuoteIds = lrQuotes.map(q => q.id);
+              const lrCases = await tx.select({ id: cases.id })
+                .from(cases)
+                .where(inArray(cases.quoteId, lrQuoteIds));
+              if (lrCases.length > 0) {
+                const lrCaseIds = lrCases.map(c => c.id);
+                await tx.delete(attorneyNotes).where(inArray(attorneyNotes.caseId, lrCaseIds));
+                await tx.delete(cases).where(inArray(cases.id, lrCaseIds));
+              }
+            }
+            await tx.delete(attorneyNotes).where(inArray(attorneyNotes.assignmentId, lrAssignmentIds));
+            await tx.delete(quotes).where(inArray(quotes.assignmentId, lrAssignmentIds));
+            await tx.delete(referralAssignments).where(inArray(referralAssignments.id, lrAssignmentIds));
+          }
+          await tx.delete(legalRequests).where(eq(legalRequests.id, matchingLR.id));
+        }
+      }
+
       await tx.delete(structuredIntakes).where(eq(structuredIntakes.id, id));
     });
   }
