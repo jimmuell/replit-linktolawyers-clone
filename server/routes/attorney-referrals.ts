@@ -1083,6 +1083,7 @@ router.get("/cases", requireAuth, async (req, res) => {
         c.notes as case_notes,
         c.updated_at as case_updated_at,
         c.quote_id,
+        c.assignment_id,
         q.service_fee,
         q.description as quote_description,
         COALESCE(lr.id, si.id) as request_id,
@@ -1113,6 +1114,7 @@ router.get("/cases", requireAuth, async (req, res) => {
       caseNotes: row.case_notes,
       caseUpdatedAt: row.case_updated_at,
       quoteId: row.quote_id,
+      assignmentId: row.assignment_id,
       serviceFee: row.service_fee,
       quoteDescription: row.quote_description,
       request: {
@@ -1353,11 +1355,48 @@ router.get("/assignment/:assignmentId/documents", requireAuth, async (req, res) 
       return res.status(404).json({ error: 'Assignment not found' });
     }
 
-    const docs = await db.select().from(caseDocuments)
+    const docsByAssignment = await db.select().from(caseDocuments)
       .where(eq(caseDocuments.assignmentId, assignmentId))
       .orderBy(desc(caseDocuments.uploadedAt));
 
-    res.json({ success: true, data: docs });
+    let docsByRequestNumber: typeof docsByAssignment = [];
+    if (assignment.submissionId) {
+      const [intake] = await db.select({ requestNumber: structuredIntakes.requestNumber })
+        .from(structuredIntakes)
+        .where(eq(structuredIntakes.id, assignment.submissionId));
+      if (intake?.requestNumber) {
+        docsByRequestNumber = await db.select().from(caseDocuments)
+          .where(and(
+            eq(caseDocuments.requestNumber, intake.requestNumber),
+            isNull(caseDocuments.assignmentId)
+          ))
+          .orderBy(desc(caseDocuments.uploadedAt));
+      }
+    }
+    if (assignment.requestId) {
+      const [legReq] = await db.select({ requestNumber: legalRequests.requestNumber })
+        .from(legalRequests)
+        .where(eq(legalRequests.id, assignment.requestId));
+      if (legReq?.requestNumber) {
+        const clientDocs = await db.select().from(caseDocuments)
+          .where(and(
+            eq(caseDocuments.requestNumber, legReq.requestNumber),
+            isNull(caseDocuments.assignmentId)
+          ))
+          .orderBy(desc(caseDocuments.uploadedAt));
+        docsByRequestNumber = [...docsByRequestNumber, ...clientDocs];
+      }
+    }
+
+    const allDocIds = new Set(docsByAssignment.map(d => d.id));
+    const merged = [...docsByAssignment];
+    for (const doc of docsByRequestNumber) {
+      if (!allDocIds.has(doc.id)) {
+        merged.push(doc);
+      }
+    }
+
+    res.json({ success: true, data: merged });
   } catch (error) {
     console.error('Error fetching documents:', error);
     res.status(500).json({ error: 'Failed to fetch documents' });
@@ -1384,9 +1423,33 @@ router.get("/documents/:documentId/download", async (req, res) => {
     const attorneyId = attorney.id;
 
     const [doc] = await db.select().from(caseDocuments)
-      .where(and(eq(caseDocuments.id, documentId), eq(caseDocuments.attorneyId, attorneyId)));
+      .where(eq(caseDocuments.id, documentId));
     if (!doc) {
       return res.status(404).json({ error: 'Document not found' });
+    }
+
+    if (doc.attorneyId && doc.attorneyId !== attorneyId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    if (!doc.attorneyId && doc.assignmentId) {
+      const [assignment] = await db.select().from(referralAssignments)
+        .where(and(eq(referralAssignments.id, doc.assignmentId), eq(referralAssignments.attorneyId, attorneyId)));
+      if (!assignment) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+    if (!doc.attorneyId && !doc.assignmentId && doc.requestNumber) {
+      const assignmentCheck = await db.execute(sql`
+        SELECT ra.id FROM referral_assignments ra
+        LEFT JOIN structured_intakes si ON ra.submission_id = si.id
+        LEFT JOIN legal_requests lr ON ra.request_id = lr.id
+        WHERE ra.attorney_id = ${attorneyId}
+          AND (si.request_number = ${doc.requestNumber} OR lr.request_number = ${doc.requestNumber})
+        LIMIT 1
+      `);
+      if (assignmentCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     const objectStorageService = new ObjectStorageService();
@@ -1421,9 +1484,33 @@ router.delete("/documents/:documentId", requireAuth, async (req, res) => {
     }
 
     const [doc] = await db.select().from(caseDocuments)
-      .where(and(eq(caseDocuments.id, documentId), eq(caseDocuments.attorneyId, attorney.id)));
+      .where(eq(caseDocuments.id, documentId));
     if (!doc) {
       return res.status(404).json({ error: 'Document not found' });
+    }
+
+    if (doc.attorneyId && doc.attorneyId !== attorney.id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    if (!doc.attorneyId && doc.assignmentId) {
+      const [assignment] = await db.select().from(referralAssignments)
+        .where(and(eq(referralAssignments.id, doc.assignmentId), eq(referralAssignments.attorneyId, attorney.id)));
+      if (!assignment) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+    }
+    if (!doc.attorneyId && !doc.assignmentId && doc.requestNumber) {
+      const assignmentCheck = await db.execute(sql`
+        SELECT ra.id FROM referral_assignments ra
+        LEFT JOIN structured_intakes si ON ra.submission_id = si.id
+        LEFT JOIN legal_requests lr ON ra.request_id = lr.id
+        WHERE ra.attorney_id = ${attorney.id}
+          AND (si.request_number = ${doc.requestNumber} OR lr.request_number = ${doc.requestNumber})
+        LIMIT 1
+      `);
+      if (assignmentCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
     }
 
     await db.delete(caseDocuments).where(eq(caseDocuments.id, documentId));

@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Eye, FileText, Calendar, DollarSign, CheckCircle } from 'lucide-react';
+import { Eye, FileText, Calendar, DollarSign, CheckCircle, ExternalLink } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useLocation } from 'wouter';
 
 interface ActiveCase {
   caseId: number;
@@ -20,6 +21,7 @@ interface ActiveCase {
   serviceFee: number;
   quoteDescription: string;
   quoteId: number;
+  assignmentId: number;
   caseUpdatedAt: string;
   request: {
     id: number;
@@ -47,6 +49,7 @@ export default function ActiveCasesList({ filterStatus = 'active', title, emptyM
   const [closeCaseSuccess, setCloseCaseSuccess] = useState<{ caseNumber: string; clientName: string } | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const { data: casesData, isLoading } = useQuery({
     queryKey: ['/api/attorney-referrals/cases'],
@@ -228,6 +231,15 @@ export default function ActiveCasesList({ filterStatus = 'active', title, emptyM
                     <TableCell>{formatDate(case_.startDate)}</TableCell>
                     <TableCell className="font-medium">{formatCurrency(case_.serviceFee || 0)}</TableCell>
                     <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setLocation(`/attorney/referral/${case_.assignmentId}`)}
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          Referral
+                        </Button>
                       <Dialog open={selectedCase?.caseId === case_.caseId} onOpenChange={(open) => {
                         if (!open) {
                           setSelectedCase(null);
@@ -240,7 +252,7 @@ export default function ActiveCasesList({ filterStatus = 'active', title, emptyM
                             onClick={() => setSelectedCase(case_)}
                           >
                             <Eye className="h-3 w-3 mr-1" />
-                            View Details
+                            Details
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -345,6 +357,7 @@ export default function ActiveCasesList({ filterStatus = 'active', title, emptyM
                           )}
                         </DialogContent>
                       </Dialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

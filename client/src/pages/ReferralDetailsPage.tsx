@@ -918,6 +918,7 @@ export default function ReferralDetailsPage() {
                             <p className="text-sm font-medium truncate">{doc.fileName}</p>
                             <p className="text-xs text-gray-500">
                               {formatFileSize(doc.fileSize)} &middot; {formatDate(doc.uploadedAt)}
+                              {!doc.attorneyId && <span className="ml-1 text-blue-500">&middot; Client Upload</span>}
                             </p>
                           </div>
                         </div>
