@@ -34,7 +34,14 @@ interface ActiveCase {
   };
 }
 
-export default function ActiveCasesList() {
+interface ActiveCasesListProps {
+  filterStatus?: string;
+  title?: string;
+  emptyMessage?: string;
+  emptySubMessage?: string;
+}
+
+export default function ActiveCasesList({ filterStatus = 'active', title, emptyMessage, emptySubMessage }: ActiveCasesListProps) {
   const [selectedCase, setSelectedCase] = useState<ActiveCase | null>(null);
   const [closeCaseConfirm, setCloseCaseConfirm] = useState<ActiveCase | null>(null);
   const [closeCaseSuccess, setCloseCaseSuccess] = useState<{ caseNumber: string; clientName: string } | null>(null);
@@ -59,7 +66,8 @@ export default function ActiveCasesList() {
     retry: false,
   });
 
-  const cases: ActiveCase[] = casesData?.data || [];
+  const allCases: ActiveCase[] = casesData?.data || [];
+  const cases = allCases.filter((c) => c.caseStatus === filterStatus);
 
   const closeCaseMutation = useMutation({
     mutationFn: async (caseId: number) => {
@@ -118,7 +126,7 @@ export default function ActiveCasesList() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Active Cases</CardTitle>
+          <CardTitle>{title || 'Cases'}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
@@ -132,17 +140,20 @@ export default function ActiveCasesList() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="h-5 w-5" />
-          Active Cases
+        <CardTitle className="flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            {title || 'Cases'}
+          </span>
+          <Badge variant="outline">{cases.length} {cases.length === 1 ? 'record' : 'records'}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {cases.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-            <p>No active cases yet</p>
-            <p className="text-sm">Cases will appear here when you start them from accepted quotes</p>
+            <p>{emptyMessage || 'No cases yet'}</p>
+            <p className="text-sm">{emptySubMessage || 'Cases will appear here when you start them from accepted quotes'}</p>
           </div>
         ) : (
           <div className="space-y-4">

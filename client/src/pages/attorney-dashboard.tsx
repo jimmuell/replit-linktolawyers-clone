@@ -64,6 +64,7 @@ export default function AttorneyDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [referralSubTab, setReferralSubTab] = useState<'available' | 'assigned'>('available');
   const [quotesSubTab, setQuotesSubTab] = useState<'pending' | 'accepted' | 'declined'>('pending');
+  const [casesSubTab, setCasesSubTab] = useState<'active' | 'completed'>('active');
 
   useEffect(() => {
     if (!loading && user && user.role !== 'attorney') {
@@ -137,6 +138,8 @@ export default function AttorneyDashboard() {
   const declinedReferrals = referrals.filter((r) => r.assignmentStatus === 'rejected');
   const allQuotesCount = quotedReferrals.length + acceptedNotCased.length + declinedReferrals.length;
   const activeCases = cases.filter((c) => c.caseStatus === 'active');
+  const completedCases = cases.filter((c) => c.caseStatus === 'completed');
+  const allCasesCount = activeCases.length + completedCases.length;
   const totalReferralsCount = availableCount + assignedReferrals.length;
 
   const recentActivities: Array<{ type: string; label: string; detail: string; date: string; color: string }> = [];
@@ -240,8 +243,8 @@ export default function AttorneyDashboard() {
             </TabsTrigger>
             <TabsTrigger value="cases" className="gap-1.5">
               Cases
-              {activeCases.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{activeCases.length}</Badge>
+              {allCasesCount > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{allCasesCount}</Badge>
               )}
             </TabsTrigger>
           </TabsList>
@@ -287,14 +290,14 @@ export default function AttorneyDashboard() {
                     </CardContent>
                   </Card>
 
-                  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab('cases')}>
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setActiveTab('cases'); setCasesSubTab('active'); }}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Active Cases</CardTitle>
+                      <CardTitle className="text-sm font-medium">Cases</CardTitle>
                       <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{activeCases.length}</div>
-                      <p className="text-xs text-muted-foreground">In progress</p>
+                      <div className="text-2xl font-bold">{allCasesCount}</div>
+                      <p className="text-xs text-muted-foreground">{activeCases.length} active, {completedCases.length} completed</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -463,7 +466,48 @@ export default function AttorneyDashboard() {
           </TabsContent>
 
           <TabsContent value="cases">
-            <ActiveCasesList />
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  variant={casesSubTab === 'active' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setCasesSubTab('active')}
+                  className="gap-1.5"
+                >
+                  Active
+                  {activeCases.length > 0 && (
+                    <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${casesSubTab === 'active' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{activeCases.length}</Badge>
+                  )}
+                </Button>
+                <Button
+                  variant={casesSubTab === 'completed' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setCasesSubTab('completed')}
+                  className="gap-1.5"
+                >
+                  Completed
+                  {completedCases.length > 0 && (
+                    <Badge variant="secondary" className={`ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full ${casesSubTab === 'completed' ? 'bg-white/20 text-white border-white/30' : 'text-black'}`}>{completedCases.length}</Badge>
+                  )}
+                </Button>
+              </div>
+
+              {casesSubTab === 'active' ? (
+                <ActiveCasesList
+                  filterStatus="active"
+                  title="Active Cases"
+                  emptyMessage="No active cases yet."
+                  emptySubMessage="Cases will appear here when you start them from accepted quotes."
+                />
+              ) : (
+                <ActiveCasesList
+                  filterStatus="completed"
+                  title="Completed Cases"
+                  emptyMessage="No completed cases yet."
+                  emptySubMessage="Cases you close will appear here."
+                />
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
