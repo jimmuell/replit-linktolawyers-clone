@@ -1,10 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { ArrowLeft, Download, FileText, Users, Calendar } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Users, Calendar, Upload, File, Image, Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface LegalRequest {
   success: boolean;
@@ -41,6 +44,10 @@ const CaseDetailsPage: React.FC = () => {
   const [, navigate] = useLocation();
 
   const requestNumber = params?.requestNumber;
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [deleteDocConfirm, setDeleteDocConfirm] = useState<number | null>(null);
 
   const { data: request, isLoading } = useQuery<LegalRequest>({
     queryKey: ['/api/legal-requests', requestNumber],
@@ -53,6 +60,87 @@ const CaseDetailsPage: React.FC = () => {
     queryFn: () => fetch(`/api/structured-intakes/${requestNumber}`).then(r => r.json()),
     enabled: !!requestNumber,
   });
+
+  const { data: assignmentData } = useQuery({
+    queryKey: ['/api/attorney-referrals/by-request', requestNumber],
+    queryFn: async () => {
+      const response = await fetch(`/api/attorney-referrals/by-request/${requestNumber}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
+      });
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!requestNumber,
+  });
+
+  const assignmentId = assignmentData?.data?.assignmentId;
+
+  const { data: documentsData, refetch: refetchDocuments } = useQuery({
+    queryKey: ['/api/attorney-referrals/assignment', assignmentId, 'documents'],
+    queryFn: async () => {
+      const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/documents`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
+      });
+      if (!response.ok) return { data: [] };
+      return response.json();
+    },
+    enabled: !!assignmentId,
+  });
+
+  const documents = documentsData?.data || [];
+
+  const handleFileUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !assignmentId) return;
+    setIsUploading(true);
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const formData = new FormData();
+        formData.append('file', files[i]);
+        const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/documents`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
+          body: formData,
+        });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Upload failed');
+        }
+      }
+      toast({ title: "Success", description: `${files.length} file(s) uploaded successfully` });
+      refetchDocuments();
+    } catch (error: any) {
+      toast({ title: "Upload Failed", description: error.message || "Failed to upload file", variant: "destructive" });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (documentId: number) => {
+      return await apiRequest(`/api/attorney-referrals/documents/${documentId}`, { method: 'DELETE' });
+    },
+    onSuccess: () => {
+      toast({ title: "Deleted", description: "Document deleted successfully" });
+      refetchDocuments();
+      setDeleteDocConfirm(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message || "Failed to delete document", variant: "destructive" });
+    },
+  });
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType === 'application/pdf') return <File className="h-4 w-4 text-red-500" />;
+    if (mimeType.startsWith('image/')) return <Image className="h-4 w-4 text-blue-500" />;
+    return <FileText className="h-4 w-4 text-gray-500" />;
+  };
 
   const questionsCount = useMemo(() => {
     if (!structuredIntake?.data?.formResponses) return null;
@@ -682,8 +770,75 @@ const CaseDetailsPage: React.FC = () => {
                   <Download className="w-4 h-4 mr-2" />
                   Download PDF
                 </Button>
+                {assignmentId && (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,image/*"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e.target.files)}
+                      disabled={isUploading}
+                    />
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                    >
+                      {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                      {isUploading ? 'Uploading...' : 'Upload Documents'}
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
+
+            {assignmentId && documents.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-gray-700 flex items-center gap-2">
+                    Documents
+                    <Badge variant="secondary" className="text-xs">{documents.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {documents.map((doc: any) => (
+                    <div key={doc.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border text-sm">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {getFileIcon(doc.fileType)}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate text-sm">{doc.fileName}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(doc.fileSize)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 ml-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            const token = localStorage.getItem('sessionId');
+                            window.open(`/api/attorney-referrals/documents/${doc.id}/download?token=${token}`, '_blank');
+                          }}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-red-500 hover:text-red-700"
+                          onClick={() => setDeleteDocConfirm(doc.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Case Details */}
             <Card>
@@ -731,6 +886,26 @@ const CaseDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={!!deleteDocConfirm} onOpenChange={(open) => !open && setDeleteDocConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Document</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this document? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteDocConfirm && deleteDocumentMutation.mutate(deleteDocConfirm)}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteDocumentMutation.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

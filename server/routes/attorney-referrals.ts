@@ -1243,6 +1243,38 @@ router.post("/assign-submission/:submissionId", requireAuth, async (req, res) =>
   }
 });
 
+// Get assignment by request number (for linking documents from case details page)
+router.get("/by-request/:requestNumber", requireAuth, async (req, res) => {
+  try {
+    const requestNumber = req.params.requestNumber;
+    const [attorney] = await db.select().from(attorneys).where(eq(attorneys.userId, req.user!.userId));
+    if (!attorney) {
+      return res.status(403).json({ error: 'Attorney profile not found' });
+    }
+
+    const result = await db.select({
+      assignmentId: referralAssignments.id,
+      status: referralAssignments.status,
+    })
+    .from(referralAssignments)
+    .innerJoin(structuredIntakes, eq(referralAssignments.submissionId, structuredIntakes.id))
+    .where(and(
+      eq(structuredIntakes.requestNumber, requestNumber),
+      eq(referralAssignments.attorneyId, attorney.id)
+    ))
+    .limit(1);
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Assignment not found for this request' });
+    }
+
+    res.json({ success: true, data: result[0] });
+  } catch (error) {
+    console.error('Error finding assignment by request number:', error);
+    res.status(500).json({ error: 'Failed to find assignment' });
+  }
+});
+
 // ============ DOCUMENT UPLOAD ENDPOINTS ============
 
 router.post("/assignment/:assignmentId/documents", requireAuth, documentUpload.single('file'), async (req, res) => {
