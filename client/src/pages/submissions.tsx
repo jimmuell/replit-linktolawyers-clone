@@ -657,12 +657,13 @@ export default function SubmissionsPage() {
         const zip = new JSZip();
         zip.file(pdfFileName, pdfBlob);
 
+        const docsFolder = zip.folder('Documents');
         for (const docItem of documents) {
           try {
             const docResponse = await fetch(`/api/case-documents/${docItem.id}/download`);
             if (docResponse.ok) {
               const docBlob = await docResponse.blob();
-              zip.file(docItem.fileName || `document_${docItem.id}`, docBlob);
+              docsFolder!.file(docItem.fileName || `document_${docItem.id}`, docBlob);
             }
           } catch (err) {
             console.error(`Failed to fetch document ${docItem.id}:`, err);
