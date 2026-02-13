@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import AdminNavbar from '@/components/AdminNavbar';
-import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, Clock, UserPlus, UserMinus, Users, AlertTriangle, Loader2 } from 'lucide-react';
+import { Eye, Trash2, Download, FileText, MessageSquare, ChevronRight, ChevronDown, CheckCircle2, Clock, UserPlus, UserMinus, Users, AlertTriangle, Loader2, Package } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -90,6 +90,7 @@ export default function SubmissionsPage() {
   const [selectedAttorneyIds, setSelectedAttorneyIds] = useState<number[]>([]);
   const [relatedCounts, setRelatedCounts] = useState<{ referralAssignments: number; quotes: number; cases: number; attorneyNotes: number } | null>(null);
   const [isLoadingCounts, setIsLoadingCounts] = useState(false);
+  const [isGeneratingPackage, setIsGeneratingPackage] = useState(false);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== 'admin')) {
@@ -373,6 +374,333 @@ export default function SubmissionsPage() {
     a.download = `${formGroup.caseType}-submissions.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadReferralPackage = async () => {
+    if (!selectedSubmission) return;
+    setIsGeneratingPackage(true);
+
+    try {
+      const submission = selectedSubmission;
+      const jsPDF = (await import('jspdf')).default;
+      const doc = new jsPDF();
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const marginLeft = 25;
+      const marginRight = 25;
+      const contentWidth = pageWidth - marginLeft - marginRight;
+      const footerHeight = 25;
+      let y = 0;
+
+      const COLORS = {
+        primaryBlue: [30, 64, 175] as [number, number, number],
+        darkBlue: [20, 45, 130] as [number, number, number],
+        white: [255, 255, 255] as [number, number, number],
+        black: [33, 33, 33] as [number, number, number],
+        darkGray: [55, 65, 81] as [number, number, number],
+        mediumGray: [107, 114, 128] as [number, number, number],
+        lightGray: [243, 244, 246] as [number, number, number],
+        borderGray: [209, 213, 219] as [number, number, number],
+        accentBlue: [239, 246, 255] as [number, number, number],
+        noticeYellow: [254, 252, 232] as [number, number, number],
+        noticeBorder: [250, 204, 21] as [number, number, number],
+        noticeText: [133, 100, 4] as [number, number, number],
+      };
+
+      const setColor = (color: [number, number, number]) => {
+        doc.setTextColor(color[0], color[1], color[2]);
+      };
+
+      const checkPage = (needed: number) => {
+        if (y + needed > pageHeight - footerHeight) {
+          doc.addPage();
+          y = 25;
+        }
+      };
+
+      const drawSectionHeader = (title: string) => {
+        checkPage(20);
+        doc.setFillColor(COLORS.lightGray[0], COLORS.lightGray[1], COLORS.lightGray[2]);
+        doc.roundedRect(marginLeft, y, contentWidth, 12, 1.5, 1.5, 'F');
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        setColor(COLORS.darkGray);
+        doc.text(title, marginLeft + 5, y + 8);
+        y += 18;
+      };
+
+      const drawInfoRow = (label: string, value: string, xStart: number, rowWidth: number) => {
+        checkPage(14);
+        doc.setFontSize(8.5);
+        doc.setFont('helvetica', 'normal');
+        setColor(COLORS.mediumGray);
+        doc.text(label, xStart, y);
+        y += 4.5;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        setColor(COLORS.black);
+        const lines = doc.splitTextToSize(value, rowWidth - 5);
+        lines.forEach((line: string) => {
+          checkPage(6);
+          doc.text(line, xStart, y);
+          y += 5;
+        });
+        y += 3;
+      };
+
+      const headerHeight = 48;
+      doc.setFillColor(COLORS.primaryBlue[0], COLORS.primaryBlue[1], COLORS.primaryBlue[2]);
+      doc.rect(0, 0, pageWidth, headerHeight, 'F');
+      doc.setFillColor(COLORS.darkBlue[0], COLORS.darkBlue[1], COLORS.darkBlue[2]);
+      doc.rect(0, headerHeight - 3, pageWidth, 3, 'F');
+
+      setColor(COLORS.white);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('LinkToLawyers', marginLeft, 20);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Referral Summary', marginLeft, 30);
+
+      doc.setFontSize(9);
+      const genDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      const dateText = `Generated: ${genDate}`;
+      const dateWidth = doc.getTextWidth(dateText);
+      doc.text(dateText, pageWidth - marginRight - dateWidth, 30);
+
+      y = headerHeight + 10;
+
+      const clientCardHeight = 36;
+      doc.setFillColor(COLORS.primaryBlue[0], COLORS.primaryBlue[1], COLORS.primaryBlue[2]);
+      doc.roundedRect(marginLeft, y, contentWidth, clientCardHeight, 3, 3, 'F');
+
+      setColor(COLORS.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${submission.firstName} ${submission.lastName}`, marginLeft + 10, y + 14);
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      const createdDate = format(new Date(submission.createdAt), 'EEEE, MMMM d, yyyy');
+      doc.text(createdDate, marginLeft + 10, y + 22);
+
+      doc.setFontSize(8);
+      setColor(COLORS.white);
+      const reqLabel = 'Request Number';
+      const reqLabelW = doc.getTextWidth(reqLabel);
+      doc.text(reqLabel, marginLeft + contentWidth - 10 - reqLabelW, y + 12);
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      const reqNum = submission.requestNumber.toUpperCase();
+      const reqNumW = doc.getTextWidth(reqNum);
+      doc.text(reqNum, marginLeft + contentWidth - 10 - reqNumW, y + 22);
+
+      y += clientCardHeight + 12;
+
+      drawSectionHeader('Client Information');
+
+      const colWidth = contentWidth / 2;
+      const col1X = marginLeft + 5;
+      const col2X = marginLeft + colWidth + 5;
+
+      let savedY = y;
+      drawInfoRow('Full Name', `${submission.firstName} ${submission.lastName}`, col1X, colWidth);
+      let afterCol1 = y;
+      y = savedY;
+      drawInfoRow('Email Address', submission.email, col2X, colWidth);
+      y = Math.max(afterCol1, y);
+
+      savedY = y;
+      drawInfoRow('Phone Number', submission.phoneNumber || 'N/A', col1X, colWidth);
+      afterCol1 = y;
+      y = savedY;
+      drawInfoRow('State', submission.state || 'N/A', col2X, colWidth);
+      y = Math.max(afterCol1, y);
+
+      savedY = y;
+      drawInfoRow('Case Type', submission.caseType, col1X, colWidth);
+      afterCol1 = y;
+      y = savedY;
+      drawInfoRow('Role', submission.role || 'N/A', col2X, colWidth);
+      y = Math.max(afterCol1, y);
+
+      drawInfoRow('Submission Date', format(new Date(submission.createdAt), 'MMM d, yyyy h:mm a'), col1X, contentWidth);
+
+      doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
+      doc.line(marginLeft, y, marginLeft + contentWidth, y);
+      y += 10;
+
+      if (submission.attorneyIntakeSummary) {
+        drawSectionHeader('Case Summary');
+
+        const stripHtml = (html: string) => {
+          return html
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/p>/gi, '\n\n')
+            .replace(/<\/li>/gi, '\n')
+            .replace(/<\/h[1-6]>/gi, '\n\n')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&#039;/g, "'")
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+        };
+
+        const summaryText = stripHtml(submission.attorneyIntakeSummary);
+        doc.setFontSize(9.5);
+        doc.setFont('helvetica', 'normal');
+        setColor(COLORS.darkGray);
+        const summaryLines = doc.splitTextToSize(summaryText, contentWidth - 10);
+        summaryLines.forEach((line: string) => {
+          checkPage(6);
+          doc.text(line, marginLeft + 5, y);
+          y += 4.5;
+        });
+        y += 10;
+      }
+
+      const transcript = submission.formResponses?.transcript;
+      if (transcript && transcript.length > 0) {
+        drawSectionHeader('User Journey');
+
+        transcript.forEach((entry: TranscriptEntry, idx: number) => {
+          checkPage(20);
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          setColor(COLORS.mediumGray);
+          doc.text(`Step ${idx + 1}`, marginLeft + 5, y);
+          y += 5;
+
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'bold');
+          setColor(COLORS.black);
+          const qLines = doc.splitTextToSize(entry.question || 'N/A', contentWidth - 10);
+          qLines.forEach((line: string) => {
+            checkPage(5);
+            doc.text(line, marginLeft + 5, y);
+            y += 4.5;
+          });
+
+          doc.setFontSize(9);
+          doc.setFont('helvetica', 'normal');
+          setColor(COLORS.darkGray);
+          const aLines = doc.splitTextToSize(entry.answer || 'N/A', contentWidth - 10);
+          aLines.forEach((line: string) => {
+            checkPage(5);
+            doc.text(line, marginLeft + 5, y);
+            y += 4.5;
+          });
+          y += 4;
+        });
+        y += 6;
+      }
+
+      checkPage(30);
+      const noticeHeight = 22;
+      doc.setFillColor(COLORS.noticeYellow[0], COLORS.noticeYellow[1], COLORS.noticeYellow[2]);
+      doc.setDrawColor(COLORS.noticeBorder[0], COLORS.noticeBorder[1], COLORS.noticeBorder[2]);
+      doc.roundedRect(marginLeft, y, contentWidth, noticeHeight, 2, 2, 'FD');
+      doc.setFillColor(COLORS.noticeBorder[0], COLORS.noticeBorder[1], COLORS.noticeBorder[2]);
+      doc.circle(marginLeft + 8, y + 7, 1.5, 'F');
+      doc.setFontSize(9.5);
+      doc.setFont('helvetica', 'bold');
+      setColor(COLORS.noticeText);
+      doc.text('Important Notice', marginLeft + 14, y + 8);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      const noticeLines = doc.splitTextToSize(
+        'This referral summary provides general information only and does not constitute legal advice. For specific legal questions, consult with a qualified immigration attorney.',
+        contentWidth - 20
+      );
+      noticeLines.forEach((line: string, idx: number) => {
+        doc.text(line, marginLeft + 14, y + 14 + idx * 3.5);
+      });
+      y += noticeHeight + 10;
+
+      const totalPages = (doc as any).internal.pages.length - 1;
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
+        doc.line(marginLeft, pageHeight - 18, pageWidth - marginRight, pageHeight - 18);
+        doc.setFontSize(7.5);
+        doc.setFont('helvetica', 'normal');
+        setColor(COLORS.mediumGray);
+        doc.text('LinkToLawyers  \u00B7  Referral Summary  \u00B7  Confidential', marginLeft, pageHeight - 12);
+        const pageText = `Page ${i} of ${totalPages}`;
+        const pageTextWidth = doc.getTextWidth(pageText);
+        doc.text(pageText, pageWidth - marginRight - pageTextWidth, pageHeight - 12);
+      }
+
+      const pdfBlob = doc.output('blob');
+      const pdfFileName = `Referral_Summary_${submission.requestNumber}.pdf`;
+
+      let docsResponse;
+      try {
+        docsResponse = await fetch(`/api/case-documents/${submission.requestNumber}`);
+      } catch {
+        docsResponse = null;
+      }
+
+      let documents: any[] = [];
+      if (docsResponse && docsResponse.ok) {
+        const docsData = await docsResponse.json();
+        documents = docsData?.data || [];
+      }
+
+      if (documents.length > 0) {
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
+        zip.file(pdfFileName, pdfBlob);
+
+        for (const docItem of documents) {
+          try {
+            const docResponse = await fetch(`/api/case-documents/${docItem.id}/download`);
+            if (docResponse.ok) {
+              const docBlob = await docResponse.blob();
+              zip.file(docItem.fileName || `document_${docItem.id}`, docBlob);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch document ${docItem.id}:`, err);
+          }
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `LinkToLawyers_Referral_${submission.requestNumber}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const url = URL.createObjectURL(pdfBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = pdfFileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      toast({
+        title: "Package downloaded",
+        description: documents.length > 0
+          ? `ZIP file with PDF summary and ${documents.length} document(s) downloaded.`
+          : "Referral summary PDF downloaded.",
+      });
+    } catch (error) {
+      console.error('Error generating referral package:', error);
+      toast({
+        title: "Download failed",
+        description: "An error occurred while generating the referral package.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPackage(false);
+    }
   };
 
   return (
@@ -733,8 +1061,25 @@ export default function SubmissionsPage() {
                 </div>
               </div>
 
-              {/* Delete Button */}
-              <div className="flex justify-end pt-4">
+              {/* Action Buttons */}
+              <div className="flex justify-between items-center pt-4 border-t">
+                <Button
+                  onClick={handleDownloadReferralPackage}
+                  disabled={isGeneratingPackage}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {isGeneratingPackage ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Preparing Package...
+                    </>
+                  ) : (
+                    <>
+                      <Package className="w-4 h-4 mr-2" />
+                      Download Referral Package
+                    </>
+                  )}
+                </Button>
                 <Button
                   variant="destructive"
                   onClick={() => setIsDeleteModalOpen(true)}

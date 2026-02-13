@@ -1,9 +1,11 @@
 import { useMemo, useState, useRef } from 'react';
 import { useRoute, useLocation } from 'wouter';
-import { ArrowLeft, Download, FileText, Users, Calendar, Upload, File, Image, Trash2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, FileText, Users, Calendar, Upload, File, Image, Trash2, Loader2, CheckSquare, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -48,6 +50,9 @@ const CaseDetailsPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [deleteDocConfirm, setDeleteDocConfirm] = useState<number | null>(null);
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
+  const [selectedDocIds, setSelectedDocIds] = useState<Set<number>>(new Set());
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const { data: request, isLoading } = useQuery<LegalRequest>({
     queryKey: ['/api/legal-requests', requestNumber],
@@ -567,7 +572,66 @@ const CaseDetailsPage: React.FC = () => {
     }
   };
 
+  const handleOpenDownloadModal = () => {
+    setSelectedDocIds(new Set(documents.map((doc: any) => doc.id)));
+    setIsDownloadModalOpen(true);
+  };
 
+  const handleToggleDoc = (docId: number) => {
+    setSelectedDocIds(prev => {
+      const next = new Set(prev);
+      if (next.has(docId)) next.delete(docId);
+      else next.add(docId);
+      return next;
+    });
+  };
+
+  const handleToggleAll = () => {
+    if (selectedDocIds.size === documents.length) {
+      setSelectedDocIds(new Set());
+    } else {
+      setSelectedDocIds(new Set(documents.map((doc: any) => doc.id)));
+    }
+  };
+
+  const handleDownloadSelected = async () => {
+    const selected = documents.filter((doc: any) => selectedDocIds.has(doc.id));
+    if (selected.length === 0) return;
+
+    setIsDownloading(true);
+    try {
+      if (selected.length === 1) {
+        window.open(`/api/case-documents/${selected[0].id}/download`, '_blank');
+      } else {
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
+
+        for (const doc of selected) {
+          const response = await fetch(`/api/case-documents/${doc.id}/download`);
+          if (!response.ok) throw new Error(`Failed to download ${doc.fileName}`);
+          const blob = await response.blob();
+          zip.file(doc.fileName, blob);
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Documents_${request?.data.requestNumber?.toUpperCase() || 'case'}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      toast({ title: "Download started", description: `${selected.length} document(s) downloading` });
+      setIsDownloadModalOpen(false);
+    } catch (error: any) {
+      toast({ title: "Download failed", description: error.message || "Failed to download documents", variant: "destructive" });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -640,14 +704,16 @@ const CaseDetailsPage: React.FC = () => {
                 <FileText className="w-3 h-3 mr-1" />
                 Case Summary
               </Badge>
-              <Button 
-                onClick={handleDownloadPDF}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download PDF
-              </Button>
+              {documents.length > 0 && (
+                <Button 
+                  onClick={handleOpenDownloadModal}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Documents
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -747,14 +813,16 @@ const CaseDetailsPage: React.FC = () => {
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to Quotes
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start"
-                  onClick={handleDownloadPDF}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PDF
-                </Button>
+                {documents.length > 0 && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start"
+                    onClick={handleOpenDownloadModal}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Documents
+                  </Button>
+                )}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -866,6 +934,73 @@ const CaseDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Download className="w-5 h-5 text-blue-600" />
+              Download Documents
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                <Checkbox
+                  checked={selectedDocIds.size === documents.length && documents.length > 0}
+                  onCheckedChange={handleToggleAll}
+                />
+                Select All ({documents.length} files)
+              </label>
+              <span className="text-xs text-gray-500">
+                {selectedDocIds.size} selected
+              </span>
+            </div>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {documents.map((doc: any) => (
+                <label
+                  key={doc.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedDocIds.has(doc.id)}
+                    onCheckedChange={() => handleToggleDoc(doc.id)}
+                  />
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {getFileIcon(doc.fileType)}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{doc.fileName}</p>
+                      <p className="text-xs text-gray-500">{formatFileSize(doc.fileSize)}</p>
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsDownloadModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDownloadSelected}
+              disabled={selectedDocIds.size === 0 || isDownloading}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Preparing...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download {selectedDocIds.size > 1 ? `${selectedDocIds.size} Files` : 'File'}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteDocConfirm} onOpenChange={(open) => !open && setDeleteDocConfirm(null)}>
         <AlertDialogContent>
