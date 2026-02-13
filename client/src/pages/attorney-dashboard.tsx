@@ -108,8 +108,24 @@ export default function AttorneyDashboard() {
     enabled: !!user && user.role === 'attorney',
   });
 
+  const { data: availableData } = useQuery({
+    queryKey: ['/api/attorney-referrals/available'],
+    queryFn: async () => {
+      const response = await fetch('/api/attorney-referrals/available', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('sessionId')}`,
+        },
+      });
+      if (!response.ok) return { success: true, data: [] };
+      return response.json();
+    },
+    retry: false,
+    enabled: !!user && user.role === 'attorney',
+  });
+
   const referrals: ReferralData[] = referralsData?.data || [];
   const cases: CaseData[] = casesData?.data || [];
+  const availableCount = availableData?.data?.length || 0;
 
   const activeReferrals = referrals.filter((r) => r.assignmentStatus !== 'accepted' && r.assignmentStatus !== 'rejected');
   const pendingQuotes = referrals.filter((r) => r.assignmentStatus === 'assigned' || (r.assignmentStatus === 'quoted' && r.quoteStatus === 'pending'));
@@ -203,10 +219,30 @@ export default function AttorneyDashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="available">Available Referrals</TabsTrigger>
-            <TabsTrigger value="my-referrals">My Referrals</TabsTrigger>
-            <TabsTrigger value="accepted-quotes">Accepted Quotes</TabsTrigger>
-            <TabsTrigger value="cases">Active Cases</TabsTrigger>
+            <TabsTrigger value="available" className="gap-1.5">
+              Available Referrals
+              {availableCount > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{availableCount}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="my-referrals" className="gap-1.5">
+              My Referrals
+              {activeReferrals.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{activeReferrals.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="accepted-quotes" className="gap-1.5">
+              Accepted Quotes
+              {acceptedQuotes.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{acceptedQuotes.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="cases" className="gap-1.5">
+              Active Cases
+              {activeCases.length > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{activeCases.length}</Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
