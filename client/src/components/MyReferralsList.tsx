@@ -37,9 +37,12 @@ interface MyReferral {
 
 interface MyReferralsListProps {
   filterStatus?: string;
+  title?: string;
+  emptyMessage?: string;
+  emptySubMessage?: string;
 }
 
-export default function MyReferralsList({ filterStatus }: MyReferralsListProps) {
+export default function MyReferralsList({ filterStatus, title, emptyMessage, emptySubMessage }: MyReferralsListProps) {
   const [selectedReferral, setSelectedReferral] = useState<MyReferral | null>(null);
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
@@ -148,20 +151,23 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
   const activeCases = casesData?.data || [];
   const activeCaseQuoteIds = new Set(activeCases.map((c: any) => c.quoteId || c.quote_id));
   
-  // Filter referrals based on assignment status or quote status
   const referrals = allReferrals.filter((referral: MyReferral) => {
-    // Check if this referral has an active case (should be excluded from Accepted Quotes)
     const hasActiveCase = activeCaseQuoteIds.size > 0 && referral.quoteId && activeCaseQuoteIds.has(referral.quoteId);
     
     if (!filterStatus) {
-      // No filter means show all EXCEPT accepted ones (they belong in "Accepted Quotes" tab)
-      return referral.assignmentStatus !== 'accepted';
+      return referral.assignmentStatus !== 'accepted' && referral.assignmentStatus !== 'quoted';
     }
     
     if (filterStatus === 'accepted') {
-      // For accepted quotes, only show referrals with "accepted" assignment status AND no active case
-      // This ensures that once a case is started, it disappears from "Accepted Quotes" tab
       return referral.assignmentStatus === 'accepted' && !hasActiveCase;
+    }
+
+    if (filterStatus === 'quoted') {
+      return referral.assignmentStatus === 'quoted';
+    }
+
+    if (filterStatus === 'all_quotes') {
+      return (referral.assignmentStatus === 'quoted' || referral.assignmentStatus === 'accepted') && !hasActiveCase;
     }
     
     return referral.assignmentStatus === filterStatus;
@@ -582,8 +588,8 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            My Assigned Referrals
-            <Badge variant="outline">{referrals.length} active</Badge>
+            {title || 'My Assigned Referrals'}
+            <Badge variant="outline">{referrals.length} {referrals.length === 1 ? 'record' : 'records'}</Badge>
           </CardTitle>
         </CardHeader>
         
@@ -591,8 +597,8 @@ export default function MyReferralsList({ filterStatus }: MyReferralsListProps) 
           {referrals.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Clock className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No assigned referrals yet.</p>
-              <p className="text-sm">Check the available referrals to assign cases to yourself.</p>
+              <p>{emptyMessage || 'No assigned referrals yet.'}</p>
+              <p className="text-sm">{emptySubMessage || 'Check the available referrals to assign cases to yourself.'}</p>
             </div>
           ) : (
             <div className="rounded-md border">

@@ -62,6 +62,8 @@ interface Organization {
 export default function AttorneyDashboard() {
   const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [referralSubTab, setReferralSubTab] = useState<'available' | 'assigned'>('available');
+  const [quotesSubTab, setQuotesSubTab] = useState<'pending' | 'accepted'>('pending');
 
   useEffect(() => {
     if (!loading && user && user.role !== 'attorney') {
@@ -127,10 +129,14 @@ export default function AttorneyDashboard() {
   const cases: CaseData[] = casesData?.data || [];
   const availableCount = availableData?.data?.length || 0;
 
-  const activeReferrals = referrals.filter((r) => r.assignmentStatus !== 'accepted' && r.assignmentStatus !== 'rejected');
-  const pendingQuotes = referrals.filter((r) => r.assignmentStatus === 'assigned' || (r.assignmentStatus === 'quoted' && r.quoteStatus === 'pending'));
-  const activeCases = cases.filter((c) => c.caseStatus === 'active');
+  const assignedReferrals = referrals.filter((r) => r.assignmentStatus !== 'accepted' && r.assignmentStatus !== 'rejected' && r.assignmentStatus !== 'quoted');
+  const quotedReferrals = referrals.filter((r) => r.assignmentStatus === 'quoted');
   const acceptedQuotes = referrals.filter((r) => r.assignmentStatus === 'accepted');
+  const activeCaseQuoteIds = new Set(cases.filter((c) => c.caseStatus === 'active').map((c: any) => c.quoteId || c.quote_id));
+  const acceptedNotCased = acceptedQuotes.filter((r) => !r.quoteId || !activeCaseQuoteIds.has(r.quoteId));
+  const allQuotesCount = quotedReferrals.length + acceptedNotCased.length;
+  const activeCases = cases.filter((c) => c.caseStatus === 'active');
+  const totalReferralsCount = availableCount + assignedReferrals.length;
 
   const recentActivities: Array<{ type: string; label: string; detail: string; date: string; color: string }> = [];
 
@@ -217,28 +223,22 @@ export default function AttorneyDashboard() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="available" className="gap-1.5">
-              Available Referrals
-              {availableCount > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{availableCount}</Badge>
+            <TabsTrigger value="referrals" className="gap-1.5">
+              Referrals
+              {totalReferralsCount > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{totalReferralsCount}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="my-referrals" className="gap-1.5">
-              My Referrals
-              {activeReferrals.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{activeReferrals.length}</Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="accepted-quotes" className="gap-1.5">
-              Accepted Quotes
-              {acceptedQuotes.length > 0 && (
-                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{acceptedQuotes.length}</Badge>
+            <TabsTrigger value="quotes" className="gap-1.5">
+              Quotes
+              {allQuotesCount > 0 && (
+                <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{allQuotesCount}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="cases" className="gap-1.5">
-              Active Cases
+              Cases
               {activeCases.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{activeCases.length}</Badge>
               )}
@@ -253,29 +253,40 @@ export default function AttorneyDashboard() {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                  <Card>
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setActiveTab('referrals'); setReferralSubTab('available'); }}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Active Referrals</CardTitle>
+                      <CardTitle className="text-sm font-medium">Available Referrals</CardTitle>
                       <Briefcase className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{activeReferrals.length}</div>
+                      <div className="text-2xl font-bold">{availableCount}</div>
+                      <p className="text-xs text-muted-foreground">Ready for you to pick up</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setActiveTab('referrals'); setReferralSubTab('assigned'); }}>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">My Referrals</CardTitle>
+                      <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{assignedReferrals.length}</div>
                       <p className="text-xs text-muted-foreground">Currently assigned to you</p>
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setActiveTab('quotes'); setQuotesSubTab('pending'); }}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Pending Quotes</CardTitle>
+                      <CardTitle className="text-sm font-medium">Quotes</CardTitle>
                       <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{pendingQuotes.length}</div>
-                      <p className="text-xs text-muted-foreground">Awaiting submission or response</p>
+                      <div className="text-2xl font-bold">{allQuotesCount}</div>
+                      <p className="text-xs text-muted-foreground">{quotedReferrals.length} pending, {acceptedNotCased.length} accepted</p>
                     </CardContent>
                   </Card>
 
-                  <Card>
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setActiveTab('cases')}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Active Cases</CardTitle>
                       <Users className="h-4 w-4 text-muted-foreground" />
@@ -283,17 +294,6 @@ export default function AttorneyDashboard() {
                     <CardContent>
                       <div className="text-2xl font-bold">{activeCases.length}</div>
                       <p className="text-xs text-muted-foreground">In progress</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Accepted Quotes</CardTitle>
-                      <CheckCircle className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{acceptedQuotes.length}</div>
-                      <p className="text-xs text-muted-foreground">Ready to start cases</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -332,17 +332,17 @@ export default function AttorneyDashboard() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        <Button className="w-full justify-start" onClick={() => setActiveTab('available')}>
+                        <Button className="w-full justify-start" onClick={() => { setActiveTab('referrals'); setReferralSubTab('available'); }}>
                           <Briefcase className="mr-2 h-4 w-4" />
                           Browse Available Referrals
                         </Button>
-                        <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('my-referrals')}>
+                        <Button className="w-full justify-start" variant="outline" onClick={() => { setActiveTab('referrals'); setReferralSubTab('assigned'); }}>
                           <MessageSquare className="mr-2 h-4 w-4" />
                           Review My Referrals
                         </Button>
-                        <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('accepted-quotes')}>
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          View Accepted Quotes
+                        <Button className="w-full justify-start" variant="outline" onClick={() => { setActiveTab('quotes'); setQuotesSubTab('pending'); }}>
+                          <DollarSign className="mr-2 h-4 w-4" />
+                          View Quotes
                         </Button>
                         <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('cases')}>
                           <FileText className="mr-2 h-4 w-4" />
@@ -356,27 +356,91 @@ export default function AttorneyDashboard() {
             )}
           </TabsContent>
 
-          <TabsContent value="available">
-            <SubmissionsList 
-              title="Available Referrals"
-              showAssignButton={true}
-            />
+          <TabsContent value="referrals">
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  variant={referralSubTab === 'available' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setReferralSubTab('available')}
+                  className="gap-1.5"
+                >
+                  Available
+                  {availableCount > 0 && (
+                    <Badge variant={referralSubTab === 'available' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{availableCount}</Badge>
+                  )}
+                </Button>
+                <Button
+                  variant={referralSubTab === 'assigned' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setReferralSubTab('assigned')}
+                  className="gap-1.5"
+                >
+                  Assigned to Me
+                  {assignedReferrals.length > 0 && (
+                    <Badge variant={referralSubTab === 'assigned' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{assignedReferrals.length}</Badge>
+                  )}
+                </Button>
+              </div>
+
+              {referralSubTab === 'available' ? (
+                <SubmissionsList 
+                  title="Available Referrals"
+                  showAssignButton={true}
+                />
+              ) : (
+                <MyReferralsList 
+                  title="My Assigned Referrals"
+                  emptyMessage="No assigned referrals yet."
+                  emptySubMessage="Check the Available tab to pick up new referrals."
+                />
+              )}
+            </div>
           </TabsContent>
 
-          <TabsContent value="my-referrals">
-            <MyReferralsList />
-          </TabsContent>
+          <TabsContent value="quotes">
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button
+                  variant={quotesSubTab === 'pending' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setQuotesSubTab('pending')}
+                  className="gap-1.5"
+                >
+                  Submitted
+                  {quotedReferrals.length > 0 && (
+                    <Badge variant={quotesSubTab === 'pending' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{quotedReferrals.length}</Badge>
+                  )}
+                </Button>
+                <Button
+                  variant={quotesSubTab === 'accepted' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setQuotesSubTab('accepted')}
+                  className="gap-1.5"
+                >
+                  Accepted
+                  {acceptedNotCased.length > 0 && (
+                    <Badge variant={quotesSubTab === 'accepted' ? 'outline' : 'secondary'} className="ml-1 h-5 min-w-[20px] px-1.5 text-xs rounded-full">{acceptedNotCased.length}</Badge>
+                  )}
+                </Button>
+              </div>
 
-          <TabsContent value="accepted-quotes">
-            <Card>
-              <CardHeader>
-                <CardTitle>Accepted Quotes</CardTitle>
-                <p className="text-sm text-gray-600">Quotes that have been accepted by clients and are ready to start cases</p>
-              </CardHeader>
-              <CardContent>
-                <MyReferralsList filterStatus="accepted" />
-              </CardContent>
-            </Card>
+              {quotesSubTab === 'pending' ? (
+                <MyReferralsList 
+                  filterStatus="quoted"
+                  title="Submitted Quotes"
+                  emptyMessage="No submitted quotes yet."
+                  emptySubMessage="Submit quotes from your assigned referrals."
+                />
+              ) : (
+                <MyReferralsList 
+                  filterStatus="accepted"
+                  title="Accepted Quotes"
+                  emptyMessage="No accepted quotes yet."
+                  emptySubMessage="Quotes accepted by clients will appear here."
+                />
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="cases">
