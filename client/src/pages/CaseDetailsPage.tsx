@@ -381,11 +381,12 @@ const CaseDetailsPage: React.FC = () => {
       const pdfBlob = await generatePdfBlob();
       zip.file(`LinkToLawyers_Case_${request.data.requestNumber.toUpperCase()}.pdf`, pdfBlob);
 
+      const docsFolder = zip.folder('Documents');
       for (const doc of selected) {
         const response = await fetch(`/api/case-documents/${doc.id}/download`);
         if (!response.ok) throw new Error(`Failed to download ${doc.fileName}`);
         const blob = await response.blob();
-        zip.file(doc.fileName, blob);
+        docsFolder!.file(doc.fileName, blob);
       }
 
       const zipBlob = await zip.generateAsync({ type: 'blob' });
