@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Pencil, Trash2, KeyRound, X, Search, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Plus, Pencil, Trash2, KeyRound, X, Search, ShieldCheck, Scale, User } from 'lucide-react';
 
 interface UserData {
   id: number;
@@ -23,12 +24,29 @@ interface UserData {
 
 type ModalMode = 'create' | 'edit' | 'password' | null;
 
+const ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin', icon: ShieldCheck, color: 'bg-blue-100 text-blue-800' },
+  { value: 'attorney', label: 'Attorney', icon: Scale, color: 'bg-purple-100 text-purple-800' },
+  { value: 'client', label: 'Client', icon: User, color: 'bg-gray-100 text-gray-700' },
+];
+
+const getRoleBadge = (role: string) => {
+  const config = ROLE_OPTIONS.find(r => r.value === role) || ROLE_OPTIONS[2];
+  const Icon = config.icon;
+  return (
+    <Badge className={`${config.color} hover:${config.color}`}>
+      <Icon className="w-3 h-3 mr-1" />{config.label}
+    </Badge>
+  );
+};
+
 export default function AdminUsers() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -46,13 +64,18 @@ export default function AdminUsers() {
     queryKey: ['/api/admin/users'],
   });
 
-  const adminUsers = users.filter(u => u.role === 'admin');
-  const filteredUsers = adminUsers.filter(u => {
-    return searchQuery === '' ||
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = searchQuery === '' ||
       u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (u.firstName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (u.lastName || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = roleFilter === 'all' || u.role === roleFilter;
+    return matchesSearch && matchesRole;
   });
+
+  const adminCount = users.filter(u => u.role === 'admin').length;
+  const attorneyCount = users.filter(u => u.role === 'attorney').length;
+  const clientCount = users.filter(u => u.role === 'client').length;
 
   const openCreateModal = () => {
     setFormData({ email: '', password: '', firstName: '', lastName: '', role: 'admin' });
@@ -66,7 +89,7 @@ export default function AdminUsers() {
       password: '',
       firstName: user.firstName || '',
       lastName: user.lastName || '',
-      role: 'admin',
+      role: user.role,
     });
     setSelectedUser(user);
     setModalMode('edit');
@@ -95,10 +118,10 @@ export default function AdminUsers() {
     try {
       await apiRequest('/api/admin/users', {
         method: 'POST',
-        body: { ...formData, role: 'admin' },
+        body: formData,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      toast({ title: 'Success', description: 'Admin user created successfully' });
+      toast({ title: 'Success', description: 'User created successfully' });
       closeModal();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Failed to create user', variant: 'destructive' });
@@ -117,16 +140,30 @@ export default function AdminUsers() {
           email: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
-          role: 'admin',
+          role: formData.role,
         },
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      toast({ title: 'Success', description: 'Admin user updated successfully' });
+      toast({ title: 'Success', description: 'User updated successfully' });
       closeModal();
     } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Failed to update user', variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleRoleChange = async (userId: number, newRole: string) => {
+    try {
+      await apiRequest(`/api/admin/users/${userId}`, {
+        method: 'PUT',
+        body: { role: newRole },
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      const roleLabel = ROLE_OPTIONS.find(r => r.value === newRole)?.label || newRole;
+      toast({ title: 'Role Updated', description: `User role changed to ${roleLabel}` });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to update role', variant: 'destructive' });
     }
   };
 
@@ -159,7 +196,7 @@ export default function AdminUsers() {
     try {
       await apiRequest(`/api/admin/users/${id}`, { method: 'DELETE' });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
-      toast({ title: 'Success', description: 'Admin user deleted successfully' });
+      toast({ title: 'Success', description: 'User deleted successfully' });
       setDeleteConfirmId(null);
     } catch (error: any) {
       toast({ title: 'Error', description: error.message || 'Failed to delete user', variant: 'destructive' });
@@ -167,40 +204,75 @@ export default function AdminUsers() {
   };
 
   return (
-    <AdminLayout title="Admin User Management">
+    <AdminLayout title="User Management">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4 w-32">
           <Button variant="ghost" size="sm" onClick={() => setLocation('/admin-dashboard')}>
             <ArrowLeft className="w-4 h-4 mr-1" /> Back
           </Button>
         </div>
-        <h1 className="text-xl font-semibold text-gray-900">Admin Users</h1>
+        <h1 className="text-xl font-semibold text-gray-900">Users</h1>
         <div className="w-32" />
       </div>
 
       <p className="text-sm text-gray-500 mb-6">
-        Manage administrator accounts here. Attorney accounts are managed through the Attorney Onboarding page.
+        Manage administrators and user credentials. Assign or change roles for any user.
       </p>
+
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <ShieldCheck className="w-4 h-4 text-blue-600" />
+            <span className="text-xs font-medium text-blue-700">Admins</span>
+          </div>
+          <div className="text-xl font-bold text-blue-900">{adminCount}</div>
+        </div>
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <Scale className="w-4 h-4 text-purple-600" />
+            <span className="text-xs font-medium text-purple-700">Attorneys</span>
+          </div>
+          <div className="text-xl font-bold text-purple-900">{attorneyCount}</div>
+        </div>
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <User className="w-4 h-4 text-gray-600" />
+            <span className="text-xs font-medium text-gray-700">Clients</span>
+          </div>
+          <div className="text-xl font-bold text-gray-900">{clientCount}</div>
+        </div>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input
-            placeholder="Search admins by name or email..."
+            placeholder="Search users by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
           />
         </div>
+        <Select value={roleFilter} onValueChange={setRoleFilter}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Filter by role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Roles</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="attorney">Attorney</SelectItem>
+            <SelectItem value="client">Client</SelectItem>
+          </SelectContent>
+        </Select>
         <Button onClick={openCreateModal} className="bg-black hover:bg-gray-800 text-white">
-          <Plus className="w-4 h-4 mr-1" /> Add Admin
+          <Plus className="w-4 h-4 mr-1" /> Add User
         </Button>
       </div>
 
       {isLoading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading admin users...</p>
+          <p className="text-gray-600">Loading users...</p>
         </div>
       ) : isError ? (
         <div className="text-center py-12">
@@ -208,7 +280,7 @@ export default function AdminUsers() {
         </div>
       ) : filteredUsers.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500">No admin users found</p>
+          <p className="text-gray-500">No users found</p>
         </div>
       ) : (
         <div className="bg-white rounded-lg border overflow-hidden">
@@ -233,16 +305,34 @@ export default function AdminUsers() {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{user.email}</td>
                     <td className="px-4 py-3">
-                      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                        <ShieldCheck className="w-3 h-3 mr-1" />Admin
-                      </Badge>
+                      <Select
+                        value={user.role}
+                        onValueChange={(newRole) => handleRoleChange(user.id, newRole)}
+                      >
+                        <SelectTrigger className="w-[140px] h-8 border-none shadow-none p-0 focus:ring-0">
+                          <div>{getRoleBadge(user.role)}</div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ROLE_OPTIONS.map(opt => {
+                            const Icon = opt.icon;
+                            return (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                <div className="flex items-center gap-2">
+                                  <Icon className="w-3.5 h-3.5" />
+                                  {opt.label}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEditModal(user)} title="Edit admin">
+                        <Button variant="ghost" size="sm" onClick={() => openEditModal(user)} title="Edit user">
                           <Pencil className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={() => openPasswordModal(user)} title="Change password">
@@ -258,7 +348,7 @@ export default function AdminUsers() {
                             </Button>
                           </div>
                         ) : (
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(user.id)} title="Delete admin">
+                          <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(user.id)} title="Delete user">
                             <Trash2 className="w-4 h-4 text-red-500" />
                           </Button>
                         )}
@@ -277,8 +367,8 @@ export default function AdminUsers() {
           <Card className="w-full max-w-md">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>
-                {modalMode === 'create' && 'Create Admin User'}
-                {modalMode === 'edit' && 'Edit Admin User'}
+                {modalMode === 'create' && 'Create User'}
+                {modalMode === 'edit' && 'Edit User'}
                 {modalMode === 'password' && 'Change Password'}
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={closeModal}>
@@ -331,12 +421,33 @@ export default function AdminUsers() {
                       />
                     </div>
                   )}
+                  <div>
+                    <Label htmlFor="role">Role <span className="text-red-500">*</span></Label>
+                    <Select value={formData.role} onValueChange={(val) => setFormData(prev => ({ ...prev, role: val }))}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ROLE_OPTIONS.map(opt => {
+                          const Icon = opt.icon;
+                          return (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <div className="flex items-center gap-2">
+                                <Icon className="w-3.5 h-3.5" />
+                                {opt.label}
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button
                     onClick={modalMode === 'create' ? handleCreateUser : handleUpdateUser}
                     disabled={isSubmitting}
                     className="w-full bg-black hover:bg-gray-800 text-white"
                   >
-                    {isSubmitting ? 'Saving...' : modalMode === 'create' ? 'Create Admin' : 'Save Changes'}
+                    {isSubmitting ? 'Saving...' : modalMode === 'create' ? 'Create User' : 'Save Changes'}
                   </Button>
                 </div>
               )}

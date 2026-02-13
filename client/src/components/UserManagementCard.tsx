@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ShieldCheck } from 'lucide-react';
+import { Users } from 'lucide-react';
 import AdminCard from './AdminCard';
 
 interface UserData {
@@ -17,12 +17,14 @@ export default function UserManagementCard() {
   });
 
   const adminCount = users.filter(u => u.role === 'admin').length;
+  const attorneyCount = users.filter(u => u.role === 'attorney').length;
+  const totalCount = users.length;
 
   return (
     <AdminCard
-      title="Admin Users"
-      description="Manage administrator accounts and credentials"
-      icon={ShieldCheck}
+      title="Users"
+      description="Manage administrators and user credentials"
+      icon={Users}
       iconColor="text-blue-600"
       route="/admin/users"
       isLoading={isLoading}
@@ -31,18 +33,20 @@ export default function UserManagementCard() {
     >
       <div className="text-center mb-4">
         <div className="flex items-center justify-center gap-1 mb-1">
-          <ShieldCheck className="w-4 h-4 text-blue-500" />
-          <span className="text-xs text-gray-500">Admin Accounts</span>
+          <Users className="w-4 h-4 text-blue-500" />
+          <span className="text-xs text-gray-500">Total Users</span>
         </div>
-        <div className="text-2xl font-semibold text-gray-900">{adminCount}</div>
+        <div className="text-2xl font-semibold text-gray-900">{totalCount}</div>
       </div>
 
-      <div className="space-y-2">
-        <div className="text-sm text-gray-600">
-          {adminCount} admin account{adminCount !== 1 ? 's' : ''} configured
+      <div className="space-y-1">
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>Admins</span>
+          <span className="font-medium">{adminCount}</span>
         </div>
-        <div className="text-xs text-gray-400">
-          Attorney accounts are managed via Attorney Onboarding
+        <div className="flex justify-between text-sm text-gray-600">
+          <span>Attorneys</span>
+          <span className="font-medium">{attorneyCount}</span>
         </div>
       </div>
     </AdminCard>
