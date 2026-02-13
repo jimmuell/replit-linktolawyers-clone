@@ -4,8 +4,8 @@ import { storage } from "./storage";
 import { db } from "./db";
 import OpenAI from "openai";
 import { z } from "zod";
-import { eq, inArray, asc } from "drizzle-orm";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, insertOrganizationSchema, requestAttorneyAssignments, referralAssignments, attorneys, quotes, structuredIntakes, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
+import { eq, inArray, asc, desc } from "drizzle-orm";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, insertOrganizationSchema, requestAttorneyAssignments, referralAssignments, attorneys, quotes, structuredIntakes, caseDocuments, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
@@ -2841,6 +2841,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // ============ CASE DOCUMENT ENDPOINTS (public - for case details page) ============
+
+  const documentUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 15 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'image/heic', 'image/heif',
+      ];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return cb(new Error('Only PDF and image files are allowed'));
+      }
+      cb(null, true);
+    },
+  });
+
+  app.post("/api/case-documents/:requestNumber/upload", documentUpload.single('file'), async (req, res) => {
+    try {
+      const { requestNumber } = req.params;
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      let storagePath: string;
+
+      if (objectStorageService.isLocalMode()) {
+        storagePath = await objectStorageService.uploadLocalFile(req.file.buffer, req.file.mimetype);
+      } else {
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        const uploadResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: req.file.buffer,
+          headers: { 'Content-Type': req.file.mimetype },
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`Upload failed: ${uploadResponse.status}`);
+        }
+        const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(uploadURL, {
+          owner: `case-${requestNumber}`,
+          visibility: 'private' as any,
+        });
+        storagePath = objectPath;
+      }
+
+      const [document] = await db.insert(caseDocuments).values({
+        requestNumber,
+        fileName: req.file.originalname,
+        fileType: req.file.mimetype,
+        fileSize: req.file.size,
+        storagePath,
+      }).returning();
+
+      res.json({ success: true, data: document });
+    } catch (error) {
+      console.error('Error uploading case document:', error);
+      res.status(500).json({ error: 'Failed to upload document' });
+    }
+  });
+
+  app.get("/api/case-documents/:requestNumber", async (req, res) => {
+    try {
+      const { requestNumber } = req.params;
+      if (requestNumber.match(/^\d+$/)) {
+        return res.status(400).json({ error: 'Invalid request number' });
+      }
+
+      const docs = await db.select().from(caseDocuments)
+        .where(eq(caseDocuments.requestNumber, requestNumber))
+        .orderBy(desc(caseDocuments.uploadedAt));
+
+      res.json({ success: true, data: docs });
+    } catch (error) {
+      console.error('Error fetching case documents:', error);
+      res.status(500).json({ error: 'Failed to fetch documents' });
+    }
+  });
+
+  app.get("/api/case-documents/:documentId/download", async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.documentId);
+      if (isNaN(documentId)) {
+        return res.status(400).json({ error: 'Invalid document ID' });
+      }
+
+      const [doc] = await db.select().from(caseDocuments)
+        .where(eq(caseDocuments.id, documentId));
+      if (!doc) {
+        return res.status(404).json({ error: 'Document not found' });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const encodedFileName = encodeURIComponent(doc.fileName);
+
+      if (objectStorageService.isLocalMode()) {
+        const filePath = objectStorageService.getLocalFilePath(doc.storagePath);
+        const fs = await import('fs');
+        if (!fs.existsSync(filePath)) {
+          return res.status(404).json({ error: 'File not found' });
+        }
+        res.setHeader('Content-Type', doc.fileType);
+        res.setHeader('Content-Disposition', `inline; filename="${encodedFileName}"`);
+        fs.createReadStream(filePath).pipe(res);
+      } else {
+        const objectFile = await objectStorageService.getObjectEntityFile(doc.storagePath);
+        res.setHeader('Content-Disposition', `inline; filename="${encodedFileName}"`);
+        await objectStorageService.downloadObject(objectFile, res);
+      }
+    } catch (error) {
+      console.error('Error downloading case document:', error);
+      res.status(500).json({ error: 'Failed to download document' });
+    }
+  });
+
+  app.delete("/api/case-documents/:documentId", async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.documentId);
+      if (isNaN(documentId)) {
+        return res.status(400).json({ error: 'Invalid document ID' });
+      }
+
+      const [doc] = await db.select().from(caseDocuments)
+        .where(eq(caseDocuments.id, documentId));
+      if (!doc) {
+        return res.status(404).json({ error: 'Document not found' });
+      }
+
+      await db.delete(caseDocuments).where(eq(caseDocuments.id, documentId));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting case document:', error);
+      res.status(500).json({ error: 'Failed to delete document' });
+    }
+  });
+
   // Enhanced image upload endpoint with comprehensive validation and optimization
   app.post("/api/upload-image", upload.single('image'), async (req, res) => {
     try {

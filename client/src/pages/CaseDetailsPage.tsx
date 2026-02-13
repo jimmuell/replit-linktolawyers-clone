@@ -61,44 +61,27 @@ const CaseDetailsPage: React.FC = () => {
     enabled: !!requestNumber,
   });
 
-  const { data: assignmentData } = useQuery({
-    queryKey: ['/api/attorney-referrals/by-request', requestNumber],
+  const { data: documentsData, refetch: refetchDocuments } = useQuery({
+    queryKey: ['/api/case-documents', requestNumber],
     queryFn: async () => {
-      const response = await fetch(`/api/attorney-referrals/by-request/${requestNumber}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
-      });
-      if (!response.ok) return null;
+      const response = await fetch(`/api/case-documents/${requestNumber}`);
+      if (!response.ok) return { data: [] };
       return response.json();
     },
     enabled: !!requestNumber,
   });
 
-  const assignmentId = assignmentData?.data?.assignmentId;
-
-  const { data: documentsData, refetch: refetchDocuments } = useQuery({
-    queryKey: ['/api/attorney-referrals/assignment', assignmentId, 'documents'],
-    queryFn: async () => {
-      const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/documents`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
-      });
-      if (!response.ok) return { data: [] };
-      return response.json();
-    },
-    enabled: !!assignmentId,
-  });
-
   const documents = documentsData?.data || [];
 
   const handleFileUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0 || !assignmentId) return;
+    if (!files || files.length === 0 || !requestNumber) return;
     setIsUploading(true);
     try {
       for (let i = 0; i < files.length; i++) {
         const formData = new FormData();
         formData.append('file', files[i]);
-        const response = await fetch(`/api/attorney-referrals/assignment/${assignmentId}/documents`, {
+        const response = await fetch(`/api/case-documents/${requestNumber}/upload`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('sessionId')}` },
           body: formData,
         });
         if (!response.ok) {
@@ -118,7 +101,9 @@ const CaseDetailsPage: React.FC = () => {
 
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
-      return await apiRequest(`/api/attorney-referrals/documents/${documentId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/case-documents/${documentId}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete');
+      return response.json();
     },
     onSuccess: () => {
       toast({ title: "Deleted", description: "Document deleted successfully" });
@@ -770,32 +755,28 @@ const CaseDetailsPage: React.FC = () => {
                   <Download className="w-4 h-4 mr-2" />
                   Download PDF
                 </Button>
-                {assignmentId && (
-                  <>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      accept=".pdf,image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileUpload(e.target.files)}
-                      disabled={isUploading}
-                    />
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-start"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                    >
-                      {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                      {isUploading ? 'Uploading...' : 'Upload Documents'}
-                    </Button>
-                  </>
-                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".pdf,image/*"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e.target.files)}
+                  disabled={isUploading}
+                />
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                  {isUploading ? 'Uploading...' : 'Upload Documents'}
+                </Button>
               </CardContent>
             </Card>
 
-            {assignmentId && documents.length > 0 && (
+            {documents.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-gray-700 flex items-center gap-2">
@@ -819,8 +800,7 @@ const CaseDetailsPage: React.FC = () => {
                           size="sm"
                           className="h-7 w-7 p-0"
                           onClick={() => {
-                            const token = localStorage.getItem('sessionId');
-                            window.open(`/api/attorney-referrals/documents/${doc.id}/download?token=${token}`, '_blank');
+                            window.open(`/api/case-documents/${doc.id}/download`, '_blank');
                           }}
                         >
                           <Download className="h-3.5 w-3.5" />

@@ -166,9 +166,10 @@ export const attorneyNotes = pgTable("attorney_notes", {
 
 export const caseDocuments = pgTable("case_documents", {
   id: serial("id").primaryKey(),
-  assignmentId: integer("assignment_id").notNull().references(() => referralAssignments.id),
+  requestNumber: varchar("request_number", { length: 20 }),
+  assignmentId: integer("assignment_id").references(() => referralAssignments.id),
   caseId: integer("case_id").references(() => cases.id),
-  attorneyId: integer("attorney_id").notNull().references(() => attorneys.id),
+  attorneyId: integer("attorney_id").references(() => attorneys.id),
   fileName: varchar("file_name", { length: 255 }).notNull(),
   fileType: varchar("file_type", { length: 100 }).notNull(),
   fileSize: integer("file_size").notNull(),
