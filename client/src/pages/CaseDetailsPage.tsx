@@ -141,437 +141,6 @@ const CaseDetailsPage: React.FC = () => {
     navigate(`/quotes/${requestNumber}`);
   };
 
-  const handleDownloadPDF = async () => {
-    if (!request?.data) return;
-    
-    try {
-      const jsPDF = (await import('jspdf')).default;
-      const doc = new jsPDF();
-      
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const marginLeft = 25;
-      const marginRight = 25;
-      const contentWidth = pageWidth - marginLeft - marginRight;
-      const footerHeight = 25;
-      let y = 0;
-
-      const COLORS = {
-        primaryBlue: [30, 64, 175] as [number, number, number],
-        darkBlue: [20, 45, 130] as [number, number, number],
-        white: [255, 255, 255] as [number, number, number],
-        black: [33, 33, 33] as [number, number, number],
-        darkGray: [55, 65, 81] as [number, number, number],
-        mediumGray: [107, 114, 128] as [number, number, number],
-        lightGray: [243, 244, 246] as [number, number, number],
-        borderGray: [209, 213, 219] as [number, number, number],
-        accentBlue: [239, 246, 255] as [number, number, number],
-        noticeYellow: [254, 252, 232] as [number, number, number],
-        noticeBorder: [250, 204, 21] as [number, number, number],
-        noticeText: [133, 100, 4] as [number, number, number],
-      };
-
-      const checkPage = (needed: number) => {
-        if (y + needed > pageHeight - footerHeight) {
-          doc.addPage();
-          y = 25;
-        }
-      };
-
-      const setColor = (color: [number, number, number]) => {
-        doc.setTextColor(color[0], color[1], color[2]);
-      };
-
-      const drawSectionHeader = (title: string, iconChar?: string) => {
-        checkPage(20);
-        doc.setFillColor(COLORS.lightGray[0], COLORS.lightGray[1], COLORS.lightGray[2]);
-        doc.roundedRect(marginLeft, y, contentWidth, 12, 1.5, 1.5, 'F');
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        setColor(COLORS.darkGray);
-        const labelX = marginLeft + 5;
-        doc.text(title, labelX, y + 8);
-        y += 18;
-      };
-
-      const drawInfoRow = (label: string, value: string, xStart: number, rowWidth: number) => {
-        checkPage(14);
-        doc.setFontSize(8.5);
-        doc.setFont('helvetica', 'normal');
-        setColor(COLORS.mediumGray);
-        doc.text(label, xStart, y);
-        y += 4.5;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        setColor(COLORS.black);
-        const lines = doc.splitTextToSize(value, rowWidth - 5);
-        lines.forEach((line: string) => {
-          checkPage(6);
-          doc.text(line, xStart, y);
-          y += 5;
-        });
-        y += 3;
-      };
-
-      // ─── PAGE HEADER (Blue Banner) ───
-      const headerHeight = 48;
-      doc.setFillColor(COLORS.primaryBlue[0], COLORS.primaryBlue[1], COLORS.primaryBlue[2]);
-      doc.rect(0, 0, pageWidth, headerHeight, 'F');
-      doc.setFillColor(COLORS.darkBlue[0], COLORS.darkBlue[1], COLORS.darkBlue[2]);
-      doc.rect(0, headerHeight - 3, pageWidth, 3, 'F');
-
-      setColor(COLORS.white);
-      doc.setFontSize(22);
-      doc.setFont('helvetica', 'bold');
-      doc.text('LinkToLawyers', marginLeft, 20);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Case Details Report', marginLeft, 30);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const genDate = new Date().toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric'
-      });
-      const dateText = `Generated: ${genDate}`;
-      const dateWidth = doc.getTextWidth(dateText);
-      doc.text(dateText, pageWidth - marginRight - dateWidth, 30);
-
-      y = headerHeight + 10;
-
-      // ─── CLIENT HEADER CARD (Blue card mirroring the page) ───
-      const clientCardHeight = 36;
-      doc.setFillColor(COLORS.primaryBlue[0], COLORS.primaryBlue[1], COLORS.primaryBlue[2]);
-      doc.roundedRect(marginLeft, y, contentWidth, clientCardHeight, 3, 3, 'F');
-
-      setColor(COLORS.white);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${request.data.firstName} ${request.data.lastName}`, marginLeft + 10, y + 14);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const createdDate = new Date(request.data.createdAt).toLocaleDateString('en-US', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      });
-      doc.text(createdDate, marginLeft + 10, y + 22);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
-      const caseTypeLabel = getCaseTypeLabel(request.data.caseType);
-      const badgeWidth = doc.getTextWidth(caseTypeLabel) + 8;
-      doc.setFillColor(COLORS.white[0], COLORS.white[1], COLORS.white[2]);
-      doc.roundedRect(marginLeft + 10, y + 25, badgeWidth, 7, 2, 2, 'F');
-      setColor(COLORS.primaryBlue);
-      doc.text(caseTypeLabel, marginLeft + 14, y + 30);
-
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      setColor(COLORS.white);
-      const reqLabel = 'Request Number';
-      const reqLabelW = doc.getTextWidth(reqLabel);
-      doc.text(reqLabel, marginLeft + contentWidth - 10 - reqLabelW, y + 12);
-      doc.setFontSize(13);
-      doc.setFont('helvetica', 'bold');
-      const reqNum = request.data.requestNumber.toUpperCase();
-      const reqNumW = doc.getTextWidth(reqNum);
-      doc.text(reqNum, marginLeft + contentWidth - 10 - reqNumW, y + 22);
-
-      y += clientCardHeight + 12;
-
-      // ─── CLIENT INFORMATION SECTION ───
-      drawSectionHeader('Client Information');
-
-      const colWidth = contentWidth / 2;
-      const col1X = marginLeft + 5;
-      const col2X = marginLeft + colWidth + 5;
-
-      const savedY = y;
-      drawInfoRow('Full Name', `${request.data.firstName} ${request.data.lastName}`, col1X, colWidth);
-      const afterCol1Row1 = y;
-      y = savedY;
-      drawInfoRow('Email Address', request.data.email, col2X, colWidth);
-      y = Math.max(afterCol1Row1, y);
-
-      const savedY2 = y;
-      drawInfoRow('Case Type', getCaseTypeLabel(request.data.caseType), col1X, colWidth);
-      const afterCol1Row2 = y;
-      y = savedY2;
-      drawInfoRow('Request Date', createdDate, col2X, colWidth);
-      y = Math.max(afterCol1Row2, y);
-
-      if (request.data.phoneNumber) {
-        const savedY3 = y;
-        drawInfoRow('Phone Number', request.data.phoneNumber, col1X, colWidth);
-        const afterCol1Row3 = y;
-        y = savedY3;
-        if (request.data.location) {
-          drawInfoRow('Location', request.data.location, col2X, colWidth);
-        } else if (request.data.city && request.data.state) {
-          drawInfoRow('City, State', `${request.data.city}, ${request.data.state}`, col2X, colWidth);
-        }
-        y = Math.max(afterCol1Row3, y);
-      } else if (request.data.location) {
-        drawInfoRow('Location', request.data.location, col1X, colWidth);
-      } else if (request.data.city && request.data.state) {
-        drawInfoRow('City, State', `${request.data.city}, ${request.data.state}`, col1X, colWidth);
-      }
-
-      doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
-      doc.line(marginLeft, y, marginLeft + contentWidth, y);
-      y += 10;
-
-      // ─── CASE SUMMARY SECTION ───
-      drawSectionHeader('Case Summary');
-
-      const descBoxX = marginLeft + 3;
-      const descBoxWidth = contentWidth - 6;
-      const descPadding = 8;
-      const descTextWidth = descBoxWidth - descPadding * 2;
-
-      const parseHtmlToBlocks = (html: string) => {
-        const blocks: Array<{type: string; text: string; items?: string[]; level?: number}> = [];
-        const decoded = html
-          .replace(/&#039;/g, "'")
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&quot;/g, '"')
-          .replace(/&nbsp;/g, ' ');
-
-        const stripTags = (s: string) => s.replace(/<[^>]+>/g, '').trim();
-
-        const tokens: Array<{index: number; type: string; content: string; items?: string[]}> = [];
-
-        let m;
-        const h4Re = /<h4[^>]*>([\s\S]*?)<\/h4>/gi;
-        while ((m = h4Re.exec(decoded)) !== null) {
-          tokens.push({ index: m.index, type: 'heading', content: stripTags(m[1]) });
-        }
-
-        const olRe = /<ol[^>]*>([\s\S]*?)<\/ol>/gi;
-        while ((m = olRe.exec(decoded)) !== null) {
-          const items: string[] = [];
-          let li;
-          const liRe2 = /<li[^>]*>([\s\S]*?)<\/li>/gi;
-          while ((li = liRe2.exec(m[1])) !== null) {
-            items.push(stripTags(li[1]));
-          }
-          tokens.push({ index: m.index, type: 'orderedList', content: '', items });
-        }
-
-        const ulRe = /<ul[^>]*>([\s\S]*?)<\/ul>/gi;
-        while ((m = ulRe.exec(decoded)) !== null) {
-          const items: string[] = [];
-          let li;
-          const liRe3 = /<li[^>]*>([\s\S]*?)<\/li>/gi;
-          while ((li = liRe3.exec(m[1])) !== null) {
-            items.push(stripTags(li[1]));
-          }
-          tokens.push({ index: m.index, type: 'unorderedList', content: '', items });
-        }
-
-        const pRe = /<p[^>]*>([\s\S]*?)<\/p>/gi;
-        while ((m = pRe.exec(decoded)) !== null) {
-          const text = stripTags(m[1]);
-          if (text) {
-            tokens.push({ index: m.index, type: 'paragraph', content: text });
-          }
-        }
-
-        tokens.sort((a, b) => a.index - b.index);
-
-        if (tokens.length === 0) {
-          const plain = stripTags(decoded).replace(/\n{3,}/g, '\n\n').trim();
-          if (plain) {
-            blocks.push({ type: 'paragraph', text: plain });
-          }
-        } else {
-          tokens.forEach(t => {
-            if (t.type === 'heading') {
-              blocks.push({ type: 'heading', text: t.content });
-            } else if (t.type === 'orderedList' && t.items) {
-              blocks.push({ type: 'orderedList', text: '', items: t.items });
-            } else if (t.type === 'unorderedList' && t.items) {
-              blocks.push({ type: 'unorderedList', text: '', items: t.items });
-            } else if (t.type === 'paragraph') {
-              blocks.push({ type: 'paragraph', text: t.content });
-            }
-          });
-        }
-
-        return blocks;
-      };
-
-      const blocks = parseHtmlToBlocks(request.data.caseDescription);
-
-      const textX = descBoxX + descPadding;
-
-      const computeBlockHeight = (block: {type: string; text: string; items?: string[]}, isFirst: boolean) => {
-        let h = 0;
-        if (block.type === 'heading') {
-          if (!isFirst) h += 5;
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          const hLines = doc.splitTextToSize(block.text, descTextWidth);
-          h += hLines.length * 6 + 2;
-        } else if (block.type === 'orderedList' || block.type === 'unorderedList') {
-          doc.setFontSize(9.5);
-          doc.setFont('helvetica', 'normal');
-          (block.items || []).forEach(item => {
-            const iLines = doc.splitTextToSize(item, descTextWidth - 15);
-            h += iLines.length * 4.5 + 1.5;
-          });
-          h += 2;
-        } else {
-          doc.setFontSize(9.5);
-          doc.setFont('helvetica', 'normal');
-          const pLines = doc.splitTextToSize(block.text, descTextWidth);
-          h += pLines.length * 4.5 + 3;
-        }
-        return h;
-      };
-
-      let totalDescHeight = descPadding * 2;
-      blocks.forEach((block, idx) => {
-        totalDescHeight += computeBlockHeight(block, idx === 0);
-      });
-
-      const maxBoxOnPage = pageHeight - footerHeight - y;
-      if (totalDescHeight <= maxBoxOnPage) {
-        doc.setFillColor(COLORS.lightGray[0], COLORS.lightGray[1], COLORS.lightGray[2]);
-        doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
-        doc.roundedRect(descBoxX, y, descBoxWidth, totalDescHeight, 2, 2, 'FD');
-      } else {
-        const firstPageBoxHeight = maxBoxOnPage;
-        doc.setFillColor(COLORS.lightGray[0], COLORS.lightGray[1], COLORS.lightGray[2]);
-        doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
-        doc.roundedRect(descBoxX, y, descBoxWidth, firstPageBoxHeight, 2, 2, 'FD');
-      }
-
-      y += descPadding;
-
-      const drawContinuationBox = () => {
-        const remainingOnNewPage = pageHeight - footerHeight - 25;
-        doc.setFillColor(COLORS.lightGray[0], COLORS.lightGray[1], COLORS.lightGray[2]);
-        doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
-        doc.roundedRect(descBoxX, 25, descBoxWidth, remainingOnNewPage, 2, 2, 'FD');
-      };
-
-      const checkPageDesc = (needed: number) => {
-        if (y + needed > pageHeight - footerHeight) {
-          doc.addPage();
-          y = 25;
-          drawContinuationBox();
-          y += descPadding;
-        }
-      };
-
-      blocks.forEach((block, blockIdx) => {
-        if (block.type === 'heading') {
-          checkPageDesc(16);
-          if (blockIdx > 0) y += 5;
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          setColor(COLORS.black);
-          const hLines = doc.splitTextToSize(block.text, descTextWidth);
-          hLines.forEach((line: string) => {
-            checkPageDesc(7);
-            doc.text(line, textX, y);
-            y += 6;
-          });
-          y += 2;
-        } else if (block.type === 'orderedList' || block.type === 'unorderedList') {
-          doc.setFontSize(9.5);
-          doc.setFont('helvetica', 'normal');
-          setColor(COLORS.darkGray);
-          (block.items || []).forEach((item, idx) => {
-            checkPageDesc(8);
-            const prefix = block.type === 'orderedList' ? `${idx + 1}.` : '\u2022';
-            doc.setFont('helvetica', 'bold');
-            doc.text(prefix, textX + 2, y);
-            doc.setFont('helvetica', 'normal');
-            const itemLines = doc.splitTextToSize(item, descTextWidth - 15);
-            itemLines.forEach((line: string) => {
-              checkPageDesc(6);
-              doc.text(line, textX + 12, y);
-              y += 4.5;
-            });
-            y += 1.5;
-          });
-          y += 2;
-        } else {
-          doc.setFontSize(9.5);
-          doc.setFont('helvetica', 'normal');
-          setColor(COLORS.darkGray);
-          const pLines = doc.splitTextToSize(block.text, descTextWidth);
-          pLines.forEach((line: string) => {
-            checkPageDesc(6);
-            doc.text(line, textX, y);
-            y += 4.5;
-          });
-          y += 3;
-        }
-      });
-
-      y += descPadding;
-      y += 10;
-
-      // ─── IMPORTANT NOTICE ───
-      checkPage(30);
-      const noticeHeight = 22;
-      doc.setFillColor(COLORS.noticeYellow[0], COLORS.noticeYellow[1], COLORS.noticeYellow[2]);
-      doc.setDrawColor(COLORS.noticeBorder[0], COLORS.noticeBorder[1], COLORS.noticeBorder[2]);
-      doc.roundedRect(marginLeft, y, contentWidth, noticeHeight, 2, 2, 'FD');
-
-      doc.setFillColor(COLORS.noticeBorder[0], COLORS.noticeBorder[1], COLORS.noticeBorder[2]);
-      doc.circle(marginLeft + 8, y + 7, 1.5, 'F');
-
-      doc.setFontSize(9.5);
-      doc.setFont('helvetica', 'bold');
-      setColor(COLORS.noticeText);
-      doc.text('Important Notice', marginLeft + 14, y + 8);
-
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      setColor(COLORS.noticeText);
-      const noticeLines = doc.splitTextToSize(
-        'This intake summary provides general information only and does not constitute legal advice. For specific legal questions, consult with a qualified immigration attorney.',
-        contentWidth - 20
-      );
-      noticeLines.forEach((line: string, idx: number) => {
-        doc.text(line, marginLeft + 14, y + 14 + idx * 3.5);
-      });
-
-      y += noticeHeight + 10;
-
-      // ─── FOOTER ON ALL PAGES ───
-      const totalPages = (doc as any).internal.pages.length - 1;
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-
-        doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
-        doc.line(marginLeft, pageHeight - 18, pageWidth - marginRight, pageHeight - 18);
-
-        doc.setFontSize(7.5);
-        doc.setFont('helvetica', 'normal');
-        setColor(COLORS.mediumGray);
-        doc.text('LinkToLawyers  \u00B7  Case Details Report  \u00B7  Confidential', marginLeft, pageHeight - 12);
-        
-        const pageText = `Page ${i} of ${totalPages}`;
-        const pageTextWidth = doc.getTextWidth(pageText);
-        doc.text(pageText, pageWidth - marginRight - pageTextWidth, pageHeight - 12);
-      }
-      
-      const filename = `LinkToLawyers_Case_${request.data.requestNumber.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.pdf`;
-      doc.save(filename);
-      
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    }
-  };
-
   const handleOpenDownloadModal = () => {
     setSelectedDocIds(new Set(documents.map((doc: any) => doc.id)));
     setIsDownloadModalOpen(true);
@@ -594,37 +163,243 @@ const CaseDetailsPage: React.FC = () => {
     }
   };
 
+  const generatePdfBlob = async (): Promise<Blob> => {
+    const jsPDF = (await import('jspdf')).default;
+    const doc = new jsPDF();
+    
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginLeft = 25;
+    const marginRight = 25;
+    const contentWidth = pageWidth - marginLeft - marginRight;
+    const footerHeight = 25;
+    let y = 0;
+
+    const COLORS = {
+      primaryBlue: [30, 64, 175] as [number, number, number],
+      darkBlue: [20, 45, 130] as [number, number, number],
+      white: [255, 255, 255] as [number, number, number],
+      black: [33, 33, 33] as [number, number, number],
+      darkGray: [55, 65, 81] as [number, number, number],
+      mediumGray: [107, 114, 128] as [number, number, number],
+      lightGray: [243, 244, 246] as [number, number, number],
+      borderGray: [209, 213, 219] as [number, number, number],
+      noticeYellow: [254, 252, 232] as [number, number, number],
+      noticeBorder: [250, 204, 21] as [number, number, number],
+      noticeText: [133, 100, 4] as [number, number, number],
+    };
+
+    const checkPage = (needed: number) => {
+      if (y + needed > pageHeight - footerHeight) {
+        doc.addPage();
+        y = 25;
+      }
+    };
+
+    const setColor = (color: [number, number, number]) => {
+      doc.setTextColor(color[0], color[1], color[2]);
+    };
+
+    const drawSectionHeader = (title: string) => {
+      checkPage(20);
+      doc.setFillColor(COLORS.lightGray[0], COLORS.lightGray[1], COLORS.lightGray[2]);
+      doc.roundedRect(marginLeft, y, contentWidth, 12, 1.5, 1.5, 'F');
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      setColor(COLORS.darkGray);
+      doc.text(title, marginLeft + 5, y + 8);
+      y += 18;
+    };
+
+    const drawInfoRow = (label: string, value: string, xStart: number, rowWidth: number) => {
+      checkPage(14);
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica', 'normal');
+      setColor(COLORS.mediumGray);
+      doc.text(label, xStart, y);
+      y += 4.5;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      setColor(COLORS.black);
+      const lines = doc.splitTextToSize(value, rowWidth - 5);
+      lines.forEach((line: string) => {
+        checkPage(6);
+        doc.text(line, xStart, y);
+        y += 5;
+      });
+      y += 3;
+    };
+
+    const rd = request!.data;
+    const headerHeight = 48;
+    doc.setFillColor(COLORS.primaryBlue[0], COLORS.primaryBlue[1], COLORS.primaryBlue[2]);
+    doc.rect(0, 0, pageWidth, headerHeight, 'F');
+    doc.setFillColor(COLORS.darkBlue[0], COLORS.darkBlue[1], COLORS.darkBlue[2]);
+    doc.rect(0, headerHeight - 3, pageWidth, 3, 'F');
+
+    setColor(COLORS.white);
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LinkToLawyers', marginLeft, 20);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Case Details Report', marginLeft, 30);
+
+    doc.setFontSize(9);
+    const genDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const dateText = `Generated: ${genDate}`;
+    const dateWidth = doc.getTextWidth(dateText);
+    doc.text(dateText, pageWidth - marginRight - dateWidth, 30);
+
+    y = headerHeight + 10;
+
+    const clientCardHeight = 36;
+    doc.setFillColor(COLORS.primaryBlue[0], COLORS.primaryBlue[1], COLORS.primaryBlue[2]);
+    doc.roundedRect(marginLeft, y, contentWidth, clientCardHeight, 3, 3, 'F');
+    setColor(COLORS.white);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${rd.firstName} ${rd.lastName}`, marginLeft + 10, y + 14);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    const createdDate = new Date(rd.createdAt).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    doc.text(createdDate, marginLeft + 10, y + 22);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    const caseTypeLabel = getCaseTypeLabel(rd.caseType);
+    const badgeWidth = doc.getTextWidth(caseTypeLabel) + 8;
+    doc.setFillColor(COLORS.white[0], COLORS.white[1], COLORS.white[2]);
+    doc.roundedRect(marginLeft + 10, y + 25, badgeWidth, 7, 2, 2, 'F');
+    setColor(COLORS.primaryBlue);
+    doc.text(caseTypeLabel, marginLeft + 14, y + 30);
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    setColor(COLORS.white);
+    const reqLabel = 'Request Number';
+    const reqLabelW = doc.getTextWidth(reqLabel);
+    doc.text(reqLabel, marginLeft + contentWidth - 10 - reqLabelW, y + 12);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    const reqNum = rd.requestNumber.toUpperCase();
+    const reqNumW = doc.getTextWidth(reqNum);
+    doc.text(reqNum, marginLeft + contentWidth - 10 - reqNumW, y + 22);
+    y += clientCardHeight + 12;
+
+    drawSectionHeader('Client Information');
+    const colWidth = contentWidth / 2;
+    const col1X = marginLeft + 5;
+    const col2X = marginLeft + colWidth + 5;
+
+    let savedY = y;
+    drawInfoRow('Full Name', `${rd.firstName} ${rd.lastName}`, col1X, colWidth);
+    let after1 = y;
+    y = savedY;
+    drawInfoRow('Email Address', rd.email, col2X, colWidth);
+    y = Math.max(after1, y);
+
+    savedY = y;
+    drawInfoRow('Case Type', getCaseTypeLabel(rd.caseType), col1X, colWidth);
+    after1 = y;
+    y = savedY;
+    drawInfoRow('Request Date', createdDate, col2X, colWidth);
+    y = Math.max(after1, y);
+
+    if (rd.phoneNumber) {
+      savedY = y;
+      drawInfoRow('Phone Number', rd.phoneNumber, col1X, colWidth);
+      after1 = y;
+      y = savedY;
+      if (rd.location) drawInfoRow('Location', rd.location, col2X, colWidth);
+      else if (rd.city && rd.state) drawInfoRow('City, State', `${rd.city}, ${rd.state}`, col2X, colWidth);
+      y = Math.max(after1, y);
+    }
+
+    doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
+    doc.line(marginLeft, y, marginLeft + contentWidth, y);
+    y += 10;
+
+    drawSectionHeader('Case Summary');
+    const stripTags = (s: string) => s.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&#039;/g, "'").replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').trim();
+    const plainDesc = stripTags(rd.caseDescription);
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'normal');
+    setColor(COLORS.darkGray);
+    const descLines = doc.splitTextToSize(plainDesc, contentWidth - 10);
+    descLines.forEach((line: string) => {
+      checkPage(6);
+      doc.text(line, marginLeft + 5, y);
+      y += 4.5;
+    });
+    y += 10;
+
+    checkPage(30);
+    const noticeHeight = 22;
+    doc.setFillColor(COLORS.noticeYellow[0], COLORS.noticeYellow[1], COLORS.noticeYellow[2]);
+    doc.setDrawColor(COLORS.noticeBorder[0], COLORS.noticeBorder[1], COLORS.noticeBorder[2]);
+    doc.roundedRect(marginLeft, y, contentWidth, noticeHeight, 2, 2, 'FD');
+    doc.setFillColor(COLORS.noticeBorder[0], COLORS.noticeBorder[1], COLORS.noticeBorder[2]);
+    doc.circle(marginLeft + 8, y + 7, 1.5, 'F');
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'bold');
+    setColor(COLORS.noticeText);
+    doc.text('Important Notice', marginLeft + 14, y + 8);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    const noticeLines = doc.splitTextToSize('This intake summary provides general information only and does not constitute legal advice. For specific legal questions, consult with a qualified immigration attorney.', contentWidth - 20);
+    noticeLines.forEach((line: string, idx: number) => {
+      doc.text(line, marginLeft + 14, y + 14 + idx * 3.5);
+    });
+
+    const totalPages = (doc as any).internal.pages.length - 1;
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(COLORS.borderGray[0], COLORS.borderGray[1], COLORS.borderGray[2]);
+      doc.line(marginLeft, pageHeight - 18, pageWidth - marginRight, pageHeight - 18);
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'normal');
+      setColor(COLORS.mediumGray);
+      doc.text('LinkToLawyers  \u00B7  Case Details Report  \u00B7  Confidential', marginLeft, pageHeight - 12);
+      const pageText = `Page ${i} of ${totalPages}`;
+      const pageTextWidth = doc.getTextWidth(pageText);
+      doc.text(pageText, pageWidth - marginRight - pageTextWidth, pageHeight - 12);
+    }
+
+    return doc.output('blob');
+  };
+
   const handleDownloadSelected = async () => {
+    if (!request?.data) return;
     const selected = documents.filter((doc: any) => selectedDocIds.has(doc.id));
-    if (selected.length === 0) return;
 
     setIsDownloading(true);
     try {
-      if (selected.length === 1) {
-        window.open(`/api/case-documents/${selected[0].id}/download`, '_blank');
-      } else {
-        const JSZip = (await import('jszip')).default;
-        const zip = new JSZip();
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
 
-        for (const doc of selected) {
-          const response = await fetch(`/api/case-documents/${doc.id}/download`);
-          if (!response.ok) throw new Error(`Failed to download ${doc.fileName}`);
-          const blob = await response.blob();
-          zip.file(doc.fileName, blob);
-        }
+      const pdfBlob = await generatePdfBlob();
+      zip.file(`LinkToLawyers_Case_${request.data.requestNumber.toUpperCase()}.pdf`, pdfBlob);
 
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
-        const url = URL.createObjectURL(zipBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Documents_${request?.data.requestNumber?.toUpperCase() || 'case'}.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+      for (const doc of selected) {
+        const response = await fetch(`/api/case-documents/${doc.id}/download`);
+        if (!response.ok) throw new Error(`Failed to download ${doc.fileName}`);
+        const blob = await response.blob();
+        zip.file(doc.fileName, blob);
       }
 
-      toast({ title: "Download started", description: `${selected.length} document(s) downloading` });
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `LinkToLawyers_Case_${request.data.requestNumber.toUpperCase()}_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      const totalFiles = selected.length + 1;
+      toast({ title: "Download started", description: `ZIP with Case Summary PDF + ${selected.length} document(s)` });
       setIsDownloadModalOpen(false);
     } catch (error: any) {
       toast({ title: "Download failed", description: error.message || "Failed to download documents", variant: "destructive" });
@@ -936,7 +711,7 @@ const CaseDetailsPage: React.FC = () => {
       </div>
 
       <Dialog open={isDownloadModalOpen} onOpenChange={setIsDownloadModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Download className="w-5 h-5 text-blue-600" />
@@ -977,13 +752,16 @@ const CaseDetailsPage: React.FC = () => {
               ))}
             </div>
           </div>
+          <p className="text-xs text-gray-500 italic">
+            The Case Summary PDF is always included in the download.
+          </p>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsDownloadModalOpen(false)}>
               Cancel
             </Button>
             <Button
               onClick={handleDownloadSelected}
-              disabled={selectedDocIds.size === 0 || isDownloading}
+              disabled={isDownloading}
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isDownloading ? (
@@ -993,8 +771,8 @@ const CaseDetailsPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download {selectedDocIds.size > 1 ? `${selectedDocIds.size} Files` : 'File'}
+                  <Package className="w-4 h-4 mr-2" />
+                  Download ZIP ({selectedDocIds.size + 1} files)
                 </>
               )}
             </Button>
