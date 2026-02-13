@@ -164,6 +164,18 @@ export const attorneyNotes = pgTable("attorney_notes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const caseDocuments = pgTable("case_documents", {
+  id: serial("id").primaryKey(),
+  assignmentId: integer("assignment_id").notNull().references(() => referralAssignments.id),
+  caseId: integer("case_id").references(() => cases.id),
+  attorneyId: integer("attorney_id").notNull().references(() => attorneys.id),
+  fileName: varchar("file_name", { length: 255 }).notNull(),
+  fileType: varchar("file_type", { length: 100 }).notNull(),
+  fileSize: integer("file_size").notNull(),
+  storagePath: text("storage_path").notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
 export const emailTemplates = pgTable("email_templates", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
