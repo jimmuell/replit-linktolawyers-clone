@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+Allow: /es
+Allow: /blog
+Allow: /es/blog
+Allow: /free-resources
+Allow: /es/recursos-gratuitos
+Allow: /help
+Allow: /es/ayuda
+Allow: /chat
+Allow: /es/chat
+
+Disallow: /admin
+Disallow: /admin-dashboard
+Disallow: /admin/
+Disallow: /submissions
+Disallow: /smtp-config
+Disallow: /email-templates
+Disallow: /prompt-management
+Disallow: /blog-management
+Disallow: /attorney-dashboard
+Disallow: /attorney-profile
+Disallow: /attorney-onboarding
+Disallow: /attorney-fee-schedule
+Disallow: /attorney/
+Disallow: /organizations
+Disallow: /quotes/
+Disallow: /case-details/
+
+Sitemap: /sitemap.xml
