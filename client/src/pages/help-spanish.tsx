@@ -8,8 +8,17 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { MessageCircle, Phone, Mail, Clock, HelpCircle, Menu, X, ArrowLeft, Search } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { useSEO } from '@/hooks/useSEO';
 
 export default function HelpSpanish() {
+  useSEO({
+    title: 'Ayuda y Preguntas Frecuentes de Inmigración',
+    description: 'Obtenga respuestas a preguntas comunes sobre inmigración. Descubra cómo LinkToLawyers lo conecta con abogados calificados y compara tarifas legales.',
+    path: '/es/ayuda',
+    lang: 'es',
+    alternateLang: { lang: 'en', path: '/help' },
+  });
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',

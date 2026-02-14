@@ -6,6 +6,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from 'jspdf';
+import { useSEO } from '@/hooks/useSEO';
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState("");
@@ -18,7 +19,6 @@ const ChatPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // Check if we're on Spanish route or have Spanish content
   useEffect(() => {
     const path = window.location.pathname;
     if (path.includes('/es') || path.includes('/chat-es')) {
@@ -28,7 +28,16 @@ const ChatPage: React.FC = () => {
     }
   }, []);
 
-  // Fetch active prompt for initial greeting - language specific
+  useSEO({
+    title: language === 'es' ? 'Asistente Legal de Inmigración con IA' : 'AI Immigration Legal Assistant',
+    description: language === 'es'
+      ? 'Obtenga orientación legal de inmigración gratuita con nuestro asistente impulsado por IA. Disponible 24/7 para responder sus preguntas.'
+      : 'Get free immigration legal guidance from our AI-powered assistant. Available 24/7 to answer your immigration questions.',
+    path: language === 'es' ? '/es/chat' : '/chat',
+    lang: language === 'es' ? 'es' : 'en',
+    alternateLang: language === 'es' ? { lang: 'en', path: '/chat' } : { lang: 'es', path: '/es/chat' },
+  });
+
   const { data: activePrompt } = useQuery<{
     id: number;
     name: string;

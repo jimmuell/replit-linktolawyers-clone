@@ -9,8 +9,17 @@ import BlogHeader from '@/components/BlogHeader';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import type { BlogPost } from '@shared/schema';
 import { getImageUrl } from '@/lib/imageUtils';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function Blog() {
+  useSEO({
+    title: 'Immigration Law Blog',
+    description: 'Stay informed with the latest immigration law news, policy updates, and expert legal guides from qualified immigration attorneys.',
+    path: '/blog',
+    lang: 'en',
+    alternateLang: { lang: 'es', path: '/es/blog' },
+  });
+
   const { data: blogPosts, isLoading, error } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog-posts/published'],
   });

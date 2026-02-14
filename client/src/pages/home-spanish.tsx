@@ -11,10 +11,19 @@ import { NewQuoteModal } from "@/components/NewQuoteModal";
 import { Link } from "wouter";
 import girlThinkingSpanishImage from "@assets/girl-thinking-spanish_1759069959323.jpg";
 import { getTranslations } from "@/lib/translations";
+import { useSEO } from '@/hooks/useSEO';
 
 const t = getTranslations('es');
 
 export default function HomeSpanish() {
+  useSEO({
+    title: 'Compare Tarifas de Abogados de Inmigración',
+    description: 'Encuentre y compare abogados de inmigración calificados. Obtenga cotizaciones transparentes, coincidencia impulsada por IA y representación legal experta para su caso.',
+    path: '/es',
+    lang: 'es',
+    alternateLang: { lang: 'en', path: '/' },
+  });
+
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);

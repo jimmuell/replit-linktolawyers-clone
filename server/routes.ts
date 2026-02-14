@@ -4251,6 +4251,59 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
     }
   });
 
+  // ========== SEO: DYNAMIC SITEMAP ==========
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+      const host = req.headers['x-forwarded-host'] || req.headers.host;
+      const baseUrl = `${protocol}://${host}`;
+
+      const staticPages = [
+        { loc: '/', priority: '1.0', changefreq: 'weekly' },
+        { loc: '/es', priority: '1.0', changefreq: 'weekly' },
+        { loc: '/blog', priority: '0.8', changefreq: 'daily' },
+        { loc: '/es/blog', priority: '0.8', changefreq: 'daily' },
+        { loc: '/free-resources', priority: '0.7', changefreq: 'monthly' },
+        { loc: '/es/recursos-gratuitos', priority: '0.7', changefreq: 'monthly' },
+        { loc: '/help', priority: '0.6', changefreq: 'monthly' },
+        { loc: '/es/ayuda', priority: '0.6', changefreq: 'monthly' },
+        { loc: '/chat', priority: '0.6', changefreq: 'monthly' },
+        { loc: '/es/chat', priority: '0.6', changefreq: 'monthly' },
+      ];
+
+      const publishedPosts = await storage.getPublishedBlogPosts();
+
+      const blogEntries = publishedPosts.flatMap(post => {
+        const lastmod = post.publishedAt ? new Date(post.publishedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+        const entries = [
+          { loc: `/blog/${post.slug}`, priority: '0.6', changefreq: 'monthly', lastmod },
+        ];
+        if (post.translationStatus === 'completed' && post.spanishTitle) {
+          entries.push({ loc: `/es/blog/${post.slug}-es`, priority: '0.6', changefreq: 'monthly', lastmod });
+        }
+        return entries;
+      });
+
+      const allPages = [...staticPages, ...blogEntries];
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${allPages.map(page => `  <url>
+    <loc>${baseUrl}${page.loc}</loc>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>${(page as any).lastmod ? `\n    <lastmod>${(page as any).lastmod}</lastmod>` : ''}
+  </url>`).join('\n')}
+</urlset>`;
+
+      res.set('Content-Type', 'application/xml');
+      res.send(xml);
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      res.status(500).send('Error generating sitemap');
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

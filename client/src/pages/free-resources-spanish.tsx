@@ -4,8 +4,17 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Download, FileText, Video, Users, Menu, X, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { useSEO } from '@/hooks/useSEO';
 
 export default function FreeResourcesSpanish() {
+  useSEO({
+    title: 'Recursos Gratuitos de Inmigración',
+    description: 'Acceda a guías de inmigración gratuitas, formularios legales, listas de verificación y recursos educativos para navegar el proceso de inmigración.',
+    path: '/es/recursos-gratuitos',
+    lang: 'es',
+    alternateLang: { lang: 'en', path: '/free-resources' },
+  });
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const resources = [

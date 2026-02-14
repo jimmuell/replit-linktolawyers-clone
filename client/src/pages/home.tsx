@@ -29,10 +29,19 @@ import Navbar from "@/components/Navbar";
 import { Link } from "wouter";
 import girlThinkingImage from "@assets/girl-thinking-english_1759076159405.jpg";
 import { getTranslations } from "@/lib/translations";
+import { useSEO } from '@/hooks/useSEO';
 
 const t = getTranslations('en');
 
 export default function Home() {
+  useSEO({
+    title: 'Compare Immigration Attorney Fees Nationwide',
+    description: 'Find and compare qualified immigration attorneys. Get transparent legal fee quotes, AI-powered matching, and expert legal representation for your immigration case.',
+    path: '/',
+    lang: 'en',
+    alternateLang: { lang: 'es', path: '/es' },
+  });
+
   const [activeSection, setActiveSection] = useState("home");
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isNewQuoteModalOpen, setIsNewQuoteModalOpen] = useState(false);

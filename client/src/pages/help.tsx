@@ -8,8 +8,17 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { MessageCircle, Phone, Mail, Clock, HelpCircle, Menu, X, ArrowLeft, Search } from "lucide-react";
 import { useState } from "react";
 import { Link } from "wouter";
+import { useSEO } from '@/hooks/useSEO';
 
 export default function Help() {
+  useSEO({
+    title: 'Immigration Help & FAQ',
+    description: 'Get answers to common immigration questions. Learn how LinkToLawyers connects you with qualified attorneys and helps compare legal fees.',
+    path: '/help',
+    lang: 'en',
+    alternateLang: { lang: 'es', path: '/es/ayuda' },
+  });
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: '',

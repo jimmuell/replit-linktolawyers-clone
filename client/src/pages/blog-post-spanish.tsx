@@ -7,6 +7,7 @@ import BlogHeader from '@/components/BlogHeader';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { BlogPost } from '@shared/schema';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function BlogPostSpanish() {
   const [, params] = useRoute("/es/blog/:slug");
@@ -15,6 +16,16 @@ export default function BlogPostSpanish() {
   const { data: blogPost, isLoading, error } = useQuery<BlogPost>({
     queryKey: [`/api/blog-posts/slug/${slug}/spanish`],
     enabled: !!slug,
+  });
+
+  useSEO({
+    title: blogPost?.title || 'Artículo del Blog',
+    description: blogPost?.excerpt || 'Lea este artículo sobre leyes de inmigración en LinkToLawyers.',
+    path: `/es/blog/${slug || ''}`,
+    type: 'article',
+    image: blogPost?.imageUrl || undefined,
+    lang: 'es',
+    alternateLang: { lang: 'en', path: `/blog/${(slug || '').replace(/-es$/, '')}` },
   });
 
   const formatDate = (date: string) => {

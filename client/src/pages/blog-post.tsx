@@ -7,6 +7,7 @@ import BlogHeader from '@/components/BlogHeader';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import type { BlogPost } from '@shared/schema';
 import { getImageUrl } from '@/lib/imageUtils';
+import { useSEO } from '@/hooks/useSEO';
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -20,6 +21,16 @@ export default function BlogPostPage() {
       }
       return response.json();
     },
+  });
+
+  useSEO({
+    title: blogPost?.title || 'Blog Post',
+    description: blogPost?.excerpt || 'Read this immigration law article on LinkToLawyers.',
+    path: `/blog/${slug || ''}`,
+    type: 'article',
+    image: blogPost?.imageUrl || undefined,
+    lang: 'en',
+    alternateLang: { lang: 'es', path: `/es/blog/${slug || ''}-es` },
   });
 
   const formatDate = (date: string) => {

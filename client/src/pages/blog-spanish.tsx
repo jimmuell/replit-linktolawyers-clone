@@ -8,6 +8,7 @@ import { ArrowLeft, Search, Clock, User } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useSEO } from '@/hooks/useSEO';
 
 type BlogPost = {
   id: number;
@@ -35,6 +36,14 @@ function stripHtmlAndTruncate(html: string, maxLength: number = 150): string {
 }
 
 export default function BlogSpanish() {
+  useSEO({
+    title: 'Blog de Leyes de Inmigración',
+    description: 'Manténgase informado con las últimas noticias sobre leyes de inmigración, actualizaciones de políticas y guías legales de abogados calificados.',
+    path: '/es/blog',
+    lang: 'es',
+    alternateLang: { lang: 'en', path: '/blog' },
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: blogPosts = [], isLoading, error } = useQuery<BlogPost[]>({
