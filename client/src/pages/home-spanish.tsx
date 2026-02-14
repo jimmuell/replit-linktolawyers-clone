@@ -22,6 +22,28 @@ export default function HomeSpanish() {
     path: '/es',
     lang: 'es',
     alternateLang: { lang: 'en', path: '/' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'LegalService',
+      name: 'LinkToLawyers',
+      alternateName: 'Link To Lawyers',
+      description: 'Compare tarifas de abogados de inmigración en todo el país. Encuentre abogados calificados para visas familiares, permisos de trabajo, asilo, ciudadanía y defensa contra deportación.',
+      url: `${window.location.origin}/es`,
+      serviceType: ['Ley de Inmigración', 'Inmigración Familiar', 'Inmigración Laboral', 'Asilo y Refugio', 'Defensa contra Deportación', 'Ciudadanía y Naturalización'],
+      areaServed: { '@type': 'Country', name: 'United States' },
+      availableLanguage: [
+        { '@type': 'Language', name: 'English', alternateName: 'en' },
+        { '@type': 'Language', name: 'Spanish', alternateName: 'es' },
+      ],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Servicios Legales de Inmigración',
+        itemListElement: [
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Comparación de Tarifas de Abogados' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Emparejamiento con Abogados de Inmigración' } },
+        ],
+      },
+    },
   });
 
   const [activeSection, setActiveSection] = useState("home");

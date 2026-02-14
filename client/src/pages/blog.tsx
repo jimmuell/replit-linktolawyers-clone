@@ -18,6 +18,15 @@ export default function Blog() {
     path: '/blog',
     lang: 'en',
     alternateLang: { lang: 'es', path: '/es/blog' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'Blog',
+      name: 'LinkToLawyers Immigration Law Blog',
+      description: 'Stay informed with the latest immigration law news, policy updates, and legal guides.',
+      url: `${window.location.origin}/blog`,
+      inLanguage: 'en-US',
+      publisher: { '@type': 'Organization', name: 'LinkToLawyers', url: window.location.origin },
+    },
   });
 
   const { data: blogPosts, isLoading, error } = useQuery<BlogPost[]>({

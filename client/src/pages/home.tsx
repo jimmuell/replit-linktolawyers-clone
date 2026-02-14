@@ -40,6 +40,28 @@ export default function Home() {
     path: '/',
     lang: 'en',
     alternateLang: { lang: 'es', path: '/es' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'LegalService',
+      name: 'LinkToLawyers',
+      alternateName: 'Link To Lawyers',
+      description: 'Compare immigration attorney fees nationwide. Get matched with qualified immigration lawyers for family visas, work permits, asylum, citizenship, and deportation defense.',
+      url: window.location.origin,
+      serviceType: ['Immigration Law', 'Family Immigration', 'Employment Immigration', 'Asylum and Refugee Law', 'Deportation Defense', 'Citizenship and Naturalization'],
+      areaServed: { '@type': 'Country', name: 'United States' },
+      availableLanguage: [
+        { '@type': 'Language', name: 'English', alternateName: 'en' },
+        { '@type': 'Language', name: 'Spanish', alternateName: 'es' },
+      ],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Immigration Legal Services',
+        itemListElement: [
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Attorney Fee Comparison' } },
+          { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'Immigration Attorney Matching' } },
+        ],
+      },
+    },
   });
 
   const [activeSection, setActiveSection] = useState("home");

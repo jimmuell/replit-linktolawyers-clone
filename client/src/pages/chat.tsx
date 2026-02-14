@@ -36,6 +36,19 @@ const ChatPage: React.FC = () => {
     path: language === 'es' ? '/es/chat' : '/chat',
     lang: language === 'es' ? 'es' : 'en',
     alternateLang: language === 'es' ? { lang: 'en', path: '/chat' } : { lang: 'es', path: '/es/chat' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: language === 'es' ? 'Asistente de Inmigración IA de LinkToLawyers' : 'LinkToLawyers AI Immigration Assistant',
+      description: language === 'es'
+        ? 'Obtenga orientación legal de inmigración gratuita con nuestro asistente impulsado por IA. Disponible 24/7 en inglés y español.'
+        : 'Get free immigration legal guidance from our AI-powered assistant. Available 24/7 in English and Spanish.',
+      url: `${window.location.origin}${language === 'es' ? '/es/chat' : '/chat'}`,
+      applicationCategory: 'Legal',
+      operatingSystem: 'Web Browser',
+      availableLanguage: ['English', 'Spanish'],
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    },
   });
 
   const { data: activePrompt } = useQuery<{

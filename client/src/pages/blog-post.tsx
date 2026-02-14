@@ -31,6 +31,19 @@ export default function BlogPostPage() {
     image: blogPost?.imageUrl || undefined,
     lang: 'en',
     alternateLang: { lang: 'es', path: `/es/blog/${slug || ''}-es` },
+    structuredData: blogPost ? {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: blogPost.title,
+      description: blogPost.excerpt || blogPost.content?.substring(0, 160),
+      image: blogPost.imageUrl ? getImageUrl(blogPost.imageUrl) : undefined,
+      datePublished: blogPost.publishedAt,
+      dateModified: blogPost.updatedAt,
+      inLanguage: 'en-US',
+      author: { '@type': 'Organization', name: 'LinkToLawyers' },
+      publisher: { '@type': 'Organization', name: 'LinkToLawyers', url: window.location.origin },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${window.location.origin}/blog/${slug}` },
+    } : undefined,
   });
 
   const formatDate = (date: string) => {
@@ -42,46 +55,11 @@ export default function BlogPostPage() {
   };
 
   const formatContent = (content: string) => {
-    // Render HTML content from rich text editor
     return <div dangerouslySetInnerHTML={{ __html: content }} />;
   };
 
-  // Add structured data for SEO
-  const jsonLd = blogPost ? {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: blogPost.title,
-    description: blogPost.excerpt,
-    image: blogPost.imageUrl ? getImageUrl(blogPost.imageUrl) : undefined,
-    author: {
-      "@type": "Organization",
-      name: "LinkToLawyers Team"
-    },
-    publisher: {
-      "@type": "Organization", 
-      name: "LinkToLawyers",
-      logo: {
-        "@type": "ImageObject",
-        url: "/logo.png"
-      }
-    },
-    datePublished: blogPost.publishedAt,
-    dateModified: blogPost.updatedAt,
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": window.location.href
-    }
-  } : null;
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* SEO structured data */}
-      {jsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      )}
       <BlogHeader title={blogPost?.title || "Blog Post"} showBackButton={false} />
       
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

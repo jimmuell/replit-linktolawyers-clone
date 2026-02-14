@@ -13,6 +13,16 @@ export default function FreeResources() {
     path: '/free-resources',
     lang: 'en',
     alternateLang: { lang: 'es', path: '/es/recursos-gratuitos' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Free Immigration Resources',
+      description: 'Access free immigration guides, legal forms, checklists, and educational resources in English and Spanish.',
+      url: `${window.location.origin}/free-resources`,
+      inLanguage: 'en-US',
+      isPartOf: { '@type': 'WebSite', name: 'LinkToLawyers', url: window.location.origin },
+      about: { '@type': 'Thing', name: 'Immigration Law Resources' },
+    },
   });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);

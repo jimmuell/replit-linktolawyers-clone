@@ -8,6 +8,7 @@ interface SEOProps {
   image?: string;
   lang?: 'en' | 'es';
   alternateLang?: { lang: string; path: string };
+  structuredData?: object | object[];
 }
 
 const BASE_TITLE = 'LinkToLawyers';
@@ -43,7 +44,22 @@ function removeLinks(rel: string) {
   document.querySelectorAll(`link[rel="${rel}"]`).forEach(el => el.remove());
 }
 
-export function useSEO({ title, description, path, type = 'website', image, lang = 'en', alternateLang }: SEOProps) {
+function removeJsonLd() {
+  document.querySelectorAll('script.jsonld-seo').forEach(el => el.remove());
+}
+
+function injectJsonLd(data: object | object[]) {
+  const items = Array.isArray(data) ? data : [data];
+  items.forEach(item => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.className = 'jsonld-seo';
+    script.text = JSON.stringify(item);
+    document.head.appendChild(script);
+  });
+}
+
+export function useSEO({ title, description, path, type = 'website', image, lang = 'en', alternateLang, structuredData }: SEOProps) {
   useEffect(() => {
     const fullTitle = title === BASE_TITLE ? title : `${title} | ${BASE_TITLE}`;
     document.title = fullTitle;
@@ -81,9 +97,15 @@ export function useSEO({ title, description, path, type = 'website', image, lang
       setLinkTag('alternate', `${window.location.origin}${path}`, { hreflang: 'x-default' });
     }
 
+    removeJsonLd();
+    if (structuredData) {
+      injectJsonLd(structuredData);
+    }
+
     return () => {
       document.title = `${BASE_TITLE} - Find Your Attorney | Compare Legal Fees Nationwide`;
       removeLinks('alternate');
+      removeJsonLd();
     };
-  }, [title, description, path, type, image, lang, alternateLang]);
+  }, [title, description, path, type, image, lang, alternateLang, structuredData]);
 }

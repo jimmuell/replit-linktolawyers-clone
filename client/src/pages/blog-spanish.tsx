@@ -42,6 +42,15 @@ export default function BlogSpanish() {
     path: '/es/blog',
     lang: 'es',
     alternateLang: { lang: 'en', path: '/blog' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'Blog',
+      name: 'Blog de Leyes de Inmigración de LinkToLawyers',
+      description: 'Manténgase informado con las últimas noticias sobre leyes de inmigración, actualizaciones de políticas y guías legales.',
+      url: `${window.location.origin}/es/blog`,
+      inLanguage: 'es',
+      publisher: { '@type': 'Organization', name: 'LinkToLawyers', url: window.location.origin },
+    },
   });
 
   const [searchTerm, setSearchTerm] = useState("");

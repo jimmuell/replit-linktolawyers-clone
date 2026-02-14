@@ -17,6 +17,20 @@ export default function Help() {
     path: '/help',
     lang: 'en',
     alternateLang: { lang: 'es', path: '/es/ayuda' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        { '@type': 'Question', name: 'How do I find the right attorney for my case?', acceptedAnswer: { '@type': 'Answer', text: 'Our smart matching system analyzes your specific legal needs, location, and preferences to connect you with qualified immigration attorneys. Simply fill out our questionnaire, and we\'ll provide you with a curated list of attorneys who specialize in your type of case.' } },
+        { '@type': 'Question', name: 'How much does it cost to use LinkToLawyers?', acceptedAnswer: { '@type': 'Answer', text: 'LinkToLawyers is free for clients. We connect you with attorneys at no cost. You only pay the attorney directly for their legal services. Our platform helps you compare rates and find transparent pricing.' } },
+        { '@type': 'Question', name: 'Are all attorneys on your platform licensed?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, all attorneys on LinkToLawyers are licensed and verified. We conduct thorough background checks and verify licensing status with state bar associations before approving any attorney to join our platform.' } },
+        { '@type': 'Question', name: 'What types of immigration cases do you handle?', acceptedAnswer: { '@type': 'Answer', text: 'Our network includes attorneys who handle all types of immigration cases including family-based immigration, employment-based visas, asylum cases, naturalization, deportation defense, and more. We\'ll match you with attorneys who specialize in your specific case type.' } },
+        { '@type': 'Question', name: 'How quickly can I get connected with an attorney?', acceptedAnswer: { '@type': 'Answer', text: 'Most clients receive attorney matches within 24 hours. Once you submit your information, our system immediately begins matching you with suitable attorneys. You can then schedule consultations directly through our platform.' } },
+        { '@type': 'Question', name: 'Can I get a second opinion on my case?', acceptedAnswer: { '@type': 'Answer', text: 'Absolutely! You can request consultations with multiple attorneys through our platform. Getting a second opinion is often valuable, especially for complex cases. Our attorneys understand this and are happy to provide their professional assessment.' } },
+        { '@type': 'Question', name: 'What if I\'m not satisfied with the attorney I was matched with?', acceptedAnswer: { '@type': 'Answer', text: 'If you\'re not satisfied with your attorney match, you can request new matches at any time. Our platform is designed to help you find the right legal representation, and we\'ll work with you until you find an attorney you\'re comfortable with.' } },
+        { '@type': 'Question', name: 'Do you offer services in languages other than English?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, many attorneys in our network speak multiple languages. During the matching process, you can specify your preferred language, and we\'ll prioritize attorneys who can communicate with you in your preferred language.' } },
+      ],
+    },
   });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);

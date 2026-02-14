@@ -13,6 +13,16 @@ export default function FreeResourcesSpanish() {
     path: '/es/recursos-gratuitos',
     lang: 'es',
     alternateLang: { lang: 'en', path: '/free-resources' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: 'Recursos Gratuitos de Inmigración',
+      description: 'Acceda a guías de inmigración gratuitas, formularios legales, listas de verificación y recursos educativos en inglés y español.',
+      url: `${window.location.origin}/es/recursos-gratuitos`,
+      inLanguage: 'es',
+      isPartOf: { '@type': 'WebSite', name: 'LinkToLawyers', url: window.location.origin },
+      about: { '@type': 'Thing', name: 'Recursos de Ley de Inmigración' },
+    },
   });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);

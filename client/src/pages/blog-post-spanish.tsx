@@ -8,6 +8,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import type { BlogPost } from '@shared/schema';
 import { useSEO } from '@/hooks/useSEO';
+import { getImageUrl } from '@/lib/imageUtils';
 
 export default function BlogPostSpanish() {
   const [, params] = useRoute("/es/blog/:slug");
@@ -26,6 +27,19 @@ export default function BlogPostSpanish() {
     image: blogPost?.imageUrl || undefined,
     lang: 'es',
     alternateLang: { lang: 'en', path: `/blog/${(slug || '').replace(/-es$/, '')}` },
+    structuredData: blogPost ? {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: blogPost.title,
+      description: blogPost.excerpt || blogPost.content?.substring(0, 160),
+      image: blogPost.imageUrl ? getImageUrl(blogPost.imageUrl) : undefined,
+      datePublished: blogPost.publishedAt,
+      dateModified: blogPost.updatedAt,
+      inLanguage: 'es',
+      author: { '@type': 'Organization', name: 'LinkToLawyers' },
+      publisher: { '@type': 'Organization', name: 'LinkToLawyers', url: window.location.origin },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': `${window.location.origin}/es/blog/${slug}` },
+    } : undefined,
   });
 
   const formatDate = (date: string) => {

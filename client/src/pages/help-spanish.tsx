@@ -17,6 +17,20 @@ export default function HelpSpanish() {
     path: '/es/ayuda',
     lang: 'es',
     alternateLang: { lang: 'en', path: '/help' },
+    structuredData: {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        { '@type': 'Question', name: '¿Cómo encuentro el abogado adecuado para mi caso?', acceptedAnswer: { '@type': 'Answer', text: 'Nuestro sistema de emparejamiento inteligente analiza tus necesidades legales específicas, ubicación y preferencias para conectarte con abogados de inmigración calificados. Simplemente completa nuestro cuestionario y te proporcionaremos una lista curada de abogados que se especializan en tu tipo de caso.' } },
+        { '@type': 'Question', name: '¿Cuánto cuesta usar LinkToLawyers?', acceptedAnswer: { '@type': 'Answer', text: 'LinkToLawyers es gratuito para los clientes. Te conectamos con abogados sin costo alguno. Solo pagas directamente al abogado por sus servicios legales. Nuestra plataforma te ayuda a comparar tarifas y encontrar precios transparentes.' } },
+        { '@type': 'Question', name: '¿Todos los abogados en su plataforma están licenciados?', acceptedAnswer: { '@type': 'Answer', text: 'Sí, todos los abogados en LinkToLawyers están licenciados y verificados. Realizamos verificaciones exhaustivas de antecedentes y verificamos el estado de licencia con las asociaciones estatales de abogados antes de aprobar que cualquier abogado se una a nuestra plataforma.' } },
+        { '@type': 'Question', name: '¿Qué tipos de casos de inmigración manejan?', acceptedAnswer: { '@type': 'Answer', text: 'Nuestra red incluye abogados que manejan todos los tipos de casos de inmigración, incluyendo inmigración basada en familia, visas basadas en empleo, casos de asilo, naturalización, defensa de deportación y más. Te emparejaremos con abogados que se especialicen en tu tipo específico de caso.' } },
+        { '@type': 'Question', name: '¿Qué tan rápido puedo conectarme con un abogado?', acceptedAnswer: { '@type': 'Answer', text: 'La mayoría de los clientes reciben emparejamientos de abogados dentro de 24 horas. Una vez que envíes tu información, nuestro sistema inmediatamente comienza a emparejarte con abogados adecuados. Luego puedes programar consultas directamente a través de nuestra plataforma.' } },
+        { '@type': 'Question', name: '¿Puedo obtener una segunda opinión sobre mi caso?', acceptedAnswer: { '@type': 'Answer', text: '¡Por supuesto! Puedes solicitar consultas con múltiples abogados a través de nuestra plataforma. Obtener una segunda opinión a menudo es valioso, especialmente para casos complejos. Nuestros abogados entienden esto y están felices de proporcionar su evaluación profesional.' } },
+        { '@type': 'Question', name: '¿Qué pasa si no estoy satisfecho con el abogado con el que fui emparejado?', acceptedAnswer: { '@type': 'Answer', text: 'Si no estás satisfecho con tu emparejamiento de abogado, puedes solicitar nuevos emparejamientos en cualquier momento. Nuestra plataforma está diseñada para ayudarte a encontrar la representación legal correcta, y trabajaremos contigo hasta que encuentres un abogado con el que te sientas cómodo.' } },
+        { '@type': 'Question', name: '¿Ofrecen servicios en idiomas distintos al inglés?', acceptedAnswer: { '@type': 'Answer', text: 'Sí, muchos abogados en nuestra red hablan múltiples idiomas. Durante el proceso de emparejamiento, puedes especificar tu idioma preferido, y priorizaremos abogados que puedan comunicarse contigo en tu idioma preferido.' } },
+      ],
+    },
   });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
