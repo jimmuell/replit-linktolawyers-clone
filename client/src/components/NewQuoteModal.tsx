@@ -427,16 +427,30 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
           const node = dbFlow.nodes?.find((n: any) => n.id === nodeId);
           const answer = answers[nodeId];
           if (node && answer !== undefined && node.type !== 'start' && !['completion', 'success', 'end', 'info'].includes(node.type)) {
-            let answerText = '';
-            if (typeof answer === 'object') {
-              answerText = Object.entries(answer).map(([k, v]) => `${k}: ${v}`).join(', ');
+            if (node.type === 'form' && typeof answer === 'object' && node.formFields) {
+              Object.entries(answer).forEach(([fieldId, value]) => {
+                if (value !== undefined && value !== '') {
+                  const field = node.formFields.find((f: any) => f.id === fieldId);
+                  const fieldLabel = field?.label || field?.placeholder || fieldId;
+                  transcript.push({
+                    question: fieldLabel,
+                    answer: String(value),
+                  });
+                }
+              });
             } else {
-              answerText = String(answer);
+              let answerText = '';
+              if (typeof answer === 'object') {
+                answerText = Object.values(answer).filter(v => v !== undefined && v !== '').join(', ');
+              } else {
+                answerText = String(answer);
+              }
+              const questionLabel = node.question || node.formTitle || 'Question';
+              transcript.push({
+                question: questionLabel,
+                answer: answerText,
+              });
             }
-            transcript.push({
-              question: node.question || node.formTitle || 'Question',
-              answer: answerText
-            });
           }
         });
       } else if (caseType) {

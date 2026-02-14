@@ -124,7 +124,7 @@ export function generateConfirmationEmail(requestData: LegalRequestData, caseTyp
       
       <div class="footer">
         <p>This is an automated confirmation email. Please do not reply to this message.</p>
-        <p>&copy; 2025 LinkToLawyers. All rights reserved.</p>
+        <p>&copy; 2026 LinkToLawyers. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -171,7 +171,7 @@ ${process.env.REPLIT_DOMAINS || 'http://localhost:5000'}/quotes/${requestNumber}
 
 This is an automated confirmation email. Please do not reply to this message.
 
-© 2025 LinkToLawyers. All rights reserved.
+© 2026 LinkToLawyers. All rights reserved.
   `.trim();
   
   return {

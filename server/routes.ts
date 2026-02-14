@@ -1061,23 +1061,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate request number
       const requestNumber = generateRequestNumber();
       
-      // Build attorney intake summary from User Journey transcript (HTML for emails)
       const transcript = formResponses?.transcript;
-      let userJourneyHtml = '';
+      let caseDetailsHtml = '';
       if (Array.isArray(transcript) && transcript.length > 0) {
         const items = transcript.map((entry: { question: string; answer: string }, idx: number) =>
           `<li style="margin-bottom: 8px;"><strong>${escapeHtml(entry.question)}</strong><br/><span style="color: #2563eb;">${escapeHtml(entry.answer)}</span></li>`
         ).join('');
-        userJourneyHtml = `<ol style="padding-left: 20px; margin: 8px 0;">${items}</ol>`;
+        caseDetailsHtml = `<ol style="padding-left: 20px; margin: 8px 0;">${items}</ol>`;
       } else {
-        userJourneyHtml = '<p>No user journey responses recorded.</p>';
+        caseDetailsHtml = '<p>No responses recorded.</p>';
       }
 
       const additionalDetailsHtml = formResponses?.additionalDetails
         ? `<p style="margin-top: 12px;"><strong>Additional Details:</strong> ${escapeHtml(formResponses.additionalDetails)}</p>`
         : '';
 
-      const attorneyIntakeSummary = `<div><h4 style="margin: 0 0 8px 0; color: #1e40af;">User Journey</h4>${userJourneyHtml}${additionalDetailsHtml}</div>`;
+      const attorneyIntakeSummary = `<div><h4 style="margin: 0 0 8px 0; color: #1e40af;">Your Responses</h4>${caseDetailsHtml}${additionalDetailsHtml}</div>`;
 
       // Create structured intake
       const structuredIntakeData = {
@@ -1191,7 +1190,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 <tr><td style="padding: 8px 0; color: #6b7280;">Submitted:</td><td style="padding: 8px 0;">${new Date().toLocaleString()}</td></tr>
               </table>
               <div style="margin-top: 16px; padding: 12px; background: #f3f4f6; border-radius: 8px;">
-                <p style="color: #6b7280; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">User Journey:</p>
+                <p style="color: #6b7280; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Your Responses:</p>
                 <table style="width: 100%; border-collapse: collapse;">${transcriptItems}</table>
               </div>
               ${notifyAdditionalHtml}
@@ -3983,7 +3982,7 @@ IMPORTANT CONTEXT: Today's date is ${dateString} (${currentDate.toISOString().sp
         </a>
       </p>
       <p class="text-12 text-gray-500 text-center" style="margin: 0;">
-        © 2025 LinkToLawyers. All rights reserved.
+        © 2026 LinkToLawyers. All rights reserved.
       </p>
     </div>
   </div>
