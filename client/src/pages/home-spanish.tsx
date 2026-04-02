@@ -8,14 +8,18 @@ import TrackRequestModalSpanish from "@/components/TrackRequestModalSpanish";
 import { IntakeModal } from "@/components/IntakeModal";
 import NavbarSpanish from "@/components/NavbarSpanish";
 import { NewQuoteModal } from "@/components/NewQuoteModal";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import girlThinkingSpanishImage from "@assets/girl-thinking-spanish_1759069959323.jpg";
 import { getTranslations } from "@/lib/translations";
 import { useSEO } from '@/hooks/useSEO';
 
 const t = getTranslations('es');
 
-export default function HomeSpanish() {
+interface HomeSpanishProps {
+  autoOpenQuote?: boolean;
+}
+
+export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps) {
   useSEO({
     title: 'Compare Tarifas de Abogados de Inmigración',
     description: 'Encuentre y compare abogados de inmigración calificados. Obtenga cotizaciones transparentes, coincidencia impulsada por IA y representación legal experta para su caso.',
@@ -54,7 +58,9 @@ export default function HomeSpanish() {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [showLanguageAlert, setShowLanguageAlert] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [adVisitId, setAdVisitId] = useState<number | null>(null);
   const { user, logout } = useAuth();
+  const [, navigate] = useLocation();
 
   // Check for mobile view
   useEffect(() => {
@@ -87,6 +93,29 @@ export default function HomeSpanish() {
       window.location.href = '/admin-dashboard';
     }
   }, [user]);
+
+  // Auto-open quote modal for ad landing page and log the visit
+  useEffect(() => {
+    if (!autoOpenQuote) return;
+    const params = new URLSearchParams(window.location.search);
+    const visitData = {
+      language: 'es',
+      utmSource: params.get('utm_source') || undefined,
+      utmMedium: params.get('utm_medium') || undefined,
+      utmCampaign: params.get('utm_campaign') || undefined,
+      utmContent: params.get('utm_content') || undefined,
+      utmTerm: params.get('utm_term') || undefined,
+    };
+    fetch('/api/ad-visits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(visitData),
+    })
+      .then(r => r.json())
+      .then(res => { if (res.success) setAdVisitId(res.data.id); })
+      .catch(() => {});
+    setIsQuoteModalOpen(true);
+  }, [autoOpenQuote]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -422,8 +451,14 @@ export default function HomeSpanish() {
       {/* New Quote Modal */}
       <NewQuoteModal
         isOpen={isQuoteModalOpen}
-        onClose={() => setIsQuoteModalOpen(false)}
+        onClose={() => {
+          setIsQuoteModalOpen(false);
+          if (autoOpenQuote) navigate('/es');
+        }}
         language="es"
+        onStart={adVisitId !== null ? () => {
+          fetch(`/api/ad-visits/${adVisitId}/started`, { method: 'PATCH' }).catch(() => {});
+        } : undefined}
       />
 
       {/* Intake Modal */}

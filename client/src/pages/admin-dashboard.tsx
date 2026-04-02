@@ -11,6 +11,7 @@ import EmailTemplatesCard from '@/components/EmailTemplatesCard';
 import CaseTypesManagementCard from '@/components/CaseTypesManagementCard';
 import TestFlowCard from '@/components/TestFlowCard';
 import UserManagementCard from '@/components/UserManagementCard';
+import AdCampaignLinksCard from '@/components/AdCampaignLinksCard';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -34,6 +35,7 @@ export default function AdminDashboard() {
         <CaseTypesManagementCard />
         <TestFlowCard />
         <UserManagementCard />
+        <AdCampaignLinksCard />
       </div>
     </AdminLayout>
   );

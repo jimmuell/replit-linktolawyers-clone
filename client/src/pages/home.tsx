@@ -26,14 +26,18 @@ import TermsAndConditionsModal from "@/components/TermsAndConditionsModal";
 import PrivacyPolicyModal from "@/components/PrivacyPolicyModal";
 import { generateConfirmationEmail } from "@/lib/emailTemplates";
 import Navbar from "@/components/Navbar";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import girlThinkingImage from "@assets/girl-thinking-english_1759076159405.jpg";
 import { getTranslations } from "@/lib/translations";
 import { useSEO } from '@/hooks/useSEO';
 
 const t = getTranslations('en');
 
-export default function Home() {
+interface HomeProps {
+  autoOpenQuote?: boolean;
+}
+
+export default function Home({ autoOpenQuote = false }: HomeProps) {
   useSEO({
     title: 'Compare Immigration Attorney Fees Nationwide',
     description: 'Find and compare qualified immigration attorneys. Get transparent legal fee quotes, AI-powered matching, and expert legal representation for your immigration case.',
@@ -68,6 +72,7 @@ export default function Home() {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isNewQuoteModalOpen, setIsNewQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [adVisitId, setAdVisitId] = useState<number | null>(null);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
 
@@ -100,6 +105,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
 
   // Check for mobile view
   useEffect(() => {
@@ -137,6 +143,29 @@ export default function Home() {
       // Don't redirect clients - they can stay on home page
     }
   }, [user]);
+
+  // Auto-open quote modal for ad landing page and log the visit
+  useEffect(() => {
+    if (!autoOpenQuote) return;
+    const params = new URLSearchParams(window.location.search);
+    const visitData = {
+      language: 'en',
+      utmSource: params.get('utm_source') || undefined,
+      utmMedium: params.get('utm_medium') || undefined,
+      utmCampaign: params.get('utm_campaign') || undefined,
+      utmContent: params.get('utm_content') || undefined,
+      utmTerm: params.get('utm_term') || undefined,
+    };
+    fetch('/api/ad-visits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(visitData),
+    })
+      .then(r => r.json())
+      .then(res => { if (res.success) setAdVisitId(res.data.id); })
+      .catch(() => {});
+    setIsNewQuoteModalOpen(true);
+  }, [autoOpenQuote]);
 
   // Fetch case types for dropdown
   const { data: caseTypesData, isLoading: caseTypesLoading } = useQuery({
@@ -1024,7 +1053,13 @@ export default function Home() {
       {/* New Quote Modal - Structured Form System */}
       <NewQuoteModal
         isOpen={isNewQuoteModalOpen}
-        onClose={() => setIsNewQuoteModalOpen(false)}
+        onClose={() => {
+          setIsNewQuoteModalOpen(false);
+          if (autoOpenQuote) navigate('/');
+        }}
+        onStart={adVisitId !== null ? () => {
+          fetch(`/api/ad-visits/${adVisitId}/started`, { method: 'PATCH' }).catch(() => {});
+        } : undefined}
       />
 
       {/* Terms and Conditions Modal */}

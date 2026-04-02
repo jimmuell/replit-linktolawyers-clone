@@ -45,7 +45,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/get-a-quote" component={() => <Home autoOpenQuote />} />
       <Route path="/es" component={HomeSpanish} />
+      <Route path="/es/get-a-quote" component={() => <HomeSpanish autoOpenQuote />} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
       <Route path="/admin/flows" component={AdminFlows} />

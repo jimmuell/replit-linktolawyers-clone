@@ -614,3 +614,28 @@ export const insertStructuredIntakeSchema = createInsertSchema(structuredIntakes
 
 export type InsertStructuredIntake = z.infer<typeof insertStructuredIntakeSchema>;
 export type StructuredIntake = typeof structuredIntakes.$inferSelect;
+
+// Ad visit tracking table
+export const adVisits = pgTable("ad_visits", {
+  id: serial("id").primaryKey(),
+  visitedAt: timestamp("visited_at").defaultNow().notNull(),
+  language: varchar("language", { length: 5 }).notNull().default("en"),
+  utmSource: varchar("utm_source", { length: 255 }),
+  utmMedium: varchar("utm_medium", { length: 255 }),
+  utmCampaign: varchar("utm_campaign", { length: 255 }),
+  utmContent: varchar("utm_content", { length: 255 }),
+  utmTerm: varchar("utm_term", { length: 255 }),
+  didStart: boolean("did_start").notNull().default(false),
+});
+
+export const insertAdVisitSchema = createInsertSchema(adVisits).pick({
+  language: true,
+  utmSource: true,
+  utmMedium: true,
+  utmCampaign: true,
+  utmContent: true,
+  utmTerm: true,
+});
+
+export type InsertAdVisit = z.infer<typeof insertAdVisitSchema>;
+export type AdVisit = typeof adVisits.$inferSelect;

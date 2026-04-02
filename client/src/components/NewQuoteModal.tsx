@@ -21,6 +21,7 @@ interface NewQuoteModalProps {
   initialCaseType?: string;
   skipToQuestionnaire?: boolean;
   language?: 'en' | 'es';
+  onStart?: () => void;
 }
 
 // Type definitions for the questionnaire system
@@ -119,7 +120,7 @@ const FLOW_CONFIG: Record<string, Flow> = buildFlowConfig('en') as unknown as Re
 // Spanish translations for all flow configurations (legacy)
 const FLOW_CONFIG_ES: Record<string, Flow> = buildFlowConfig('es') as unknown as Record<string, Flow>;
 
-export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false, language = 'en' }: NewQuoteModalProps) {
+export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseType, skipToQuestionnaire = false, language = 'en', onStart }: NewQuoteModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>(skipToQuestionnaire ? 'questionnaire' : 'welcome');
   const [caseType, setCaseType] = useState<CaseType | ''>(initialCaseType as CaseType || '');
   const [role, setRole] = useState<Role>('');
@@ -1107,7 +1108,7 @@ export function NewQuoteModal({ isOpen, onClose, initialBasicInfo, initialCaseTy
         return (
           <div className="flex justify-center pt-8">
             <Button 
-              onClick={() => setCurrentStep('basic-info')} 
+              onClick={() => { onStart?.(); setCurrentStep('basic-info'); }} 
               className="bg-black hover:bg-gray-800 text-white px-12 py-6 text-lg"
               data-testid="button-start"
             >

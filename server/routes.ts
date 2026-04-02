@@ -5,7 +5,7 @@ import { db } from "./db";
 import OpenAI from "openai";
 import { z } from "zod";
 import { eq, inArray, asc, desc } from "drizzle-orm";
-import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, insertOrganizationSchema, requestAttorneyAssignments, referralAssignments, attorneys, quotes, structuredIntakes, caseDocuments, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
+import { insertUserSchema, loginSchema, insertCaseTypeSchema, insertLegalRequestSchema, insertSmtpSettingsSchema, sendEmailSchema, insertAttorneySchema, insertAttorneyFeeScheduleSchema, insertRequestAttorneyAssignmentSchema, insertBlogPostSchema, insertEmailTemplateSchema, updateEmailTemplateSchema, insertChatbotPromptSchema, insertFlowSchema, insertOrganizationSchema, requestAttorneyAssignments, referralAssignments, attorneys, quotes, structuredIntakes, caseDocuments, adVisits, insertAdVisitSchema, type User, type ChatbotPrompt, type InsertChatbotPrompt } from "@shared/schema";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
@@ -4300,6 +4300,44 @@ ${allPages.map(page => `  <url>
     } catch (error) {
       console.error('Error generating sitemap:', error);
       res.status(500).send('Error generating sitemap');
+    }
+  });
+
+  // Ad Visit Tracking endpoints
+  // POST /api/ad-visits — log a new visit from an ad URL
+  app.post('/api/ad-visits', async (req, res) => {
+    try {
+      const data = insertAdVisitSchema.parse(req.body);
+      const [visit] = await db.insert(adVisits).values(data).returning();
+      res.json({ success: true, data: visit });
+    } catch (error) {
+      console.error('Error logging ad visit:', error);
+      res.status(400).json({ success: false, error: 'Failed to log visit' });
+    }
+  });
+
+  // PATCH /api/ad-visits/:id/started — mark that the user clicked "Start"
+  app.patch('/api/ad-visits/:id/started', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) return res.status(400).json({ error: 'Invalid id' });
+      const [updated] = await db.update(adVisits).set({ didStart: true }).where(eq(adVisits.id, id)).returning();
+      if (!updated) return res.status(404).json({ error: 'Visit not found' });
+      res.json({ success: true, data: updated });
+    } catch (error) {
+      console.error('Error updating ad visit:', error);
+      res.status(500).json({ error: 'Failed to update visit' });
+    }
+  });
+
+  // GET /api/ad-visits — admin-only, return all visits
+  app.get('/api/ad-visits', requireAuth, requireRole(['admin']), async (req, res) => {
+    try {
+      const visits = await db.select().from(adVisits).orderBy(desc(adVisits.visitedAt));
+      res.json({ success: true, data: visits });
+    } catch (error) {
+      console.error('Error fetching ad visits:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch visits' });
     }
   });
 
