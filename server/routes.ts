@@ -4331,10 +4331,23 @@ ${allPages.map(page => `  <url>
     }
   });
 
-  // GET /api/ad-visits — admin-only, return all visits
+  // GET /api/ad-visits — admin-only, return all visits (token excluded)
   app.get('/api/ad-visits', requireAuth, requireRole(['admin']), async (req, res) => {
     try {
-      const visits = await db.select().from(adVisits).orderBy(desc(adVisits.visitedAt));
+      const visits = await db
+        .select({
+          id: adVisits.id,
+          visitedAt: adVisits.visitedAt,
+          language: adVisits.language,
+          utmSource: adVisits.utmSource,
+          utmMedium: adVisits.utmMedium,
+          utmCampaign: adVisits.utmCampaign,
+          utmContent: adVisits.utmContent,
+          utmTerm: adVisits.utmTerm,
+          didStart: adVisits.didStart,
+        })
+        .from(adVisits)
+        .orderBy(desc(adVisits.visitedAt));
       res.json({ success: true, data: visits });
     } catch (error) {
       console.error('Error fetching ad visits:', error);
