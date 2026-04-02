@@ -58,7 +58,6 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [showLanguageAlert, setShowLanguageAlert] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [adVisitId, setAdVisitId] = useState<number | null>(null);
   const adVisitIdRef = useRef<number | null>(null);
   const pendingStartRef = useRef(false);
   const { user, logout } = useAuth();
@@ -118,7 +117,6 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
         if (res.success) {
           const id = res.data.id;
           adVisitIdRef.current = id;
-          setAdVisitId(id);
           // If Start was clicked before the ID resolved, send the PATCH now
           if (pendingStartRef.current) {
             pendingStartRef.current = false;

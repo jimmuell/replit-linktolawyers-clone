@@ -72,7 +72,6 @@ export default function Home({ autoOpenQuote = false }: HomeProps) {
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
   const [isNewQuoteModalOpen, setIsNewQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-  const [adVisitId, setAdVisitId] = useState<number | null>(null);
   const adVisitIdRef = useRef<number | null>(null);
   const pendingStartRef = useRef(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
@@ -168,7 +167,6 @@ export default function Home({ autoOpenQuote = false }: HomeProps) {
         if (res.success) {
           const id = res.data.id;
           adVisitIdRef.current = id;
-          setAdVisitId(id);
           // If Start was clicked before the ID resolved, send the PATCH now
           if (pendingStartRef.current) {
             pendingStartRef.current = false;
