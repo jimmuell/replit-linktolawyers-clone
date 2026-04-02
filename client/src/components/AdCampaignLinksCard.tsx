@@ -50,6 +50,8 @@ export default function AdCampaignLinksCard() {
   const esVisits = visits.filter(v => v.language === 'es').length;
   const startRate = totalVisits > 0 ? Math.round((totalStarts / totalVisits) * 100) : 0;
 
+  const totalExited = totalVisits - totalStarts;
+
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const visitsThisWeek = visits.filter(v => new Date(v.visitedAt) >= weekAgo).length;
   const startsThisWeek = visits.filter(v => v.didStart && new Date(v.visitedAt) >= weekAgo).length;
@@ -91,7 +93,7 @@ export default function AdCampaignLinksCard() {
             <span className="text-xs text-gray-500">Start Rate</span>
           </div>
           <div className="text-lg font-semibold text-gray-900">{startRate}%</div>
-          <div className="text-xs text-gray-400">all time</div>
+          <div className="text-xs text-gray-400">{totalExited} exited</div>
         </div>
       </div>
 
