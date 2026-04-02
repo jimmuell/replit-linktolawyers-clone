@@ -635,6 +635,8 @@ export const insertAdVisitSchema = createInsertSchema(adVisits).pick({
   utmCampaign: true,
   utmContent: true,
   utmTerm: true,
+}).extend({
+  language: z.enum(['en', 'es']).default('en'),
 });
 
 export type InsertAdVisit = z.infer<typeof insertAdVisitSchema>;

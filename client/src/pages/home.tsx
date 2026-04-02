@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Mail, Copy, Check, Bell, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -73,6 +73,8 @@ export default function Home({ autoOpenQuote = false }: HomeProps) {
   const [isNewQuoteModalOpen, setIsNewQuoteModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [adVisitId, setAdVisitId] = useState<number | null>(null);
+  const adVisitIdRef = useRef<number | null>(null);
+  const pendingStartRef = useRef(false);
   const [isTrackRequestModalOpen, setIsTrackRequestModalOpen] = useState(false);
   const [isIntakeModalOpen, setIsIntakeModalOpen] = useState(false);
 
@@ -162,7 +164,18 @@ export default function Home({ autoOpenQuote = false }: HomeProps) {
       body: JSON.stringify(visitData),
     })
       .then(r => r.json())
-      .then(res => { if (res.success) setAdVisitId(res.data.id); })
+      .then(res => {
+        if (res.success) {
+          const id = res.data.id;
+          adVisitIdRef.current = id;
+          setAdVisitId(id);
+          // If Start was clicked before the ID resolved, send the PATCH now
+          if (pendingStartRef.current) {
+            pendingStartRef.current = false;
+            fetch(`/api/ad-visits/${id}/started`, { method: 'PATCH' }).catch(() => {});
+          }
+        }
+      })
       .catch(() => {});
     setIsNewQuoteModalOpen(true);
   }, [autoOpenQuote]);
@@ -1057,8 +1070,12 @@ export default function Home({ autoOpenQuote = false }: HomeProps) {
           setIsNewQuoteModalOpen(false);
           if (autoOpenQuote) navigate('/', { replace: true });
         }}
-        onStart={adVisitId !== null ? () => {
-          fetch(`/api/ad-visits/${adVisitId}/started`, { method: 'PATCH' }).catch(() => {});
+        onStart={autoOpenQuote ? () => {
+          if (adVisitIdRef.current !== null) {
+            fetch(`/api/ad-visits/${adVisitIdRef.current}/started`, { method: 'PATCH' }).catch(() => {});
+          } else {
+            pendingStartRef.current = true;
+          }
         } : undefined}
       />
 

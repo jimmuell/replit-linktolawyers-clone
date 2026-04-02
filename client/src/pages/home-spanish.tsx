@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Edit3, CheckSquare, DollarSign, Handshake, ChevronUp, Bell, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginModal from "@/components/LoginModal";
@@ -59,6 +59,8 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
   const [showLanguageAlert, setShowLanguageAlert] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [adVisitId, setAdVisitId] = useState<number | null>(null);
+  const adVisitIdRef = useRef<number | null>(null);
+  const pendingStartRef = useRef(false);
   const { user, logout } = useAuth();
   const [, navigate] = useLocation();
 
@@ -112,7 +114,18 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
       body: JSON.stringify(visitData),
     })
       .then(r => r.json())
-      .then(res => { if (res.success) setAdVisitId(res.data.id); })
+      .then(res => {
+        if (res.success) {
+          const id = res.data.id;
+          adVisitIdRef.current = id;
+          setAdVisitId(id);
+          // If Start was clicked before the ID resolved, send the PATCH now
+          if (pendingStartRef.current) {
+            pendingStartRef.current = false;
+            fetch(`/api/ad-visits/${id}/started`, { method: 'PATCH' }).catch(() => {});
+          }
+        }
+      })
       .catch(() => {});
     setIsQuoteModalOpen(true);
   }, [autoOpenQuote]);
@@ -456,8 +469,12 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
           if (autoOpenQuote) navigate('/es', { replace: true });
         }}
         language="es"
-        onStart={adVisitId !== null ? () => {
-          fetch(`/api/ad-visits/${adVisitId}/started`, { method: 'PATCH' }).catch(() => {});
+        onStart={autoOpenQuote ? () => {
+          if (adVisitIdRef.current !== null) {
+            fetch(`/api/ad-visits/${adVisitIdRef.current}/started`, { method: 'PATCH' }).catch(() => {});
+          } else {
+            pendingStartRef.current = true;
+          }
         } : undefined}
       />
 
