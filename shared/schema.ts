@@ -618,6 +618,7 @@ export type StructuredIntake = typeof structuredIntakes.$inferSelect;
 // Ad visit tracking table
 export const adVisits = pgTable("ad_visits", {
   id: serial("id").primaryKey(),
+  token: varchar("token", { length: 36 }).notNull().unique().default(sql`gen_random_uuid()`),
   visitedAt: timestamp("visited_at").defaultNow().notNull(),
   language: varchar("language", { length: 5 }).notNull().default("en"),
   utmSource: varchar("utm_source", { length: 255 }),

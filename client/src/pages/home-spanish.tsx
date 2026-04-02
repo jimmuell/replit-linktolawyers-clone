@@ -58,7 +58,7 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [showLanguageAlert, setShowLanguageAlert] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const adVisitIdRef = useRef<number | null>(null);
+  const adVisitTokenRef = useRef<string | null>(null);
   const pendingStartRef = useRef(false);
   const { user, logout } = useAuth();
   const [, navigate] = useLocation();
@@ -115,12 +115,12 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
       .then(r => r.json())
       .then(res => {
         if (res.success) {
-          const id = res.data.id;
-          adVisitIdRef.current = id;
-          // If Start was clicked before the ID resolved, send the PATCH now
+          const token = res.data.token;
+          adVisitTokenRef.current = token;
+          // If Start was clicked before the token resolved, send the PATCH now
           if (pendingStartRef.current) {
             pendingStartRef.current = false;
-            fetch(`/api/ad-visits/${id}/started`, { method: 'PATCH' }).catch(() => {});
+            fetch(`/api/ad-visits/${token}/started`, { method: 'PATCH' }).catch(() => {});
           }
         }
       })
@@ -468,8 +468,8 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
         }}
         language="es"
         onStart={autoOpenQuote ? () => {
-          if (adVisitIdRef.current !== null) {
-            fetch(`/api/ad-visits/${adVisitIdRef.current}/started`, { method: 'PATCH' }).catch(() => {});
+          if (adVisitTokenRef.current !== null) {
+            fetch(`/api/ad-visits/${adVisitTokenRef.current}/started`, { method: 'PATCH' }).catch(() => {});
           } else {
             pendingStartRef.current = true;
           }

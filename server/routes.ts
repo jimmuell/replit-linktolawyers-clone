@@ -4308,7 +4308,8 @@ ${allPages.map(page => `  <url>
   app.post('/api/ad-visits', async (req, res) => {
     try {
       const data = insertAdVisitSchema.parse(req.body);
-      const [visit] = await db.insert(adVisits).values(data).returning();
+      const token = crypto.randomUUID();
+      const [visit] = await db.insert(adVisits).values({ ...data, token }).returning();
       res.json({ success: true, data: visit });
     } catch (error) {
       console.error('Error logging ad visit:', error);
@@ -4316,12 +4317,12 @@ ${allPages.map(page => `  <url>
     }
   });
 
-  // PATCH /api/ad-visits/:id/started — mark that the user clicked "Start"
-  app.patch('/api/ad-visits/:id/started', async (req, res) => {
+  // PATCH /api/ad-visits/:token/started — mark that the user clicked "Start"
+  app.patch('/api/ad-visits/:token/started', async (req, res) => {
     try {
-      const id = parseInt(req.params.id, 10);
-      if (isNaN(id)) return res.status(400).json({ error: 'Invalid id' });
-      const [updated] = await db.update(adVisits).set({ didStart: true }).where(eq(adVisits.id, id)).returning();
+      const { token } = req.params;
+      if (!token || token.length > 36) return res.status(400).json({ error: 'Invalid token' });
+      const [updated] = await db.update(adVisits).set({ didStart: true }).where(eq(adVisits.token, token)).returning();
       if (!updated) return res.status(404).json({ error: 'Visit not found' });
       res.json({ success: true, data: updated });
     } catch (error) {
