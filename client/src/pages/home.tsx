@@ -1055,7 +1055,7 @@ export default function Home({ autoOpenQuote = false }: HomeProps) {
         isOpen={isNewQuoteModalOpen}
         onClose={() => {
           setIsNewQuoteModalOpen(false);
-          if (autoOpenQuote) navigate('/');
+          if (autoOpenQuote) navigate('/', { replace: true });
         }}
         onStart={adVisitId !== null ? () => {
           fetch(`/api/ad-visits/${adVisitId}/started`, { method: 'PATCH' }).catch(() => {});

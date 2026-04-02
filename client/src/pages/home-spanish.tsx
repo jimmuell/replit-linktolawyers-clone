@@ -453,7 +453,7 @@ export default function HomeSpanish({ autoOpenQuote = false }: HomeSpanishProps)
         isOpen={isQuoteModalOpen}
         onClose={() => {
           setIsQuoteModalOpen(false);
-          if (autoOpenQuote) navigate('/es');
+          if (autoOpenQuote) navigate('/es', { replace: true });
         }}
         language="es"
         onStart={adVisitId !== null ? () => {
